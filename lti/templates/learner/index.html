@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    {% include "includes/head.html" %}
+</head>
+
+<body>
+    <div class="container">
+        <div class="w-full max-w-md mx-auto my-4 shadow-md rounded">
+            <div class="bg-grey-lighter text-grey-darker p-3">
+                <h1 class="text-xl font-light">Complete the assignment</h1>
+            </div>
+
+            <form method="POST" action="/assignments/" class="bg-white px-8 pt-6 pb-8">
+                <div class="mb-4">
+                    <label class="block text-grey-darker text-sm font-bold mb-2" for="text">
+                        Paraphrase
+                    </label>
+                    <textarea
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker leading-tight"
+                        id="text"
+                        name="text"
+                        type="text"
+                        rows="7"></textarea>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button class="bg-blue hover:bg-blue-dark text-white font-bold py-2 px-4 rounded" type="submit">
+                        Submit
+                    </button>
+                    <a class="inline-block align-baseline font-bold text-sm text-blue hover:text-blue-darker" href="#">
+                        Help
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

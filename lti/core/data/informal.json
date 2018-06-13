@@ -1,0 +1,20 @@
+[
+    { "entity": "thing", "suggestion": "factor, issue, aspect, item, entity"  },
+    { "entity": "good thing", "suggestion": "benefit, advantage" },
+    { "entity": "good enough", "suggestion": "adequate" },
+    { "entity": "lots of", "suggestion": "many, numerous, several" },
+    { "entity": "a lot of", "suggestion": "many, numerous, several" },
+    { "entity": "loads of", "suggestion": "many, numerous, several" },
+    { "entity": "to do with", "suggestion": "regarding, concerning" },
+    { "entity": "good", "suggestion": "positive, useful, valuable, advantageous" },
+    { "entity": "bad", "suggestion": "negative, disadvantageous" },
+    { "entity": "big", "suggestion": "large, major, significant" },
+    { "entity": "little", "suggestion": "small, minor" },
+    { "entity": "cool", "suggestion": "" },
+    { "entity": "get", "suggestion": "obtain" },
+    { "entity": "has got", "suggestion": "have" },
+    { "entity": "have got", "suggestion": "have" },
+    { "entity": "give", "suggestion": "provide" },
+    { "entity": "stay", "suggestion": "remain, persist" },
+    { "entity": "keep", "suggestion": "preserve" }
+]
