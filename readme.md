@@ -17,6 +17,10 @@
 - Press `d`
 - Then enter `popular` to download the 'popular' packages of NLTK
 
+```
+>>> nltk.download('masc_tagged')
+```
+
 ### NLTK interface to the Stanford Parser
 
 First you need set the Java environment for the Java text analysis tools (e.g. Stanford Parser) before you using them in NLTK:

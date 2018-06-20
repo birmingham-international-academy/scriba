@@ -1,5 +1,7 @@
 from django.conf import settings
-from . import services, exceptions
+from . import exceptions
+from lti.core import services
+
 
 class ValidLaunchMiddleware:
     def __init__(self, get_response):

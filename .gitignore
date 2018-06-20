@@ -88,4 +88,16 @@ local_settings.py
 .env
 db.sqlite3
 
+# VS code
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# LTI-related
+
 lti/core/data/stanford-parser
+fce-corpus
+fce-corpus-in

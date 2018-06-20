@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '44d4023c.ngrok.io'
+    '8207566d.ngrok.io'
 ]
 
 

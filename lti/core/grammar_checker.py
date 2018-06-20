@@ -1,9 +1,12 @@
 import os
-from lti.helpers import get_current_dir, find_file
+import language_check
+from lti.helpers import get_current_dir, find_file, is_punctuation, is_number
+from nltk import word_tokenize
 from nltk.parse.stanford import StanfordParser, StanfordDependencyParser
 from nltk.tokenize import sent_tokenize
 from nltk.tree import Tree
 from nltk.stem import WordNetLemmatizer
+from spellchecker import SpellChecker
 
 class GrammarChecker:
     CLAUSE_TYPES = ['S', 'SINV', 'SQ']
@@ -47,12 +50,15 @@ class GrammarChecker:
         if len(subtrees) == 0:
             return [' '.join(sentence.leaves())]
 
-        for node in subtrees:
-            compounds = [child.label() for child in node if GrammarChecker._is_clause_component(child)]
+        for tree in subtrees:
+            compounds = [node.label() for node in tree if GrammarChecker._is_clause_component(node)]
             compounds = sorted(compounds)
 
-            if compounds != ['NP', 'VP'] and compounds != ['SBAR', 'VP'] and compounds != ['CC', 'S', 'S']:
-                malformed.append(node.flatten())
+            if not set(['NP', 'VP']).issubset(compounds)\
+            and compounds != ['VP']\
+            and compounds != ['SBAR', 'VP']\
+            and compounds != ['CC', 'S', 'S']:
+                malformed.append(tree.flatten())
 
         return [' '.join(malformed_str) for malformed_str in malformed]
 
@@ -96,9 +102,6 @@ class GrammarChecker:
 
         return [' '.join(node.leaves()) for node in transitive_verbs_without_object]
 
-    def _search_dangling_modifiers(self):
-        pass
-
     def _search_noun_verb_disagreements(self, sentence):
         disagreements = []
         subtrees = list(sentence.subtrees(filter=lambda n: n.label() in GrammarChecker.CLAUSE_TYPES))
@@ -140,29 +143,35 @@ class GrammarChecker:
 
         return disagreements
 
+    def spell_check(self, text):
+        spell = SpellChecker()
+        words = [word.lower() for word in word_tokenize(text) if not is_punctuation(word) and not is_number(word)]
+
+        return [{'word': word, 'corrections': spell.candidates(word)} for word in spell.unknown(words)]
+
     def run(self, text):
         sentences = list(self.parser.raw_parse_sents(sent_tokenize(text)))
+        tool = language_check.LanguageTool('en-GB')
+
         data = {
             'malformed_sentences': [],
             'sentence_fragments': [],
             'run_ons': [],
             'transitive_verbs_without_object': [],
-            'noun_verb_disagreements': []
+            'noun_verb_disagreements': [],
+            'spell_check': None
         }
 
         for line in sentences:
             for sentence in line:
                 print(sentence)
+
                 data['malformed_sentences'].extend(self._search_malformed_sentences(sentence))
                 data['sentence_fragments'].extend(self._search_sentence_fragments(sentence))
                 data['run_ons'].extend(self._search_run_ons(sentence))
                 data['transitive_verbs_without_object'].extend(self._search_transitive_verbs_without_object(sentence))
                 data['noun_verb_disagreements'].extend(self._search_noun_verb_disagreements(sentence))
-
-        #sentences = list(self.dependency_parser.raw_parse_sents(sent_tokenize(text)))
-
-        #for line in sentences:
-        #    for sentence in line:
-        #        print(sentence.to_dot())
+                data['spell_check'] = self.spell_check(text)
+                data['languagetool_check'] = [entry for entry in tool.check(text) if entry.locqualityissuetype != 'misspelling']
 
         return data

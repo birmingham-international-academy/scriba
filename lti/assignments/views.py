@@ -19,9 +19,9 @@ def submit_assignment(request):
 
     print(data)
 
-    # TODO: check assignment type
+    template = 'learner/feedback.html' if assm_type == 'pilot' else 'learner/submission-confirmation.html'
 
-    return render(request, 'learner/feedback.html', data)
+    return render(request, template, data)
 
 @require_http_methods(['GET', 'POST'])
 def index(request):
