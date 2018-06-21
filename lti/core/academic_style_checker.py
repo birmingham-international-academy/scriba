@@ -23,7 +23,7 @@ class AcademicStyleChecker:
         return phrasal_verbs
 
     def _search_contractions(self, tokens):
-        return [tokens[index - 1] + token for index, token in enumerate(tokens) if "'" in token]
+        return [tokens[index - 1][0] + token for index, (token, pos) in enumerate(tokens) if "'" in token and pos != 'POS']
 
     def _search_general_informalities(self, lemmas):
         current_dir = get_current_dir(__file__)
@@ -36,15 +36,16 @@ class AcademicStyleChecker:
 
     def run(self, text):
         tokens = tokenize.word_tokenize(text)
+        tagged_tokens = pos_tag(tokens)
         lemmas = [self.lemmatizer.lemmatize(i, j[0].lower())
                 if j[0].lower() in
                 ['a', 'n', 'v']
                 else self.lemmatizer.lemmatize(i)
-                for i, j in pos_tag(tokens)]
+                for i, j in tagged_tokens]
         doc = self.nlp(text)
 
         phrasal_verbs = self._search_phrasal_verbs(doc)
-        contractions = self._search_contractions(tokens)
+        contractions = self._search_contractions(tagged_tokens)
         general_informalities = self._search_general_informalities(' '.join(lemmas))
 
         return {

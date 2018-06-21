@@ -37,8 +37,7 @@ class FeedbackInterpreter:
                             and len(gc['languagetool_check']) == 0\
                             and len(gc['run_ons']) == 0\
                             and len(gc['transitive_verbs_without_object']) == 0\
-                            and len(gc['sentence_fragments']) == 0\
-                            and len(gc['noun_verb_disagreements']) == 0
+                            and len(gc['sentence_fragments']) == 0
 
         # Spelling status
         data['spelling_status'] = len(gc['spell_check']) == 0
@@ -50,16 +49,22 @@ class FeedbackInterpreter:
                                     and len(asc['general_informalities']) == 0
 
         # Paraphrase status
-        pc = data['plagiarsim_check']
+        pc = data['plagiarism_check']
         sc = data['semantics_check']
-        data['paraphrase_status'] = len(pc['three_words']) < 2\
-                                and len(pc['four_words']) == 0\
-                                and len(pc['five_words']) == 0\
-                                and len(pc['six_words']) == 0
+        data['paraphrase_status'] = len(pc) == 0
 
         return data
 
 class GradeInterpreter:
+    def __init__(self, points_possible):
+        self.points_possible = points_possible
+
+    def _points_to_decimal_score(self, points):
+        return points / self.points_possible
+
+    def _decimal_to_points_score(self, decimal):
+        return decimal * self.points_possible
+
     def run(self, data):
         data['score'] = 0.87
         data['comments'] = 'You did good man!\nKeep up the great work!'

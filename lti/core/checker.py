@@ -24,5 +24,5 @@ class Checker:
             'academic_style_check': academic_style_check,
             'semantics_check': semantics_check,
             'grammar_check': grammar_check,
-            'plagiarsim_check': plagiarism_check
+            'plagiarism_check': plagiarism_check
         }

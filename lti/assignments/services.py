@@ -255,8 +255,9 @@ class AssignmentDescriptionParser(HTMLParser):
 
 
 class AssignmentService:
-    def __init__(self, assm_description, assm_type, service_url, source_did):
+    def __init__(self, assm_description, assm_type, assm_points_possible, service_url, source_did):
         self.type = assm_type
+        self.points_possible = assm_points_possible
         self.outcome_service = OutcomeService({
             'consumer_key': settings.CANVAS['CONSUMER_KEY'],
             'consumer_secret': settings.CANVAS['SHARED_SECRET'],
@@ -275,7 +276,7 @@ class AssignmentService:
 
     def run_analysis(self, text):
         checker = Checker()
-        interpreter = FeedbackInterpreter() if self.type == 'pilot' else GradeInterpreter()
+        interpreter = FeedbackInterpreter() if self.type == 'pilot' else GradeInterpreter(self.points_possible)
 
         data = checker.run(text, self.excerpt, self.reference)
         data['text'] = text

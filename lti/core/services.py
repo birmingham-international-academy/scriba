@@ -3,7 +3,18 @@ from base64 import b64encode
 from hashlib import sha1
 import hmac
 
-class HmacSha1Signer(object):
+
+class CanvasService:
+    @staticmethod
+    def is_instructor(roles):
+        roles = roles.lower().split(',')
+        for role in roles:
+            if role == 'instructor':
+                return True
+        return False
+
+
+class HmacSha1Signer:
     def _encode(self, string):
         return parse.quote(string, safe='~')
 

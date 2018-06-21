@@ -1,36 +1,36 @@
 from lti.helpers import is_punctuation, tok_and_lem
-from nltk import ngrams
+from difflib import ndiff
 
 
 class PlagiarismChecker:
     def __init__(self):
         pass
 
-    def _gram_hits(self, tokens1, tokens2, n):
-        hits = []
-        hit = False
-        grams2 = ngrams(tokens2, n)
+    def _get_matches(self, tokens1, tokens2):
+        matches = []
+        match = []
+        index = -1
 
-        for gram in ngrams(tokens1, n):
-            if gram in grams2 and not hit:
-                hits.append(gram)
-                hit = True
-            else:
-                hit = False
+        for i, d in enumerate(ndiff(tokens1, tokens2)):
+            if d[0] == ' ':
+                word = d.split(' ')[-1]
 
-        return hits
+                if i == index + 1:
+                    match.append(word)
+                else:
+                    if len(match) >= 3:
+                        matches.append(' '.join(match))
+                    match = [word]
 
-    def _search_word_strings(self, text, excerpt):
-        text_lemmas = [s for s in tok_and_lem(text) if not is_punctuation(s)]
-        excerpt_lemmas = [s for s in tok_and_lem(excerpt) if not is_punctuation(s)]
-        hits = dict()
+                index = i
 
-        hits['three_words'] = self._gram_hits(text_lemmas, excerpt_lemmas, 3)
-        hits['four_words'] = self._gram_hits(text_lemmas, excerpt_lemmas, 4)
-        hits['five_words'] = self._gram_hits(text_lemmas, excerpt_lemmas, 5)
-        hits['six_words'] = self._gram_hits(text_lemmas, excerpt_lemmas, 6)
+        if len(match) >= 3:
+            matches.append(' '.join(match))
 
-        return hits
+        return matches
 
     def run(self, text, excerpt):
-        return self._search_word_strings(text, excerpt)
+        text_lemmas = [s.lower() for s in tok_and_lem(text) if not is_punctuation(s)]
+        excerpt_lemmas = [s.lower() for s in tok_and_lem(excerpt) if not is_punctuation(s)]
+
+        return self._get_matches(text_lemmas, excerpt_lemmas)

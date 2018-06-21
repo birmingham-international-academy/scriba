@@ -1,7 +1,12 @@
 import os
+import re
 import language_check
-from lti.helpers import get_current_dir, find_file, is_punctuation, is_number
-from nltk import word_tokenize
+import spacy
+from spacy.matcher import Matcher
+from lti.helpers import get_current_dir, find_file, is_punctuation, remove_punctuation, is_number
+from nltk import pos_tag
+from nltk.corpus import wordnet as wn
+from nltk import word_tokenize, WhitespaceTokenizer
 from nltk.parse.stanford import StanfordParser, StanfordDependencyParser
 from nltk.tokenize import sent_tokenize
 from nltk.tree import Tree
@@ -19,6 +24,7 @@ class GrammarChecker:
         models_jar_filename = find_file('stanford-parser-*-models.jar', stanford_parser_directory)[0]
         self.parser = StanfordParser(parser_jar_filename, models_jar_filename)
         self.dependency_parser = StanfordDependencyParser(parser_jar_filename, models_jar_filename)
+        self.nlp = spacy.load('en')
 
     @staticmethod
     def _is_valid_subordinating_conj_clause(node):
@@ -102,54 +108,42 @@ class GrammarChecker:
 
         return [' '.join(node.leaves()) for node in transitive_verbs_without_object]
 
-    def _search_noun_verb_disagreements(self, sentence):
-        disagreements = []
-        subtrees = list(sentence.subtrees(filter=lambda n: n.label() in GrammarChecker.CLAUSE_TYPES))
+    def _there_their(self, text):
+        patterns = [
+            [{'LOWER': 'there'}, {'POS': 'ADJ', 'OP': '?'}, {'POS': 'NOUN'}]
+        ]
 
-        for tree in subtrees:
-            noun_phrase = None
-            verb_phrase = None
+        matcher = Matcher(self.nlp.vocab)
+        matcher.add('THERE_THEIR', None, *patterns)
 
-            for node in tree:
-                if node.label() == 'NP':
-                    noun_phrase = node
-                elif node.label() == 'VP':
-                    verb_phrase = node
+        doc = self.nlp(text)
+        matches = matcher(doc)
+        print('Matches: ' + str(matches))
+        #print(pos_tag(word_tokenize(text)))
 
-            if noun_phrase is None or verb_phrase is None:
-                continue
+        return None
 
-            base_noun = [n for n in noun_phrase if n.label().startswith('NN') or n.label() == 'PRP']
-            base_verb = [n for n in verb_phrase if n.label().startswith('VB')]
-
-            if base_noun == [] or base_verb == []:
-                continue
-
-            noun, noun_label = base_noun[0], base_noun[0].label()
-            _, verb_label = base_verb[0], base_verb[0].label()
-            phrase = ' '.join(tree.leaves())
-
-            if noun_label in ['NN', 'NNP'] and verb_label == 'VBP':
-                disagreements.append(phrase)
-
-            if noun_label in ['NNS', 'NNPS'] and verb_label == 'VBZ':
-                disagreements.append(phrase)
-
-            if noun_label == 'PRP':
-                pronoun = noun[0].lower()
-
-                if (pronoun in ['he', 'she', 'it'] and verb_label == 'VBP') or (pronoun in ['you', 'we', 'they'] and verb_label == 'VBZ'):
-                    disagreements.append(phrase)
-
-        return disagreements
-
-    def spell_check(self, text):
+    def _spell_check(self, text):
         spell = SpellChecker()
-        words = [word.lower() for word in word_tokenize(text) if not is_punctuation(word) and not is_number(word)]
+        tokenizer = WhitespaceTokenizer()
+        words = [remove_punctuation(word.lower()) for word in tokenizer.tokenize(text)]
+        words = [word for word in words if word != '' and not is_number(word)]
 
-        return [{'word': word, 'corrections': spell.candidates(word)} for word in spell.unknown(words)]
+        mapped_words = []
+        for word in words:
+            parts = word.split("'")
+
+            if len(parts) == 2 and (parts[1] == 's' or parts[1] == ''):
+                mapped_words.append(parts[0])
+            else:
+                mapped_words.append(word)
+
+        return [{'word': word, 'corrections': spell.candidates(word)} for word in spell.unknown(mapped_words)]
 
     def run(self, text):
+        text = text.strip()
+        text = re.sub(' +', ' ', text)
+
         sentences = list(self.parser.raw_parse_sents(sent_tokenize(text)))
         tool = language_check.LanguageTool('en-GB')
 
@@ -158,8 +152,9 @@ class GrammarChecker:
             'sentence_fragments': [],
             'run_ons': [],
             'transitive_verbs_without_object': [],
-            'noun_verb_disagreements': [],
-            'spell_check': None
+            'spell_check': None,
+            'languagetool_check': [entry for entry in tool.check(text) if entry.locqualityissuetype != 'misspelling'],
+            'there_their': self._there_their(text)
         }
 
         for line in sentences:
@@ -170,8 +165,6 @@ class GrammarChecker:
                 data['sentence_fragments'].extend(self._search_sentence_fragments(sentence))
                 data['run_ons'].extend(self._search_run_ons(sentence))
                 data['transitive_verbs_without_object'].extend(self._search_transitive_verbs_without_object(sentence))
-                data['noun_verb_disagreements'].extend(self._search_noun_verb_disagreements(sentence))
-                data['spell_check'] = self.spell_check(text)
-                data['languagetool_check'] = [entry for entry in tool.check(text) if entry.locqualityissuetype != 'misspelling']
+                data['spell_check'] = self._spell_check(text)
 
         return data

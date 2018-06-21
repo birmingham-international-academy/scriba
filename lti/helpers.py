@@ -21,7 +21,7 @@ def find_file(pattern, path):
 
 
 def remove_punctuation(s):
-    return s.translate(None, string.punctuation)
+    return ''.join(c for c in s if c not in '!?.,;:')
 
 
 def is_punctuation(s):

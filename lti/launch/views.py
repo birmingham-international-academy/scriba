@@ -26,5 +26,6 @@ def index(request):
 
         request.session['assignment_description'] = assignment.get('description')
         request.session['assignment_type'] = 'pilot' if int(assignment.get('points_possible')) == 0 else 'graded'
+        request.session['assignment_points_possible'] = float(assignment.get('points_possible'))
 
     return redirect('/assignments')
