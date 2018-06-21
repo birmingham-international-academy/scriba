@@ -108,6 +108,15 @@
                             {% endfor %}
                         </ul>
                         {% endif %}
+
+                        {% if grammar_check.there_their|length > 0 %}
+                        <p>In the following fragments, instead of 'there' use 'their':</p>
+                        <ul>
+                            {% for words in grammar_check.there_their %}
+                            <li>{{ words }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
                     </div>
 
                     <div class="mb-6">

@@ -37,7 +37,8 @@ class FeedbackInterpreter:
                             and len(gc['languagetool_check']) == 0\
                             and len(gc['run_ons']) == 0\
                             and len(gc['transitive_verbs_without_object']) == 0\
-                            and len(gc['sentence_fragments']) == 0
+                            and len(gc['sentence_fragments']) == 0\
+                            and len(gc['there_their']) == 0
 
         # Spelling status
         data['spelling_status'] = len(gc['spell_check']) == 0

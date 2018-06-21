@@ -110,7 +110,7 @@ class GrammarChecker:
 
     def _there_their(self, text):
         patterns = [
-            [{'LOWER': 'there'}, {'POS': 'ADJ', 'OP': '?'}, {'POS': 'NOUN'}]
+            [{'LOWER': 'there'}, {'POS': 'ADV', 'OP': '?'}, {'POS': 'ADJ', 'OP': '?'}, {'POS': 'NOUN'}, {'POS': 'VERB', 'OP': '?'}]
         ]
 
         matcher = Matcher(self.nlp.vocab)
@@ -121,7 +121,7 @@ class GrammarChecker:
         print('Matches: ' + str(matches))
         #print(pos_tag(word_tokenize(text)))
 
-        return None
+        return [doc[start:end] for _, start, end in matches]
 
     def _spell_check(self, text):
         spell = SpellChecker()
