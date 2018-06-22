@@ -125,8 +125,8 @@ The labels are loosely grouped by their purpose, but it's not required that ever
 
 #### Pull Request Labels
 
-| Label name | `atom/atom` :mag_right: | `atom`‑org :mag_right: | Description
-| --- | --- | --- | --- |
+| Label name | Description |
+| --- | --- |
 | `work-in-progress` | Pull requests which are still being worked on, more changes will follow. |
 | `needs-review` | Pull requests which need code review, and approval from maintainers. |
 | `under-review` | Pull requests being reviewed by maintainers. |
