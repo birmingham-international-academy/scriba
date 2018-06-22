@@ -1,9 +1,10 @@
 spacy==2.0.11
-pyspellchecker==0.1.2
-nltk==3.3
-language_check==1.1
-requests==2.18.4
 gensim==3.4.0
 Django==2.0.6
+pyspellchecker==0.1.2
 untangle==1.1.1
+nltk==3.3
+requests==2.18.4
+language_check==1.1
+python-dotenv==0.8.2
 spellchecker==0.4

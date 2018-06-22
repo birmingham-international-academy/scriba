@@ -4,9 +4,21 @@
 
 ## Development setup
 
-Install the dependencies using: `pip -r requirements.txt`
+First of all install the dependencies using: `pip -r requirements.txt`.
 
-### NLTK package
+### 1. Environment settings
+
+Create a `.env` file resembling the `.env.example` file in the same directory.
+
+Then set the keys appropriately:
+- `SECRET_KEY`
+- `CANVAS_CONSUMER_KEY`
+- `CANVAS_SHARED_SECRET`
+- `CANVAS_PERSONAL_ACCESS_TOKEN`
+- `CANVAS_DEVELOPER_KEY`
+- `DANDELION_API_KEY`
+
+### 2. NLTK package
 
 - Run the Python interpreter: `$ python`
 - Run the following:
@@ -19,7 +31,7 @@ Install the dependencies using: `pip -r requirements.txt`
 - Press `d`
 - Then enter `popular` to download the 'popular' packages of NLTK
 
-### NLTK interface to the Stanford Parser
+### 3. NLTK interface to the Stanford Parser
 
 First you need set the Java environment for the Java text analysis tools (e.g. Stanford Parser) before you using them in NLTK:
 
@@ -28,6 +40,6 @@ First you need set the Java environment for the Java text analysis tools (e.g. S
 
 Then run `python scripts/stanford_parser.py` to download and extract the Stanford parser.
 
-### SpaCy package
+### 4. SpaCy package
 
 Run the following command to download the 'en' model for SpaCy: `python -m spacy download en`

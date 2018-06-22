@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 import os
 import json
 from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
+
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(dotenv_path, override=True)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -121,9 +125,19 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# Local settings
+# Application settings
 
-try:
-    from scriba.local_settings import *
-except ImportError:
-    raise Exception("A local_settings.py file is required to run this project")
+SECRET_KEY = os.getenv('SECRET_KEY')
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.file'
+
+CANVAS = {
+    'CONSUMER_KEY': os.getenv('CANVAS_CONSUMER_KEY'),
+    'SHARED_SECRET': os.getenv('CANVAS_SHARED_SECRET'),
+    'PERSONAL_ACCESS_TOKEN': os.getenv('CANVAS_PERSONAL_ACCESS_TOKEN'),
+    'DEVELOPER_KEY': os.getenv('CANVAS_DEVELOPER_KEY')
+}
+
+DANDELION = {
+    'API_KEY': os.getenv('DANDELION_API_KEY')
+}

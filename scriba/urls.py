@@ -17,6 +17,7 @@ Including another URLconf
 from django.urls import include, path
 
 urlpatterns = [
+    path('register/', include('lti.register.urls')),
     path('launch/', include('lti.launch.urls')),
     path('assignments/', include('lti.assignments.urls')),
 ]
