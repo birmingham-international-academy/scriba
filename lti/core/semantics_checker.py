@@ -6,7 +6,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import wordnet as wn
 from gensim import corpora, models, similarities
 import spacy
-from text_helpers import load_stanford_parser
+from .text_helpers import load_stanford_parser
 
 
 class SemanticsChecker:

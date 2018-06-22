@@ -11,7 +11,7 @@ from nltk.tokenize import sent_tokenize
 from nltk.tree import Tree
 from nltk.stem import WordNetLemmatizer
 from spellchecker import SpellChecker
-from text_helpers import load_stanford_parser
+from .text_helpers import load_stanford_parser
 
 
 class GrammarChecker:
