@@ -1,19 +1,32 @@
 import re
 
+
 class CitationChecker:
-    def run(self, text, citation_string):
+    def __init__(self, text, reference):
+        self.text = text
+        self.reference = reference
+
+    def run(self):
         m = re.match(
-            r'^(?P<authors>(?:(?:\w+,\s?(?:\w\.)+)(?:,\s?|\sand\s)?)+)\s?\((?P<year>\d{4})\)\s(?:\"|\')?(?P<title>[^\"\'\.]+)(?:\"|\')?\.?(?:(?P<edition>\s*\d+.+?)\.)?(?:(?P<publisher>.+?:.+?)\.)?$',
-            citation_string
+            r'^(?P<authors>(?:(?:\w+,\s?(?:\w\.)+)(?:,\s?|\sand\s)?)+)\s?'
+            r'\((?P<year>\d{4})\)\s'
+            r'(?:\"|\')?(?P<title>[^\"\'\.]+)(?:\"|\')?\.?'
+            r'(?:(?P<edition>\s*\d+.+?)\.)?'
+            r'(?:(?P<publisher>.+?:.+?)\.)?$',
+            self.reference
         )
 
         if m is None:
-            pass # raise exception
+            pass  # raise exception
 
         data = m.groupdict()
 
-        authors = [author.strip() for index, author in enumerate(re.split(r',|\sand\s', data['authors'].strip())) if index % 2 == 0]
         year = data['year']
+        authors = [
+            author.strip()
+            for author in re.split(r',|\sand\s', data['authors'].strip())
+        ]
+        authors = authors[::2]
 
         lastnames_citation = ''
 
@@ -21,9 +34,6 @@ class CitationChecker:
             lastnames_citation += authors[0] + ' et al.'
         else:
             for index, author in enumerate(authors):
-                #if index == 0:
-                #    continue
-
                 lastnames_citation += author
 
                 if index == len(authors) - 2:
@@ -32,7 +42,7 @@ class CitationChecker:
                     lastnames_citation += ', '
 
         possible_citations = [
-            lastnames_citation + ' (' + year  + ')',
+            lastnames_citation + ' (' + year + ')',
             '(' + lastnames_citation + ', ' + year + ')',
             '(' + lastnames_citation + ' ' + year + ')'
         ]
@@ -40,7 +50,7 @@ class CitationChecker:
         result = False
 
         for cit in possible_citations:
-            if cit in text:
+            if cit in self.text:
                 result = True
                 break
 
@@ -49,4 +59,3 @@ class CitationChecker:
             'possible_citations': possible_citations,
             'authors': authors
         }
-

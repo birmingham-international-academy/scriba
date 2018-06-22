@@ -7,14 +7,30 @@ import os
 
 
 class AcademicStyleChecker:
-    def __init__(self):
+    def __init__(self, text):
+        self.text = text
+        self._load_tools()
+        self._preprocess()
+
+    def _load_tools(self):
         self.lemmatizer = WordNetLemmatizer()
         self.nlp = spacy.load('en')
 
-    def _search_phrasal_verbs(self, doc):
+    def _preprocess(self):
+        self.tokens = tokenize.word_tokenize(self.text)
+        self.tagged_tokens = pos_tag(self.tokens)
+        self.lemmas = [
+            self.lemmatizer.lemmatize(i, j[0].lower())
+            if j[0].lower() in ['a', 'n', 'v']
+            else self.lemmatizer.lemmatize(i)
+            for i, j in self.tagged_tokens
+        ]
+        self.doc = self.nlp(self.text)
+
+    def get_phrasal_verbs(self):
         phrasal_verbs = []
 
-        for token in doc:
+        for token in self.doc:
             if token.dep_ == 'prt' and token.head.pos_ == 'VERB':
                 verb = token.head.orth_
                 particle = token.orth_
@@ -22,34 +38,30 @@ class AcademicStyleChecker:
 
         return phrasal_verbs
 
-    def _search_contractions(self, tokens):
-        return [tokens[index - 1][0] + token for index, (token, pos) in enumerate(tokens) if "'" in token and pos != 'POS']
+    def get_contractions(self):
+        return [
+            self.tagged_tokens[index - 1][0] + token
+            for index, (token, pos) in enumerate(self.tagged_tokens)
+            if "'" in token and pos != 'POS'
+        ]
 
-    def _search_general_informalities(self, lemmas):
+    def get_general_informalities(self):
+        lemmas = ' '.join(self.lemmas)
         current_dir = get_current_dir(__file__)
         filename = os.path.join(current_dir, 'data', 'informal.json')
 
         with open(filename, 'r') as f:
             informal_words = json.load(f)
 
-            return [word for word in informal_words if word.get('entity') in lemmas]
+            return [
+                word
+                for word in informal_words
+                if word.get('entity') in lemmas
+            ]
 
-    def run(self, text):
-        tokens = tokenize.word_tokenize(text)
-        tagged_tokens = pos_tag(tokens)
-        lemmas = [self.lemmatizer.lemmatize(i, j[0].lower())
-                if j[0].lower() in
-                ['a', 'n', 'v']
-                else self.lemmatizer.lemmatize(i)
-                for i, j in tagged_tokens]
-        doc = self.nlp(text)
-
-        phrasal_verbs = self._search_phrasal_verbs(doc)
-        contractions = self._search_contractions(tagged_tokens)
-        general_informalities = self._search_general_informalities(' '.join(lemmas))
-
+    def run(self):
         return {
-            'phrasal_verbs': phrasal_verbs,
-            'contractions': contractions,
-            'general_informalities': general_informalities
+            'phrasal_verbs': self.get_phrasal_verbs(),
+            'contractions': self.get_contractions(),
+            'general_informalities': self.get_general_informalities()
         }

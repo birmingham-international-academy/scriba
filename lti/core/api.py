@@ -2,13 +2,15 @@ import requests
 import xml.etree.ElementTree as ET
 from django.conf import settings
 
+
 class CanvasApiClient:
     def __init__(self):
         self.endpoint = 'https://canvas.bham.ac.uk/api/v1'
 
-    def get_assignment(self, course_id, assignment_id):
-        url = self.endpoint + '/courses/' + course_id + '/assignments/' + assignment_id
-        headers = {'Authorization': 'Bearer ' + settings.CANVAS['PERSONAL_ACCESS_TOKEN']}
+    def get_assignment(self, cid, aid):
+        url = self.endpoint + '/courses/' + cid + '/assignments/' + aid
+        access_token = settings.CANVAS['PERSONAL_ACCESS_TOKEN']
+        headers = {'Authorization': 'Bearer ' + access_token}
 
         return requests.get(url, headers=headers)
 
@@ -24,7 +26,11 @@ class FreeCiteApiClient:
             return ''
 
     def parse(self, citation_string):
-        r = requests.post(self.endpoint, data={'citation' : citation_string}, headers={'Accept': 'text/xml'} )
+        r = requests.post(
+            self.endpoint,
+            data={'citation': citation_string},
+            headers={'Accept': 'text/xml'}
+        )
 
         etree = ET.fromstring(r.text.encode('utf-8'))
 

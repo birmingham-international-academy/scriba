@@ -9,7 +9,7 @@ def get_current_dir(current_file):
     return os.path.dirname(os.path.realpath(current_file))
 
 
-def find_file(pattern, path):
+def find_file(pattern, path, first=False):
     result = []
 
     for root, _, files in os.walk(path):
@@ -17,7 +17,7 @@ def find_file(pattern, path):
             if fnmatch.fnmatch(name, pattern):
                 result.append(os.path.join(root, name))
 
-    return result
+    return result[0] if first else result
 
 
 def remove_punctuation(s):

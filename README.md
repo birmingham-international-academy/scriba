@@ -1,6 +1,6 @@
-# scriba
+# Scriba
 
-> A Canvas LTI for automated paraphrase analysis: a project part of the Birmingham International Academy (University of Birmingham, UK).
+> A Canvas LTI for automated paraphrase analysis.
 
 ## Development setup
 
@@ -48,3 +48,11 @@ Then run `python scripts/stanford_parser.py` to download and extract the Stanfor
 ### 4. SpaCy package
 
 Run the following command to download the 'en' model for SpaCy: `python -m spacy download en`
+
+## Testing
+
+
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.

@@ -14,45 +14,6 @@ from lti.core.checker import Checker
 from lti.core.interpreters import *
 from html.parser import HTMLParser
 
-"""
-<?xml version = "1.0" encoding = "UTF-8"?>
-<imsx_POXEnvelopeRequest xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
-  <imsx_POXHeader>
-    <imsx_POXRequestHeaderInfo>
-      <imsx_version>V1.0</imsx_version>
-      <imsx_messageIdentifier>999999123</imsx_messageIdentifier>
-    </imsx_POXRequestHeaderInfo>
-  </imsx_POXHeader>
-  <imsx_POXBody>
-    <replaceResultRequest>
-      <resultRecord>
-        <sourcedGUID>
-          <sourcedId>3124567</sourcedId>
-        </sourcedGUID>
-        <result>
-          <resultScore>
-            <language>en</language>
-            <textString>0.92</textString>
-          </resultScore>
-          <!-- Added element -->
-          <resultData>
-            <text>text data for canvas submission</text>
-          </resultData>
-        </result>
-      </resultRecord>
-    </replaceResultRequest>
-  </imsx_POXBody>
-</imsx_POXEnvelopeRequest>
-
-
-{
-    'Content-Length': '817',
-    'Authorization': 'OAuth realm="",oauth_version="1.0",oauth_nonce="c2b57d65-cdb1-4f7d-9b82-d84524c456d2",oauth_signature="wFzthJO7Sbq%2FeGVV%2FxQL64m9KAE%3D",oauth_timestamp="1529423008",oauth_consumer_key="tA49KIzosUaw0yAI3W8ubbEvnYPfftJ9",oauth_signature_method="HMAC-SHA1",oauth_body_hash="UHHthUBNuzBRRUMqZ%2BZiku1lJTE%3D"',
-    'Content-Type': 'application/xml'
-}
-
-
-"""
 
 class OutcomeDocument:
     def __init__(self, _type, source_did, outcome_service):
@@ -70,7 +31,8 @@ class OutcomeDocument:
         type_wrapper = xml.SubElement(body_wrapper, _type + 'Request')
         self.body = xml.SubElement(type_wrapper, 'resultRecord')
 
-        # Generate a unique identifier and apply the version to the header information
+        # Generate a unique identifier and
+        # apply the version to the header information
         imsx_version = xml.SubElement(self.head, 'imsx_version')
         imsx_version.text = 'V1.0'
         imsx_message_identifier = xml.SubElement(self.head, 'imsx_messageIdentifier')
@@ -275,10 +237,10 @@ class AssignmentService:
         self.reference = parser.reference.strip()
 
     def run_analysis(self, text):
-        checker = Checker()
+        checker = Checker(text, self.excerpt, self.reference)
         interpreter = FeedbackInterpreter() if self.type == 'pilot' else GradeInterpreter(self.points_possible)
 
-        data = checker.run(text, self.excerpt, self.reference)
+        data = checker.run()
         data['text'] = text
         data = interpreter.run(data)
 

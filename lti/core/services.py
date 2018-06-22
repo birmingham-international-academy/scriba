@@ -46,16 +46,20 @@ class HmacSha1Signer:
         h = hmac.new(bytes(k, 'ascii'), bytes(string, 'ascii'), sha1)
         return b64encode(h.digest()).decode()
 
-    def build_signature_raw(self, req_url, parsed_url, method, data, consumer_secret, token = None):
+    def build_signature_raw(self,
+                            req_url, parsed_url, method, data,
+                            consumer_secret, token=None):
         signature = [
             method.upper(),
             self._encode(req_url),
-            self._clean_request_body(data, dict(parse.parse_qsl(parsed_url.query)))
+            self._clean_request_body(
+                data, dict(parse.parse_qsl(parsed_url.query))
+            )
         ]
 
         return self.sign_string('&'.join(signature), consumer_secret, token)
 
-    def build_signature(self, request, data, consumer_secret, token = None):
+    def build_signature(self, request, data, consumer_secret, token=None):
         original_url = request.get_full_path()
         protocol = 'https'
 
@@ -66,4 +70,11 @@ class HmacSha1Signer:
 
         hit_url = protocol + '://' + request.get_host() + parsed_url.path
 
-        return self.build_signature_raw(hit_url, parsed_url, request.method, data, consumer_secret, token)
+        return self.build_signature_raw(
+            hit_url,
+            parsed_url,
+            request.method,
+            data,
+            consumer_secret,
+            token
+        )

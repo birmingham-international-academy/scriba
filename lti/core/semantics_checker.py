@@ -6,22 +6,25 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import wordnet as wn
 from gensim import corpora, models, similarities
 import spacy
+from text_helpers import load_stanford_parser
 
 
 class SemanticsChecker:
-    def __init__(self):
-        stanford_parser_directory = os.path.join(get_current_dir(__file__), 'data', 'stanford-parser')
-        parser_jar_filename = os.path.join(stanford_parser_directory, 'stanford-parser.jar')
-        models_jar_filename = find_file('stanford-parser-*-models.jar', stanford_parser_directory)[0]
-        self.dependency_parser = StanfordDependencyParser(parser_jar_filename, models_jar_filename)
+    def __init__(self, text, excerpt):
+        self.text = text
+        self.excerpt = excerpt
+        self._load_tools()
+
+    def _load_tools(self):
+        _, self.dependency_parser = load_stanford_parser()
         self.nlp = spacy.load('en')
 
     def _word_similarity(self, w1, w2):
         pass
 
-    def run(self, text, excerpt):
-        text_doc = self.nlp(text)
-        excerpt_doc = self.nlp(excerpt)
+    def run(self):
+        text_doc = self.nlp(self.text)
+        excerpt_doc = self.nlp(self.excerpt)
         print(text_doc.similarity(excerpt_doc))
 
         """text_sentences =  self.dependency_parser.raw_parse_sents(sent_tokenize(text))
