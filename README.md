@@ -51,7 +51,7 @@ Run the following command to download the 'en' model for SpaCy: `python -m spacy
 
 ## Testing
 
-
+Run `python manage.py test`
 
 ## Contributing
 
