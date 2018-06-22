@@ -118,16 +118,16 @@ class GrammarChecker:
 
         doc = self.nlp(text)
         matches = matcher(doc)
-        print('Matches: ' + str(matches))
-        #print(pos_tag(word_tokenize(text)))
 
         return [doc[start:end] for _, start, end in matches]
 
     def _spell_check(self, text):
         spell = SpellChecker()
+        spell.word_frequency.load_words(["we're", "you're", "won't"])
         tokenizer = WhitespaceTokenizer()
+        pattern = re.compile(r'^\(\d+\)$')
         words = [remove_punctuation(word.lower()) for word in tokenizer.tokenize(text)]
-        words = [word for word in words if word != '' and not is_number(word)]
+        words = [word for word in words if word != '' and not is_number(word) and pattern.match(word) is None]
 
         mapped_words = []
         for word in words:

@@ -12,6 +12,7 @@ class CanvasApiClient:
 
         return requests.get(url, headers=headers)
 
+
 class FreeCiteApiClient:
     def __init__(self):
         self.endpoint = 'http://freecite.library.brown.edu/citations/create'
@@ -38,3 +39,11 @@ class FreeCiteApiClient:
             'year': self._gettext(citation, 'year'),
             'raw_string': self._gettext(citation, 'raw_string')
         }
+
+
+class DandelionApiClient:
+    def __init__(self):
+        self.endpoint = ''
+
+    def similarity(self, text1, text2):
+        pass

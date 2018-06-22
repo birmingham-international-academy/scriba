@@ -1,8 +1,10 @@
 # scriba
 
+> A Canvas LTI for automated paraphrase analysis: a project part of the Birmingham International Academy (University of Birmingham, UK).
+
 ## Development setup
 
-> A Canvas LTI for automated paraphrase analysis: a project part of the Birmingham International Academy (University of Birmingham, UK).
+Install the dependencies using: `pip -r requirements.txt`
 
 ### NLTK package
 
@@ -16,10 +18,6 @@
 
 - Press `d`
 - Then enter `popular` to download the 'popular' packages of NLTK
-
-```
->>> nltk.download('masc_tagged')
-```
 
 ### NLTK interface to the Stanford Parser
 
