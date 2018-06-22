@@ -94,6 +94,10 @@ The Python code follows [PEP 8](https://www.python.org/dev/peps/pep-0008/).
 
 ## Additional Notes
 
+### Version Control
+
+The repository uses the [Gitflow Worflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
+
 ### Issue and Pull Request Labels
 
 The labels are loosely grouped by their purpose, but it's not required that every issue have a label from every group or that an issue can't have more than one label from the same group.
