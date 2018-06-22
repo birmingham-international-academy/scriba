@@ -117,6 +117,15 @@
                             {% endfor %}
                         </ul>
                         {% endif %}
+
+                        {% if grammar_check.noun_verb_disagreements|length > 0 %}
+                        <p>The following phrases may contain noun-verb disagreements:</p>
+                        <ul>
+                            {% for disagreement in grammar_check.noun_verb_disagreements %}
+                            <li>{{ disagreement }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
                     </div>
 
                     <div class="mb-6">

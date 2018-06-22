@@ -16,7 +16,7 @@ class Checker:
         citation_check = self.citation_checker.run(text, reference)
         academic_style_check = self.academic_style_checker.run(text)
         semantics_check = self.semantics_checker.run(text, excerpt)
-        grammar_check = self.grammar_checker.run(text)
+        grammar_check = self.grammar_checker.run(text, citation_check.get('authors'))
         plagiarism_check = self.plagiarism_checker.run(text, excerpt)
 
         return {

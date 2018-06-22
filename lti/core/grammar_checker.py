@@ -25,6 +25,8 @@ class GrammarChecker:
         self.parser = StanfordParser(parser_jar_filename, models_jar_filename)
         self.dependency_parser = StanfordDependencyParser(parser_jar_filename, models_jar_filename)
         self.nlp = spacy.load('en')
+        self.spell = SpellChecker()
+        self.spell.word_frequency.load_words(["we're", "you're", "won't"])
 
     @staticmethod
     def _is_valid_subordinating_conj_clause(node):
@@ -108,6 +110,47 @@ class GrammarChecker:
 
         return [' '.join(node.leaves()) for node in transitive_verbs_without_object]
 
+    def _search_noun_verb_disagreements(self, sentence):
+        disagreements = []
+        subtrees = list(sentence.subtrees(filter=lambda n: n.label() in GrammarChecker.CLAUSE_TYPES))
+
+        for tree in subtrees:
+            noun_phrase = None
+            verb_phrase = None
+
+            for node in tree:
+                if node.label() == 'NP':
+                    noun_phrase = node
+                elif node.label() == 'VP':
+                    verb_phrase = node
+
+            if noun_phrase is None or verb_phrase is None:
+                continue
+
+            base_noun = [n for n in noun_phrase if n.label().startswith('NN') or n.label() == 'PRP']
+            base_verb = [n for n in verb_phrase if n.label().startswith('VB')]
+
+            if base_noun == [] or base_verb == []:
+                continue
+
+            noun, noun_label = base_noun[0], base_noun[0].label()
+            verb, verb_label = base_verb[0], base_verb[0].label()
+            phrase = noun[0] + ' ' + verb[0]  #' '.join() #tree.leaves())
+
+            if noun_label in ['NN', 'NNP'] and verb_label == 'VBP':
+                disagreements.append(phrase)
+
+            if noun_label in ['NNS', 'NNPS'] and verb_label == 'VBZ':
+                disagreements.append(phrase)
+
+            if noun_label == 'PRP':
+                pronoun = noun[0].lower()
+
+                if (pronoun in ['he', 'she', 'it'] and verb_label == 'VBP') or (pronoun in ['you', 'we', 'they'] and verb_label == 'VBZ'):
+                    disagreements.append(phrase)
+
+        return disagreements
+
     def _there_their(self, text):
         patterns = [
             [{'LOWER': 'there'}, {'POS': 'ADV', 'OP': '?'}, {'POS': 'ADJ', 'OP': '?'}, {'POS': 'NOUN'}, {'POS': 'VERB', 'OP': '?'}]
@@ -122,8 +165,6 @@ class GrammarChecker:
         return [doc[start:end] for _, start, end in matches]
 
     def _spell_check(self, text):
-        spell = SpellChecker()
-        spell.word_frequency.load_words(["we're", "you're", "won't"])
         tokenizer = WhitespaceTokenizer()
         pattern = re.compile(r'^\(\d+\)$')
         words = [remove_punctuation(word.lower()) for word in tokenizer.tokenize(text)]
@@ -138,11 +179,12 @@ class GrammarChecker:
             else:
                 mapped_words.append(word)
 
-        return [{'word': word, 'corrections': spell.candidates(word)} for word in spell.unknown(mapped_words)]
+        return [{'word': word, 'corrections': self.spell.candidates(word)} for word in self.spell.unknown(mapped_words)]
 
-    def run(self, text):
+    def run(self, text, authors):
         text = text.strip()
         text = re.sub(' +', ' ', text)
+        self.spell.word_frequency.load_words(authors)
 
         sentences = list(self.parser.raw_parse_sents(sent_tokenize(text)))
         tool = language_check.LanguageTool('en-GB')
@@ -152,6 +194,7 @@ class GrammarChecker:
             'sentence_fragments': [],
             'run_ons': [],
             'transitive_verbs_without_object': [],
+            'noun_verb_disagreements': [],
             'spell_check': None,
             'languagetool_check': [entry for entry in tool.check(text) if entry.locqualityissuetype != 'misspelling'],
             'there_their': self._there_their(text)
@@ -165,6 +208,7 @@ class GrammarChecker:
                 data['sentence_fragments'].extend(self._search_sentence_fragments(sentence))
                 data['run_ons'].extend(self._search_run_ons(sentence))
                 data['transitive_verbs_without_object'].extend(self._search_transitive_verbs_without_object(sentence))
+                data['noun_verb_disagreements'].extend(self._search_noun_verb_disagreements(sentence))
                 data['spell_check'] = self._spell_check(text)
 
         return data

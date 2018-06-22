@@ -4,6 +4,8 @@
 
 ## Development setup
 
+Scriba is compatible with Python 3.5.2.
+
 First of all install the dependencies using: `pip -r requirements.txt`.
 
 ### 1. Environment settings
@@ -11,14 +13,16 @@ First of all install the dependencies using: `pip -r requirements.txt`.
 Create a `.env` file resembling the `.env.example` file in the same directory.
 
 Then set the keys appropriately:
-- `SECRET_KEY`
-- `CANVAS_CONSUMER_KEY`
-- `CANVAS_SHARED_SECRET`
-- `CANVAS_PERSONAL_ACCESS_TOKEN`
-- `CANVAS_DEVELOPER_KEY`
-- `DANDELION_API_KEY`
+- `SECRET_KEY`: Django secret key.
+- `CANVAS_CONSUMER_KEY`: Canvas consumer key for LTI communication. This can be generated as a 256-bit key.
+- `CANVAS_SHARED_SECRET`: Canvas consumer/shared secret for LTI communication. This can be generated as a 256-bit key.
+- `CANVAS_PERSONAL_ACCESS_TOKEN`: Canvas personal access token for testing purposes.
+- `CANVAS_DEVELOPER_KEY`: Canvas API key.
+- `DANDELION_API_KEY`: Text semantic similarity service offered by Dandelion (deprecated).
 
-### 2. NLTK package
+### 2. NLTK (Natural Language Toolkit) package
+
+After installing the required packages, we need to download corpora that is used by NLTK.
 
 - Run the Python interpreter: `$ python`
 - Run the following:
@@ -33,7 +37,8 @@ Then set the keys appropriately:
 
 ### 3. NLTK interface to the Stanford Parser
 
-First you need set the Java environment for the Java text analysis tools (e.g. Stanford Parser) before you using them in NLTK:
+The Stanford Parser is a probabilistic parser written in Java. NLTK provides a Python interface to it;
+so let's setup the Java environment:
 
 - `sudo apt-get install default-jre`
 - `sudo apt-get install default-jdk`

@@ -46,6 +46,7 @@ class CitationChecker:
 
         return {
             'result': result,
-            'possible_citations': possible_citations
+            'possible_citations': possible_citations,
+            'authors': authors
         }
 

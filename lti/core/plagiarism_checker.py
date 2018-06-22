@@ -10,6 +10,7 @@ class PlagiarismChecker:
         matches = []
         match = []
         index = -1
+        min_length = 4
 
         for i, d in enumerate(ndiff(tokens1, tokens2)):
             if d[0] == ' ':
@@ -18,13 +19,13 @@ class PlagiarismChecker:
                 if i == index + 1:
                     match.append(word)
                 else:
-                    if len(match) >= 3:
+                    if len(match) >= min_length:
                         matches.append(' '.join(match))
                     match = [word]
 
                 index = i
 
-        if len(match) >= 3:
+        if len(match) >= min_length:
             matches.append(' '.join(match))
 
         return matches

@@ -38,6 +38,7 @@ class FeedbackInterpreter:
                             and len(gc['run_ons']) == 0\
                             and len(gc['transitive_verbs_without_object']) == 0\
                             and len(gc['sentence_fragments']) == 0\
+                            and len(gc['noun_verb_disagreements']) == 0\
                             and len(gc['there_their']) == 0
 
         # Spelling status
