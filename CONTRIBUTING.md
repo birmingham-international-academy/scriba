@@ -96,7 +96,37 @@ The Python code follows [PEP 8](https://www.python.org/dev/peps/pep-0008/).
 
 ### Version Control
 
-The repository uses the [Gitflow Worflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
+The repository uses the [Feature Branch Model](https://hackernoon.com/still-using-gitflow-what-about-a-simpler-alternative-74aa9a46b9a3).
+
+#### Worflow
+
+1. Create a branch from the master (feature-x), which is where the feature will be developed: `git checkout -b feature-x`
+2. Push the branch to the remote: `git push -u origin feature-x`. With the branch in the remote repo, a pull request should be opened with it.
+3. Fix the reviewed code and wait for approval. If a new release on the master generates a conflict, a best practice would be to rebase it (instead of merging).
+4. (optional) If a rebase is needed: checkout to master `git checkout master`, pull the changes `git pull`, go back to the feature branch `git checkout feature-x`, do the rebase `git rebase master` and then sync the rebased branch `git push --force-with-lease`.
+5. If there are no conflicts and it was approved: `git checkout master` then `git merge --squash feature-x` then `git commit`.
+
+#### Managing Release Versions With Git Tags
+
+In the feature branch model, a merge is considered a new version release. To track each release version, tags can be used. These will be used as reference to choose which version should be deployed at the servers.
+
+The process is:
+
+1. Checkout to the master branch: `git checkout master`
+2. Pull changes from the remote `git pull`
+3. Create a tag using `git tag -a v1.0.0`
+4. Push the modifications and the tag: `git push origin v1.0.0 --follow-tags`
+
+#### What happens if a hot-fix is needed?
+
+At some point, an issue will be raised and the production version will need a hot-fix. A feature branch can't just be opened to develop a fix, as the master will probably be ahead of the production version. In this case, the fix needs to be done directly on the production version:
+
+1. Checkout to the production version tag `git checkout v0.10.0`.
+2. Create a new branch from this tag `git checkout -b hotfix-v0.10.1-weirdbehavior`.
+3. Create the fix and commit it.
+4. Create a tag for this new release `git tag -a v0.10.1`.
+5. Push the branch and tag to remote `git push -u origin hotfix-v0.10.1-weirdbehavior --follow-tags`.
+6. Deploy the tag `v0.10.1` to the production environment.
 
 ### Issue and Pull Request Labels
 
