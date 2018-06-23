@@ -10,7 +10,7 @@ First of all install the dependencies using: `pip -r requirements.txt`.
 
 ### 1. Environment settings
 
-Create a `.env` file resembling the `.env.example` file in the same directory.
+Create a `.env` file resembling the `.env.example` file in the same directory (`scriba/settings`).
 
 Then set the keys appropriately:
 - `SECRET_KEY`: Django secret key.
@@ -48,6 +48,12 @@ Then run `python scripts/stanford_parser.py` to download and extract the Stanfor
 ### 4. SpaCy package
 
 Run the following command to download the 'en' model for SpaCy: `python -m spacy download en`
+
+### 5. Run the server in development mode
+
+```
+$ python manage.py runsslserver --settings=scriba.settings.dev
+```
 
 ## Testing
 
