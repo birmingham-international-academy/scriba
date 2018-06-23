@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
-from . import middleware
-from lti.core.api import CanvasApiClient
+from lti_app.core.api import CanvasApiClient
 import requests
 
 
@@ -12,6 +11,7 @@ def index(request):
     data = request.POST
 
     if request.session.get('lis_result_sourcedid') is None:
+        print('Not good')
         pass  # error
 
     response = canvas_client.get_assignment(

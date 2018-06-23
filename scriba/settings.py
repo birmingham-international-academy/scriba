@@ -29,30 +29,31 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'ce92a678.ngrok.io'
+    '127.0.0.1'
 ]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'lti.apps.LtiConfig',
-    #'django.contrib.admin',
+    # 'django.contrib.admin',
+    'sslserver',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    #'django.contrib.sessions',
+    # 'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'lti_app.apps.LtiConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    #'django.middleware.csrf.CsrfViewMiddleware',
-    #'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'lti.launch.middleware.ValidLaunchMiddleware',
+    'lti_app.launch.middleware.ValidLaunchMiddleware',
 ]
 
 ROOT_URLCONF = 'scriba.urls'
@@ -60,7 +61,9 @@ ROOT_URLCONF = 'scriba.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'lti_app', 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

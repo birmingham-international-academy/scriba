@@ -1,6 +1,6 @@
 import os
 from nltk.parse.stanford import StanfordParser, StanfordDependencyParser
-from lti.helpers import get_current_dir, find_file
+from lti_app.helpers import get_current_dir, find_file
 
 
 def load_stanford_parser():

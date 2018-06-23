@@ -1,5 +1,7 @@
 import os
-from lti.helpers import get_current_dir, find_file, tok_and_lem, is_punctuation
+from lti_app.helpers import (
+    get_current_dir, find_file, tok_and_lem, is_punctuation
+)
 from nltk import pos_tag
 from nltk.parse.stanford import StanfordDependencyParser
 from nltk.tokenize import sent_tokenize, word_tokenize

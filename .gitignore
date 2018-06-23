@@ -98,6 +98,6 @@ db.sqlite3
 
 # LTI-related
 
-lti/core/data/stanford-parser
+stanford-parser
 fce-corpus
 fce-corpus-in

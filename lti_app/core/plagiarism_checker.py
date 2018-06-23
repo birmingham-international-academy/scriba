@@ -1,4 +1,4 @@
-from lti.helpers import is_punctuation, tok_and_lem
+from lti_app.helpers import is_punctuation, tok_and_lem
 from difflib import ndiff
 
 
@@ -12,7 +12,7 @@ class PlagiarismChecker:
         def get_lemmas(text):
             return [
                 s.lower()
-                for s in tok_and_lem(self.text)
+                for s in tok_and_lem(text)
                 if not is_punctuation(s)
             ]
 

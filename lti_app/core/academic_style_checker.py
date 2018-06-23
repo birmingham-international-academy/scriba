@@ -1,6 +1,6 @@
 from nltk import pos_tag, tokenize
 from nltk.stem import WordNetLemmatizer
-from lti.helpers import get_current_dir
+from lti_app.helpers import get_current_dir
 import spacy
 import json
 import os

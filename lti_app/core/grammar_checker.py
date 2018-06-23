@@ -3,7 +3,7 @@ import re
 import language_check
 import spacy
 from spacy.matcher import Matcher
-from lti.helpers import is_punctuation, remove_punctuation, is_number
+from lti_app.helpers import is_punctuation, remove_punctuation, is_number
 from nltk import pos_tag
 from nltk.corpus import wordnet as wn
 from nltk import word_tokenize, WhitespaceTokenizer
