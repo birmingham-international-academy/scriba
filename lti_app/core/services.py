@@ -1,22 +1,12 @@
-from urllib import parse
-from base64 import b64encode
-from hashlib import sha1
-from oauthlib.oauth1 import RequestValidator
+"""Provides core services for the LTI."""
+
 from django.conf import settings
-import hmac
-
-
-class CanvasService:
-    @staticmethod
-    def is_instructor(roles):
-        roles = roles.lower().split(',')
-        for role in roles:
-            if role == 'instructor':
-                return True
-        return False
+from oauthlib.oauth1 import RequestValidator
 
 
 class ScribaRequestValidator(RequestValidator):
+    """OAuth 1.0 request validator for Scriba."""
+
     @property
     def nonce_length(self):
         return 30, 45

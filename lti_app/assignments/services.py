@@ -1,20 +1,15 @@
-import urllib
-import uuid
-import hashlib
-import requests
-import base64
-import time
-import xml.etree.ElementTree as xml
-from lti.tool_provider import ToolProvider
+"""Provides service classes for the assignment views."""
+
 from django.conf import settings
-from lti_app.core.checker import Checker
-from lti_app.core.interpreters import *
-from html.parser import HTMLParser
+from html import parser
+from lti import tool_provider
+
+from lti_app.core import checkers, interpreters
 
 
-class AssignmentDescriptionParser(HTMLParser):
+class AssignmentDescriptionParser(parser.HTMLParser):
     def __init__(self):
-        HTMLParser.__init__(self)
+        parser.HTMLParser.__init__(self)
         self.excerpt = ''
         self.reference = ''
         self.in_excerpt = False
@@ -43,11 +38,11 @@ class AssignmentService:
         self.type = assm_type
         self.points_possible = assm_points_possible
         self.interpreter = (
-            FeedbackInterpreter()
+            interpreters.FeedbackInterpreter()
             if self.type == 'pilot'
-            else GradeInterpreter(self.points_possible)
+            else interpreters.GradeInterpreter(self.points_possible)
         )
-        self.tool_provider = ToolProvider(
+        self.tool_provider = tool_provider.ToolProvider(
             consumer_key=settings.CANVAS['CONSUMER_KEY'],
             consumer_secret=settings.CANVAS['SHARED_SECRET'],
             params={
@@ -65,7 +60,7 @@ class AssignmentService:
         self.reference = parser.reference.strip()
 
     def run_analysis(self, text):
-        checker = Checker(text, self.excerpt, self.reference)
+        checker = checkers.DefaultChecker(text, self.excerpt, self.reference)
         data = checker.run()
         data['text'] = text
         data = self.interpreter.run(data)

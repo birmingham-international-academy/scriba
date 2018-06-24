@@ -1,16 +1,30 @@
-from nltk import pos_tag, tokenize
-from nltk.stem import WordNetLemmatizer
-from lti_app.helpers import get_current_dir
-import spacy
+"""Provides academic style checkers.
+
+Academic style checkers must check for informalities that
+are not used in academic texts.
+"""
+
 import json
 import os
 
+import spacy
+from nltk import pos_tag, tokenize
+from nltk.stem import WordNetLemmatizer
 
-class AcademicStyleChecker:
+from lti_app.core.text_helpers import TextProcessor
+from lti_app.helpers import get_current_dir
+
+
+class Checker(TextProcessor):
+    """Implements the default academic style checker.
+
+    Args:
+        text (str): The text submitted by the student.
+    """
+
     def __init__(self, text):
         self.text = text
-        self._load_tools()
-        self._preprocess()
+        TextProcessor.__init__(self)
 
     def _load_tools(self):
         self.lemmatizer = WordNetLemmatizer()
@@ -28,6 +42,12 @@ class AcademicStyleChecker:
         self.doc = self.nlp(self.text)
 
     def get_phrasal_verbs(self):
+        """Get the phrasal verbs.
+
+        Returns:
+            list of str: The phrasal verbs.
+        """
+
         phrasal_verbs = []
 
         for token in self.doc:
@@ -39,6 +59,12 @@ class AcademicStyleChecker:
         return phrasal_verbs
 
     def get_contractions(self):
+        """Get contractions such as `don't`
+
+        Returns:
+            list of str: The contractions.
+        """
+
         return [
             self.tagged_tokens[index - 1][0] + token
             for index, (token, pos) in enumerate(self.tagged_tokens)
@@ -46,6 +72,12 @@ class AcademicStyleChecker:
         ]
 
     def get_general_informalities(self):
+        """Get general informal words such as 'nice', 'good', 'bad'.
+
+        Returns:
+            list of str: General informalities.
+        """
+
         lemmas = ' '.join(self.lemmas)
         current_dir = get_current_dir(__file__)
         filename = os.path.join(current_dir, 'data', 'informal.json')
@@ -60,6 +92,12 @@ class AcademicStyleChecker:
             ]
 
     def run(self):
+        """Run the checker.
+
+        Returns:
+            dict: The academic style check data using the described methods.
+        """
+
         return {
             'phrasal_verbs': self.get_phrasal_verbs(),
             'contractions': self.get_contractions(),

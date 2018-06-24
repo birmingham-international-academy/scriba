@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
-from .services import AssignmentService
-from lti_app.core.services import CanvasService
+
+from lti_app.assignments import services
 
 
 def show_content(request):
@@ -17,7 +17,7 @@ def submit_assignment(request):
     service_url = request.session.get('lis_outcome_service_url')
     source_did = request.session.get('lis_result_sourcedid')
 
-    service = AssignmentService(
+    service = services.AssignmentService(
         assm_description,
         assm_type,
         assm_points_possible,

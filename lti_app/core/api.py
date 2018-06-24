@@ -1,55 +1,30 @@
-import requests
+"""Provides API clients."""
+
 import xml.etree.ElementTree as ET
+
+import requests
 from django.conf import settings
 
 
 class CanvasApiClient:
+    """The Canvas LMS API client"""
+
     def __init__(self):
         self.endpoint = 'https://canvas.bham.ac.uk/api/v1'
 
     def get_assignment(self, cid, aid):
+        """Get an assignment object.
+
+        Args:
+            cid (str): The course ID.
+            aid (str): The assignment ID.
+
+        Returns:
+            requests.Response: The HTTP response.
+        """
+
         url = self.endpoint + '/courses/' + cid + '/assignments/' + aid
         access_token = settings.CANVAS['PERSONAL_ACCESS_TOKEN']
         headers = {'Authorization': 'Bearer ' + access_token}
 
         return requests.get(url, headers=headers)
-
-
-class FreeCiteApiClient:
-    def __init__(self):
-        self.endpoint = 'http://freecite.library.brown.edu/citations/create'
-
-    def _gettext(self, citation, tag):
-        if citation.find(tag) is not None:
-            return citation.find(tag).text
-        else:
-            return ''
-
-    def parse(self, citation_string):
-        r = requests.post(
-            self.endpoint,
-            data={'citation': citation_string},
-            headers={'Accept': 'text/xml'}
-        )
-
-        etree = ET.fromstring(r.text.encode('utf-8'))
-
-        citation = etree.find('citation')
-
-        return {
-            'authors': [a.text for a in citation.iter('author')],
-            'title': self._gettext(citation, 'title'),
-            'journal': self._gettext(citation, 'journal'),
-            'volume': self._gettext(citation, 'volume'),
-            'pages': self._gettext(citation, 'pages'),
-            'year': self._gettext(citation, 'year'),
-            'raw_string': self._gettext(citation, 'raw_string')
-        }
-
-
-class DandelionApiClient:
-    def __init__(self):
-        self.endpoint = ''
-
-    def similarity(self, text1, text2):
-        pass

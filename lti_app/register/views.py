@@ -8,7 +8,6 @@ def index(request):
     app_description = 'Provides automated grading for paraphrase assignments.'
     launch_view_name = 'launch_index'
     launch_url = request.build_absolute_uri(reverse(launch_view_name))
-    launch_url = launch_url.replace('http', 'https')
 
     extensions = {
         'canvas.instructure.com': {

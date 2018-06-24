@@ -1,30 +1,42 @@
-import os
+"""Provides grammar checkers."""
+
 import re
+import os
+
 import language_check
 import spacy
-from spacy.matcher import Matcher
-from lti_app.helpers import is_punctuation, remove_punctuation, is_number
-from nltk import pos_tag
+from nltk import pos_tag, word_tokenize, WhitespaceTokenizer
 from nltk.corpus import wordnet as wn
-from nltk import word_tokenize, WhitespaceTokenizer
+from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import sent_tokenize
 from nltk.tree import Tree
-from nltk.stem import WordNetLemmatizer
 from spellchecker import SpellChecker
-from .text_helpers import load_stanford_parser
+
+from lti_app.core.text_helpers import load_stanford_parser, TextProcessor
+from lti_app.helpers import is_number, is_punctuation, remove_punctuation
 
 
-class GrammarChecker:
-    CLAUSE_TYPES = ['S', 'SINV', 'SQ']
-    TRANSITIVE_VERBS = ['bring', 'cost', 'give', 'lend', 'offer',
+class Checker(TextProcessor):
+    """Implements the default grammar checker.
+
+    Attributes:
+        clause_types (list): A list of clause-level POS tags.
+        transitive_verbs (list): A list of transitive verbs
+            that require an object.
+
+    Args:
+        text: The text submitted by the student.
+    """
+
+    clause_types = ['S', 'SINV', 'SQ']
+    transitive_verbs = ['bring', 'cost', 'give', 'lend', 'offer',
                         'pass', 'play', 'read', 'send', 'sing', 'teach',
                         'write', 'buy', 'get', 'leave', 'make', 'owe',
                         'pay', 'promise', 'refuse', 'show', 'take', 'tell']
 
     def __init__(self, text):
         self.text = text
-        self._load_tools()
-        self._preprocess()
+        TextProcessor.__init__(self)
 
     def _load_tools(self):
         self.parser, self.dependency_parser = load_stanford_parser()
@@ -47,23 +59,49 @@ class GrammarChecker:
     @staticmethod
     def _is_clause_component(node):
         sbar = node.label() == 'SBAR'
-        valid_scc = GrammarChecker._is_valid_subordinating_conj_clause(node)
+        valid_scc = Checker._is_valid_subordinating_conj_clause(node)
 
         return type(node) is Tree\
             and node.label() in ['SBAR', 'NP', 'VP', 'S', 'CC']\
             and (valid_scc if sbar else True)
 
     def get_sentence_fragments(self, sentence):
+        """Get sentence fragments.
+
+        A sentence fragment is a sentence which
+        doesn't have an independent clause.
+
+        Args:
+            sentence (Tree): The parse tree of the sentence.
+
+        Returns:
+            list of str: The sentence fragments found.
+        """
+
+        # Search for subtrees with POS tag == FRAG
         def is_frag(n): n.label() == 'FRAG'
         subtrees = list(sentence.subtrees(filter=is_frag))
 
         return [' '.join(node.leaves()) for node in subtrees]
 
     def get_malformed_sentences(self, sentence):
-        def is_clause(n): n.label() in GrammarChecker.CLAUSE_TYPES
+        """Get malformed sentences.
+
+        A sentence is malformed if it doesn't convey a "full" thought.
+
+        Args:
+            sentence (Tree): The parse tree of the sentence.
+
+        Returns:
+            list of str: The malformed sentences.
+        """
+
+        # Get clause types
+        def is_clause(n): n.label() in self.clause_types
         malformed = []
         subtrees = list(sentence.subtrees(filter=is_clause))
 
+        # There is no sentence, this means it's malformed.
         if len(subtrees) == 0:
             return [' '.join(sentence.leaves())]
 
@@ -86,6 +124,20 @@ class GrammarChecker:
         return [' '.join(malformed_str) for malformed_str in malformed]
 
     def get_run_ons(self, sentence):
+        """Get run on/fused sentences.
+
+        A run on sentence is a grammatically faulty sentence
+        in which two or more main or independent clauses
+        are joined without a word to connect them
+        or a punctuation mark to separate them.
+
+        Args:
+            sentence (Tree): The parse tree of the sentence.
+
+        Returns:
+            list of str: The fused sentences.
+        """
+
         def filter(n):
             found_sentence = False
             found_sub_conj = False
@@ -106,6 +158,15 @@ class GrammarChecker:
         return [' '.join(node.leaves()) for node in subtrees]
 
     def get_transitive_verbs_without_object(self, sentence):
+        """Get transitive verbs without a mandatory object.
+
+        Args:
+            sentence (Tree): The parse tree of the sentence.
+
+        Returns:
+            list of str: The transitive verbs without object.
+        """
+
         subtrees = list(sentence.subtrees(filter=lambda n: n.label() == 'VP'))
         transitive_verbs_without_object = []
 
@@ -120,7 +181,7 @@ class GrammarChecker:
                 if node.label() == 'NP':
                     has_object = True
 
-            if not has_object and verb in GrammarChecker.TRANSITIVE_VERBS:
+            if not has_object and verb in self.transitive_verbs:
                 transitive_verbs_without_object.append(tree)
 
         return [
@@ -129,8 +190,19 @@ class GrammarChecker:
         ]
 
     def get_noun_verb_disagreements(self, sentence):
+        """Get noun-verb disagreements.
 
-        def is_clause(n): n.label() in GrammarChecker.CLAUSE_TYPES
+        Subject-verb disagreement is when you use the plural-form verb
+        for a single-form noun as in "the fox play".
+
+        Args:
+            sentence (Tree): The parse tree of the sentence.
+
+        Returns:
+            list of str: Subject-verb disagreements.
+        """
+
+        def is_clause(n): n.label() in self.clause_types
 
         def is_noun(n): n.startswith('NN') or n == 'PRP'
 
@@ -182,6 +254,15 @@ class GrammarChecker:
         return disagreements
 
     def get_there_their_occurrences(self, text):
+        """Get there-their mistakes such as 'there father is kind'.
+
+        Args:
+            text (str): The text submitted by the student.
+
+        Returns:
+            list of str: The occurrences of there-their mistakes.
+        """
+
         patterns = [
             [
                 {'LOWER': 'there'},
@@ -192,15 +273,25 @@ class GrammarChecker:
             ]
         ]
 
-        matcher = Matcher(self.nlp.vocab)
-        matcher.add('THERE_THEIR', None, *patterns)
+        matcher_obj = spacy.matcher.Matcher(self.nlp.vocab)
+        matcher_obj.add('THERE_THEIR', None, *patterns)
 
         doc = self.nlp(text)
-        matches = matcher(doc)
+        matches = matcher_obj(doc)
 
         return [doc[start:end] for _, start, end in matches]
 
     def get_spelling_mistakes(self, text):
+        """Get spelling mistakes
+
+        Args:
+            text (str): The text submitted by the student.
+
+        Returns:
+            list of dict: A list of spelling mistake and corrections
+        """
+
+        # Tokenize text and ignore numbers.
         tokenizer = WhitespaceTokenizer()
         pattern = re.compile(r'^\(\d+\)$')
         words = [
@@ -230,6 +321,17 @@ class GrammarChecker:
         ]
 
     def run(self, authors):
+        """Run the grammar checker.
+
+        Args:
+            authors (list of str): The list of authors of the excerpt
+                to exclude from spell checking.
+
+        Returns:
+            dict: The grammar check data using the described methods.
+        """
+
+        # Make the spell checker to ignore the author last names
         self.spell.word_frequency.load_words(authors)
 
         data = {
@@ -269,6 +371,7 @@ class GrammarChecker:
                 self.text
             )
 
+        # Process the parse tree sentences
         for line in self.sentences:
             for sentence in line:
                 process_sentence(sentence)
