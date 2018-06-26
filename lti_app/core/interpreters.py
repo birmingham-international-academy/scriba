@@ -1,8 +1,21 @@
+"""Provides interpreters for the analysis data."""
+
 # TODO: STORE SETTINGS
 
 
 class FeedbackInterpreter:
+    """Interpreter for pilot/diagnostic assessments."""
+
     def run(self, data):
+        """Runs the interpreter.
+
+        Args:
+            data (dict): The raw data from the checker
+
+        Returns:
+            dict: The interpreted data to process in the templates.
+        """
+
         # Grammar status
         gc = data['grammar_check']
         data['grammar_status'] = (
@@ -35,6 +48,12 @@ class FeedbackInterpreter:
 
 
 class GradeInterpreter:
+    """Interpreter for graded assessments.
+
+    Args:
+        points_possible (int): Possible points for the assignment.
+    """
+
     def __init__(self, points_possible):
         self.points_possible = points_possible
 
@@ -45,6 +64,15 @@ class GradeInterpreter:
         return decimal * self.points_possible
 
     def run(self, data):
+        """Runs the interpreter.
+
+        Args:
+            data (dict): The raw data from the checker
+
+        Returns:
+            dict: The interpreted data to process in the templates.
+        """
+
         data['score'] = 0.87
         data['comments'] = 'You did good man!\nKeep up the great work!'
         return data

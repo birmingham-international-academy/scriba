@@ -1,12 +1,28 @@
+"""Provides citation checkers using different referencing formats."""
+
 import re
 
 
-class CitationChecker:
+class Checker:
+    """Implements the default Harvard citation checking.
+
+    Args:
+        text (string): The text submitted by the student.
+        reference (string): The reference to cite in the text.
+    """
+
     def __init__(self, text, reference):
         self.text = text
         self.reference = reference
 
     def run(self):
+        """Run the checker.
+
+        Returns:
+            dict: A dictionary containing the result, correct citations,
+            and the extracted authors
+        """
+
         m = re.match(
             r'^(?P<authors>(?:(?:\w+,\s?(?:\w\.)+)(?:,\s?|\sand\s)?)+)\s?'
             r'\((?P<year>\d{4})\)\s'
