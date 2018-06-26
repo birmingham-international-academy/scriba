@@ -10,6 +10,7 @@ from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import sent_tokenize
 from nltk.tree import Tree
+from spacy.matcher import Matcher
 from spellchecker import SpellChecker
 
 from lti_app.core.text_helpers import load_stanford_parser, TextProcessor
@@ -28,7 +29,7 @@ class Checker(TextProcessor):
         text: The text submitted by the student.
     """
 
-    clause_types = ['S', 'SINV', 'SQ']
+    clause_types = ['S', 'SBAR', 'SINV', 'SQ']
     transitive_verbs = ['bring', 'cost', 'give', 'lend', 'offer',
                         'pass', 'play', 'read', 'send', 'sing', 'teach',
                         'write', 'buy', 'get', 'leave', 'make', 'owe',
@@ -52,37 +53,26 @@ class Checker(TextProcessor):
         self.text = re.sub(' +', ' ', self.text)
         self.sentences = list(self.parser.raw_parse_sents(sentences))
 
-    @staticmethod
-    def _is_valid_subordinating_conj_clause(node):
-        return 'IN' in [child.label() for child in node]
-
-    @staticmethod
-    def _is_clause_component(node):
+    def _is_clause_component(self, node):
         sbar = node.label() == 'SBAR'
-        valid_scc = Checker._is_valid_subordinating_conj_clause(node)
+        valid_scc = self._is_valid_subordinating_conj_clause(node)
 
         return type(node) is Tree\
             and node.label() in ['SBAR', 'NP', 'VP', 'S', 'CC']\
             and (valid_scc if sbar else True)
 
-    def get_sentence_fragments(self, sentence):
-        """Get sentence fragments.
+    def _is_valid_subordinating_conj_clause(self, node):
+        return 'IN' in [
+            child if type(child) is str else child.label()
+            for child in node
+        ]
 
-        A sentence fragment is a sentence which
-        doesn't have an independent clause.
+    def _is_clause(self, node):
+        return node.label() in self.clause_types
 
-        Args:
-            sentence (Tree): The parse tree of the sentence.
-
-        Returns:
-            list of str: The sentence fragments found.
-        """
-
-        # Search for subtrees with POS tag == FRAG
-        def is_frag(n): n.label() == 'FRAG'
-        subtrees = list(sentence.subtrees(filter=is_frag))
-
-        return [' '.join(node.leaves()) for node in subtrees]
+    def set_text(self, text):
+        self.text = text
+        self._preprocess()
 
     def get_malformed_sentences(self, sentence):
         """Get malformed sentences.
@@ -97,9 +87,8 @@ class Checker(TextProcessor):
         """
 
         # Get clause types
-        def is_clause(n): n.label() in self.clause_types
         malformed = []
-        subtrees = list(sentence.subtrees(filter=is_clause))
+        subtrees = list(sentence.subtrees(filter=self._is_clause))
 
         # There is no sentence, this means it's malformed.
         if len(subtrees) == 0:
@@ -123,72 +112,6 @@ class Checker(TextProcessor):
 
         return [' '.join(malformed_str) for malformed_str in malformed]
 
-    def get_run_ons(self, sentence):
-        """Get run on/fused sentences.
-
-        A run on sentence is a grammatically faulty sentence
-        in which two or more main or independent clauses
-        are joined without a word to connect them
-        or a punctuation mark to separate them.
-
-        Args:
-            sentence (Tree): The parse tree of the sentence.
-
-        Returns:
-            list of str: The fused sentences.
-        """
-
-        def filter(n):
-            found_sentence = False
-            found_sub_conj = False
-
-            for c in n:
-                if type(c) is Tree:
-                    if c.label() == 'S':
-                        found_sentence = True
-                    if c.label() == 'IN':
-                        found_sub_conj = True
-
-            return n.label() == 'SBAR'\
-                and found_sentence\
-                and not found_sub_conj
-
-        subtrees = list(sentence.subtrees(filter=filter))
-
-        return [' '.join(node.leaves()) for node in subtrees]
-
-    def get_transitive_verbs_without_object(self, sentence):
-        """Get transitive verbs without a mandatory object.
-
-        Args:
-            sentence (Tree): The parse tree of the sentence.
-
-        Returns:
-            list of str: The transitive verbs without object.
-        """
-
-        subtrees = list(sentence.subtrees(filter=lambda n: n.label() == 'VP'))
-        transitive_verbs_without_object = []
-
-        for tree in subtrees:
-            verb = ''
-            has_object = False
-
-            for node in tree:
-                if node.label().startswith('VB'):
-                    verb = self.lemmatizer.lemmatize(node[0].lower(), 'v')
-
-                if node.label() == 'NP':
-                    has_object = True
-
-            if not has_object and verb in self.transitive_verbs:
-                transitive_verbs_without_object.append(tree)
-
-        return [
-            ' '.join(node.leaves())
-            for node in transitive_verbs_without_object
-        ]
-
     def get_noun_verb_disagreements(self, sentence):
         """Get noun-verb disagreements.
 
@@ -202,11 +125,11 @@ class Checker(TextProcessor):
             list of str: Subject-verb disagreements.
         """
 
-        def is_clause(n): n.label() in self.clause_types
+        def is_noun(n):
+            return n.startswith('NN') or n == 'PRP'
 
-        def is_noun(n): n.startswith('NN') or n == 'PRP'
-
-        def is_verb(n): n.startswith('VB')
+        def is_verb(n):
+            return n.startswith('VB')
 
         def has_disagreement(n_label, v_label):
             return (
@@ -217,7 +140,7 @@ class Checker(TextProcessor):
             )
 
         disagreements = []
-        subtrees = list(sentence.subtrees(filter=is_clause))
+        subtrees = list(sentence.subtrees(filter=self._is_clause))
 
         for tree in subtrees:
             noun_phrase = None
@@ -253,39 +176,93 @@ class Checker(TextProcessor):
 
         return disagreements
 
-    def get_there_their_occurrences(self, text):
-        """Get there-their mistakes such as 'there father is kind'.
+    def get_run_ons(self, sentence):
+        """Get run on/fused sentences.
+
+        A run on sentence is a grammatically faulty sentence
+        in which two or more main or independent clauses
+        are joined without a word to connect them
+        or a punctuation mark to separate them.
 
         Args:
-            text (str): The text submitted by the student.
+            sentence (Tree): The parse tree of the sentence.
 
         Returns:
-            list of str: The occurrences of there-their mistakes.
+            list of str: The fused sentences.
         """
 
-        patterns = [
-            [
-                {'LOWER': 'there'},
-                {'POS': 'ADV', 'OP': '?'},
-                {'POS': 'ADJ', 'OP': '?'},
-                {'POS': 'NOUN'},
-                {'POS': 'VERB', 'OP': '?'}
-            ]
-        ]
+        def filter(n):
+            found_sentence = False
+            found_sub_conj = False
 
-        matcher_obj = spacy.matcher.Matcher(self.nlp.vocab)
-        matcher_obj.add('THERE_THEIR', None, *patterns)
+            for c in n:
+                if type(c) is Tree:
+                    if c.label() == 'S':
+                        found_sentence = True
+                    if c.label() == 'IN':
+                        found_sub_conj = True
 
-        doc = self.nlp(text)
-        matches = matcher_obj(doc)
+            return n.label() == 'SBAR'\
+                and found_sentence\
+                and not found_sub_conj
 
-        return [doc[start:end] for _, start, end in matches]
+        subtrees = list(sentence.subtrees(filter=filter))
 
-    def get_spelling_mistakes(self, text):
-        """Get spelling mistakes
+        return [' '.join(node.leaves()) for node in subtrees]
+
+    def get_sentence_fragments(self, sentence):
+        """Get sentence fragments.
+
+        A sentence fragment is a sentence which
+        doesn't have an independent clause.
 
         Args:
-            text (str): The text submitted by the student.
+            sentence (Tree): The parse tree of the sentence.
+
+        Returns:
+            list of str: The sentence fragments found.
+        """
+
+        # Search for subtrees with POS tag == FRAG
+        def is_frag(n): n.label() == 'FRAG'
+        subtrees = list(sentence.subtrees(filter=is_frag))
+
+        return [' '.join(node.leaves()) for node in subtrees]
+
+    def get_transitive_verbs_without_object(self, sentence):
+        """Get transitive verbs without a mandatory object.
+
+        Args:
+            sentence (Tree): The parse tree of the sentence.
+
+        Returns:
+            list of str: The transitive verbs without object.
+        """
+
+        subtrees = list(sentence.subtrees(filter=lambda n: n.label() == 'VP'))
+        transitive_verbs_without_object = []
+
+        for tree in subtrees:
+            verb = ''
+            has_object = False
+
+            for node in tree:
+                if node.label().startswith('VB'):
+                    verb = self.lemmatizer.lemmatize(node[0].lower(), 'v')
+
+                if node.label() == 'NP':
+                    has_object = True
+
+            if not has_object and verb in self.transitive_verbs:
+                transitive_verbs_without_object.append(tree)
+
+        return [
+            ' '.join(node.leaves())
+            for node in transitive_verbs_without_object
+        ]
+
+    def get_spelling_mistakes(self):
+        """Get spelling mistakes.
 
         Returns:
             list of dict: A list of spelling mistake and corrections
@@ -296,7 +273,7 @@ class Checker(TextProcessor):
         pattern = re.compile(r'^\(\d+\)$')
         words = [
             remove_punctuation(word.lower())
-            for word in tokenizer.tokenize(text)
+            for word in tokenizer.tokenize(self.text)
         ]
         words = [
             word
@@ -320,6 +297,52 @@ class Checker(TextProcessor):
             for word in self.spell.unknown(mapped_words)
         ]
 
+    def get_there_their_occurrences(self):
+        """Get there-their mistakes such as 'there father is kind'.
+
+        Returns:
+            list of str: The occurrences of there-their mistakes.
+        """
+
+        patterns = [
+            [
+                {'LOWER': 'there'},
+                {'POS': 'ADV', 'OP': '?'},
+                {'POS': 'ADJ', 'OP': '?'},
+                {'POS': 'NOUN'},
+                {'POS': 'VERB', 'OP': '?'}
+            ]
+        ]
+
+        matcher_obj = Matcher(self.nlp.vocab)
+        matcher_obj.add('THERE_THEIR', None, *patterns)
+
+        doc = self.nlp(self.text)
+        matches = matcher_obj(doc)
+
+        return [doc[start:end] for _, start, end in matches]
+
+    def process_parse_tree(self, processors, key_function=None):
+        def default_key_function(fn_name, index):
+            return '_'.join(fn_name.split('_')[1:])
+
+        key_function = key_function or default_key_function
+
+        data = {}
+
+        for line in self.sentences:
+            for sentence in line:
+                for index, processor in enumerate(processors):
+                    key = key_function(processor.__name__, index)
+                    result = processor(sentence)
+
+                    if data.get(key) is None:
+                        data[key] = result
+                    else:
+                        data[key].extend(result)
+
+        return data
+
     def run(self, authors):
         """Run the grammar checker.
 
@@ -335,45 +358,33 @@ class Checker(TextProcessor):
         self.spell.word_frequency.load_words(authors)
 
         data = {
-            'malformed_sentences': [],
-            'sentence_fragments': [],
-            'run_ons': [],
-            'transitive_verbs_without_object': [],
-            'noun_verb_disagreements': [],
-            'spell_check': None,
+            # 'malformed_sentences': [],
+            # 'sentence_fragments': [],
+            # 'run_ons': [],
+            # 'transitive_verbs_without_object': [],
+            # 'noun_verb_disagreements': [],
+            'spell_check': self.get_spelling_mistakes(),
             'languagetool_check': [
                 entry
                 for entry in self.languagetool.check(self.text)
                 if entry.locqualityissuetype != 'misspelling'
             ],
-            'there_their': self.get_there_their_occurrences(self.text)
+            'there_their': self.get_there_their_occurrences()
         }
 
-        def process_sentence(sentence):
-            print(sentence)
-
-            data['malformed_sentences'].extend(
-                self.get_malformed_sentences(sentence)
-            )
-            data['sentence_fragments'].extend(
-                self.get_sentence_fragments(sentence)
-            )
-            data['run_ons'].extend(
-                self.get_run_ons(sentence)
-            )
-            data['transitive_verbs_without_object'].extend(
-                self.get_transitive_verbs_without_object(sentence)
-            )
-            data['noun_verb_disagreements'].extend(
-                self.get_noun_verb_disagreements(sentence)
-            )
-            data['spell_check'] = self.get_spelling_mistakes(
-                self.text
-            )
-
         # Process the parse tree sentences
+        parse_tree_data = self.process_parse_tree([
+            self.get_malformed_sentences,
+            self.get_sentence_fragments,
+            self.get_run_ons,
+            self.get_transitive_verbs_without_object,
+            self.get_noun_verb_disagreements,
+        ])
+
+        """
         for line in self.sentences:
             for sentence in line:
-                process_sentence(sentence)
+                process_sentence(sentence
+        """
 
-        return data
+        return {**data, **parse_tree_data}

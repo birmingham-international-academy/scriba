@@ -57,7 +57,7 @@ $ python manage.py runsslserver --settings=scriba.settings.dev
 
 ## Testing
 
-Run `python manage.py test`
+Run `pytest`
 
 ## Contributing
 
