@@ -71,7 +71,6 @@ class AssignmentService:
         return data
 
     def send_grade(self, data):
-        # TODO: Deduce points from data
         self.tool_provider.post_replace_result(
             data.get('score'),
             result_data={'text': data.get('comments')}

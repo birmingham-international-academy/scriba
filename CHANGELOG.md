@@ -11,3 +11,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Academic style checking
 - Citation checking
 - LTI gradebook communication
+- Graded assignment
