@@ -24,8 +24,7 @@ class FeedbackInterpreter:
         # Grammar status
         gc = data['grammar_check']
         data['grammar_status'] = (
-            len(gc['malformed_sentences']) == 0
-            and len(gc['languagetool_check']) == 0
+            len(gc['languagetool_check']) == 0
             and len(gc['run_ons']) == 0
             and len(gc['transitive_verbs_without_object']) == 0
             and len(gc['sentence_fragments']) == 0
@@ -63,7 +62,7 @@ class GradeInterpreter:
         points_possible (int): Possible points for the assignment.
     """
 
-    major_grammar_errors = ['sentence_fragments', 'malformed_sentences']
+    major_grammar_errors = ['sentence_fragments', 'run_ons']
 
     def __init__(self, points_possible):
         self.points_possible = points_possible

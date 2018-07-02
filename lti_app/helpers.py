@@ -7,6 +7,10 @@ from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
 
+def contains_list(list1, list2):
+    return all(elem in list1 for elem in list2)
+
+
 def get_current_dir(current_file):
     """Get the current directory.
 

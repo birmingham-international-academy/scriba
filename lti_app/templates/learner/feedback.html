@@ -64,15 +64,6 @@
                             </span>
                         </h2>
 
-                        {% if grammar_check.malformed_sentences|length > 0 %}
-                        <p>Malformed sentences (i.e. a sentence without verb or without subject):</p>
-                        <ul>
-                            {% for sentence in grammar_check.malformed_sentences %}
-                            <li>{{ sentence }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
-
                         {% if grammar_check.languagetool_check|length > 0 %}
                         <p>General mistakes:</p>
                         <ul>

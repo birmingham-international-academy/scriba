@@ -3,9 +3,10 @@
 import re
 import os
 
+import lti_app.core.phrasefinder as pf
 import language_check
 import spacy
-from nltk import pos_tag, word_tokenize, WhitespaceTokenizer
+from nltk import ngrams, pos_tag, word_tokenize, WhitespaceTokenizer
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import sent_tokenize
@@ -13,8 +14,12 @@ from nltk.tree import Tree
 from spacy.matcher import Matcher
 from spellchecker import SpellChecker
 
-from lti_app.core.text_helpers import load_stanford_parser, TextProcessor
-from lti_app.helpers import is_number, is_punctuation, remove_punctuation
+from lti_app.core.text_helpers import (
+    clean_text, load_stanford_parser, TextProcessor
+)
+from lti_app.helpers import (
+    contains_list, is_number, is_punctuation, remove_punctuation
+)
 
 
 class Checker(TextProcessor):
@@ -48,24 +53,24 @@ class Checker(TextProcessor):
         self.lemmatizer = WordNetLemmatizer()
 
     def _preprocess(self):
+        self.text = clean_text(self.text)
         sentences = sent_tokenize(self.text)
-        self.text = self.text.strip()
-        self.text = re.sub(' +', ' ', self.text)
-        self.sentences = list(self.parser.raw_parse_sents(sentences))
-
-    def _is_clause_component(self, node):
-        sbar = node.label() == 'SBAR'
-        valid_scc = self._is_valid_subordinating_conj_clause(node)
-
-        return type(node) is Tree\
-            and node.label() in ['SBAR', 'NP', 'VP', 'S', 'CC']\
-            and (valid_scc if sbar else True)
-
-    def _is_valid_subordinating_conj_clause(self, node):
-        return 'IN' in [
-            child if type(child) is str else child.label()
-            for child in node
+        self.sentences = [
+            sentence
+            for line in list(self.parser.raw_parse_sents(sentences))
+            for sentence in line
         ]
+
+        for sentence in self.sentences:
+            print(sentence)
+
+        """
+        sents = self.dependency_parser.raw_parse_sents(sentences)
+
+        for line in sents:
+            for sentence in line:
+                print(list(sentence.triples()))
+        """
 
     def _is_clause(self, node):
         return node.label() in self.clause_types
@@ -95,22 +100,41 @@ class Checker(TextProcessor):
             return [' '.join(sentence.leaves())]
 
         for tree in subtrees:
-            compounds = [
-                node.label()
-                for node in tree
-                if self._is_clause_component(node)
-            ]
-            compounds = sorted(compounds)
+            compounds = [node.label() for node in tree]
 
             if (
-                not set(['NP', 'VP']).issubset(compounds)
+                not contains_list(compounds, ['NP', 'VP'])
                 and compounds != ['VP']
-                and compounds != ['SBAR', 'VP']
-                and compounds != ['CC', 'S', 'S']
+                and not contains_list(compounds, ['SBAR', 'VP'])
+                and not contains_list(compounds, ['S', 'CC', 'S'])
+                and not contains_list(compounds, ['IN', 'S'])
             ):
                 malformed.append(tree.flatten())
 
         return [' '.join(malformed_str) for malformed_str in malformed]
+
+    def get_comma_splices(self, sentence):
+        """Get the comma splices in a sentence.
+
+        A comma splice or comma fault is the use of a comma to join two independent clauses.
+
+        Args:
+            sentence (Tree): The parse three of the sentence.
+
+        Returns:
+            list of str: The comma splices.
+        """
+
+        subtrees = list(sentence.subtrees(filter=self._is_clause))
+        comma_splices = []
+
+        for tree in subtrees:
+            compounds = [node.label() for node in tree]
+
+            if 'CC' not in compounds and contains_list(compounds, ['S', ","]):
+                comma_splices.append(tree.flatten())
+
+        return [' '.join(token) for token in comma_splices]
 
     def get_noun_verb_disagreements(self, sentence):
         """Get noun-verb disagreements.
@@ -322,7 +346,22 @@ class Checker(TextProcessor):
 
         return [doc[start:end] for _, start, end in matches]
 
+    def get_to_too_occurrences(self):
+        pass
+
     def process_parse_tree(self, processors, key_function=None):
+        """Process the parse tree for a sentence.
+
+        Args:
+            processors (list): List of functions taking a parse tree
+                as an argument.
+            key_function (function, optional): Defaults to None. Function
+                to name the dictionary keys.
+
+        Returns:
+            dict: Mapping of the processors' results.
+        """
+
         def default_key_function(fn_name, index):
             return '_'.join(fn_name.split('_')[1:])
 
@@ -330,16 +369,15 @@ class Checker(TextProcessor):
 
         data = {}
 
-        for line in self.sentences:
-            for sentence in line:
-                for index, processor in enumerate(processors):
-                    key = key_function(processor.__name__, index)
-                    result = processor(sentence)
+        for sentence in self.sentences:
+            for index, processor in enumerate(processors):
+                key = key_function(processor.__name__, index)
+                result = processor(sentence)
 
-                    if data.get(key) is None:
-                        data[key] = result
-                    else:
-                        data[key].extend(result)
+                if data.get(key) is None:
+                    data[key] = result
+                else:
+                    data[key].extend(result)
 
         return data
 
@@ -355,14 +393,9 @@ class Checker(TextProcessor):
         """
 
         # Make the spell checker to ignore the author last names
-        self.spell.word_frequency.load_words(authors)
+        self.spell.word_frequency.load_words(authors + ["i'm"])
 
         data = {
-            # 'malformed_sentences': [],
-            # 'sentence_fragments': [],
-            # 'run_ons': [],
-            # 'transitive_verbs_without_object': [],
-            # 'noun_verb_disagreements': [],
             'spell_check': self.get_spelling_mistakes(),
             'languagetool_check': [
                 entry
@@ -374,6 +407,7 @@ class Checker(TextProcessor):
 
         # Process the parse tree sentences
         parse_tree_data = self.process_parse_tree([
+            self.get_comma_splices,
             self.get_malformed_sentences,
             self.get_sentence_fragments,
             self.get_run_ons,
@@ -381,10 +415,12 @@ class Checker(TextProcessor):
             self.get_noun_verb_disagreements,
         ])
 
-        """
-        for line in self.sentences:
-            for sentence in line:
-                process_sentence(sentence
-        """
+        # print(parse_tree_data)
+
+        parse_tree_data['sentence_fragments'] = (
+            parse_tree_data.get('sentence_fragments', []) +
+            parse_tree_data.get('malformed_sentences', [])[:]
+        )
+        parse_tree_data.pop('malformed_sentences', None)
 
         return {**data, **parse_tree_data}
