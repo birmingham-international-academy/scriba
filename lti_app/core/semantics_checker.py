@@ -17,7 +17,6 @@ import re
 import os
 
 import spacy
-from gensim import corpora, models, similarities
 from nltk import pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.stem import PorterStemmer, WordNetLemmatizer
@@ -107,10 +106,10 @@ class Checker(TextProcessor):
         weight_arg = 1
         num_args_shared = 0
 
-        target1 = t1['target'].root.text
+        target1 = self.stemmer.stem(t1['target'].root.text)
         args1 = t1['args']
 
-        target2 = t2['target'].root.text
+        target2 = self.stemmer.stem(t2['target'].root.text)
         args2 = t2['args']
 
         # Reverse arguments if passive voice is used
@@ -135,12 +134,15 @@ class Checker(TextProcessor):
             similarity += weight_target
 
         for arg1, arg2 in list(itertools.zip_longest(args1, args2)):
+            arg1_text = arg1 and self.stemmer.stem(arg1.root.text)
+            arg2_text = arg2 and self.stemmer.stem(arg2.root.text)
+
             if (
                 arg1 is not None
                 and arg2 is not None
                 and (
-                    arg1.root.text == arg2.root.text
-                    or are_synonyms(arg1.root.text, arg2.root.text)
+                    arg1_text == arg2_text
+                    or are_synonyms(arg1_text, arg2_text)
                 )
             ):
                 similarity += weight_arg
@@ -148,13 +150,9 @@ class Checker(TextProcessor):
 
         normalization_factor = weight_target + num_args_shared
 
-        return similarity / normalization_factor
+        return round(similarity / normalization_factor, 2)
 
     def run(self):
-        # print(self.text_dep_addr)
-        # print(self.excerpt_dep_addr)
-
-        similarity_threshold = 0.6
         pairs = []
         text_pred_args = self.text_pred_args[:]
         excerpt_pred_args = self.excerpt_pred_args[:]
@@ -172,10 +170,11 @@ class Checker(TextProcessor):
 
             best_pair = max(similarity_results, key=lambda item: item[2])
 
-            if best_pair[2] > similarity_threshold:
-                pairs.append(best_pair)
+            pairs.append(best_pair)
 
             text_pred_args.remove(best_pair[0])
             excerpt_pred_args.remove(best_pair[1])
 
-        print(pairs)
+        aggregate_result = sum([sim for _, _, sim in pairs]) / len(pairs)
+
+        return aggregate_result

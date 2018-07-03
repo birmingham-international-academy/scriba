@@ -3,7 +3,6 @@
 import re
 import os
 
-import lti_app.core.phrasefinder as pf
 import language_check
 import spacy
 from nltk import ngrams, pos_tag, word_tokenize, WhitespaceTokenizer

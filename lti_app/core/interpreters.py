@@ -2,8 +2,6 @@
 
 Todo:
     - Fix comments
-    - Add plagiarism check band
-    - Add semantics check band
     - Store settings
 """
 
@@ -44,9 +42,11 @@ class FeedbackInterpreter:
         )
 
         # Paraphrase status
+        semantics_similarity_threshold = 0.6
         pc = data['plagiarism_check']
         sc = data['semantics_check']
-        data['paraphrase_status'] = len(pc) == 0
+        data['plagiarism_status'] = len(pc) == 0
+        data['semantics_status'] = sc >= semantics_similarity_threshold
 
         return data
 
@@ -66,12 +66,6 @@ class GradeInterpreter:
 
     def __init__(self, points_possible):
         self.points_possible = points_possible
-
-    def _points_to_decimal_score(self, points):
-        return points / self.points_possible
-
-    def _decimal_to_points_score(self, decimal):
-        return decimal * self.points_possible
 
     def _get_errors(self, d, exclude=[], include='*'):
         keys = d.keys()
@@ -104,11 +98,17 @@ class GradeInterpreter:
     def _get_major_errors_aggregate(self, data):
         grammar_check = data.get('grammar_check')
 
-        return self._get_errors(
+        semantics_error = int(data.get('semantics_check'))
+
+        plagiarism_errors = len(data.get('plagiarism_check'))
+
+        major_grammar_errors = self._get_errors(
             grammar_check,
             exclude='*',
             include=self.major_grammar_errors
         )
+
+        return semantics_error + plagiarism_errors + major_grammar_errors
 
     def _is_in_band_1(self, data):
         citation_check = data.get('citation_check')
@@ -175,12 +175,12 @@ class GradeInterpreter:
             data['comments'] = 'The submission requires tutor guidance.'
         elif self._is_in_band_3(data):
             data['score'] = 0.6
-            data['comments'] = 'You did OK.'
+            data['comments'] = 'Refer to tutor for comments.'
         elif self._is_in_band_2(data):
             data['score'] = 0.8
-            data['comments'] = 'You did good!'
+            data['comments'] = 'Refer to tutor for comments.'
         elif self._is_in_band_1(data):
             data['score'] = 1
-            data['comments'] = 'You did great man!\nKeep up the great work!'
+            data['comments'] = 'Refer to tutor for comments.'
 
         return data
