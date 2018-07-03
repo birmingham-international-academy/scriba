@@ -100,5 +100,12 @@ db.sqlite3
 # LTI-related
 
 stanford-parser
-fce-corpus
-fce-corpus-in
+
+# AWS
+
+.elasticbeanstalk
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
