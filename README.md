@@ -49,10 +49,14 @@ Then run `python scripts/stanford_parser.py` to download and extract the Stanfor
 
 Run the following command to download the 'en' model for SpaCy: `python -m spacy download en`
 
-### 5. Run the server in development mode
+### 5. Setup the database
+
+Todo.
+
+### 6. Run the server in development mode
 
 ```
-$ python manage.py runsslserver --settings=scriba.settings.dev
+$ python manage.py runsslserver --settings=scriba.settings.local
 ```
 
 ## Testing

@@ -9,20 +9,33 @@
     <div class="container">
         <div id="content" class="w-full max-w-md mx-auto my-4 shadow-md rounded">
             <div class="bg-grey-lighter text-grey-darker p-3">
-                <h1 class="text-xl font-light">Settings</h1>
+                <h1 class="text-xl font-light">
+                    {% if assignment is None %}Create{% else %}Update{% endif %} the assignment
+                </h1>
             </div>
 
             <form method="POST" action="/assignments/" onsubmit="showLoader()" class="bg-white px-8 pt-6 pb-8">
                 <div class="mb-4">
-                    <label class="block text-grey-darker text-sm font-bold mb-2" for="text">
-                        Paraphrase
+                    <label class="block text-grey-darker text-sm font-bold mb-2" for="reference">
+                        Reference
+                    </label>
+                    <input
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker leading-tight"
+                        id="reference"
+                        name="reference"
+                        type="text"
+                        value="{% if assignment is not None %}{{ assignment.reference }}{% endif %}"
+                        placeholder="Reference">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-grey-darker text-sm font-bold mb-2" for="excerpt">
+                        Excerpt
                     </label>
                     <textarea
                         class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker leading-tight"
-                        id="text"
-                        name="text"
-                        type="text"
-                        rows="7"></textarea>
+                        id="excerpt"
+                        name="excerpt"
+                        rows="7">{% if assignment is not None %}{{ assignment.excerpt }}{% endif %}</textarea>
                 </div>
                 <div class="flex items-center justify-between">
                     <button class="bg-blue hover:bg-blue-dark text-white font-bold py-2 px-4 rounded" type="submit">

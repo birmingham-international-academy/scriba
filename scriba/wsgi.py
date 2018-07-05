@@ -12,7 +12,7 @@ import os
 from django.core.wsgi import get_wsgi_application
 from whitenoise.django import DjangoWhiteNoise
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "scriba.settings.dev")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "scriba.settings.production")
 
 application = get_wsgi_application()
 

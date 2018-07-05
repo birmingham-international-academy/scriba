@@ -13,8 +13,11 @@ class ValidLaunchMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        # Keys
         outcome_url = 'lis_outcome_service_url'
         result_sourcedid = 'lis_result_sourcedid'
+        is_instructor = 'is_instructor'
+
         method = request.method.lower()
 
         # If it's not a launch request just skip the validation
@@ -35,10 +38,8 @@ class ValidLaunchMiddleware:
         data = request.POST
 
         # Store relevant data in session
-        if data.get(outcome_url) and data.get(result_sourcedid):
-            request.session[outcome_url] = data.get(outcome_url)
-            request.session[result_sourcedid] = data.get(result_sourcedid)
-
-        request.session['is_instructor'] = tool_provider.is_instructor()
+        request.session[is_instructor] = tool_provider.is_instructor()
+        request.session[outcome_url] = data.get(outcome_url)
+        request.session[result_sourcedid] = data.get(result_sourcedid)
 
         return self.get_response(request)

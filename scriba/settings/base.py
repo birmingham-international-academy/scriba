@@ -31,12 +31,12 @@ BASE_DIR = os.path.dirname(
 # Application definition
 
 INSTALLED_APPS = [
+    'lti_app.apps.LtiConfig',
     'sslserver',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'lti_app.apps.LtiConfig',
 ]
 
 MIDDLEWARE = [
@@ -73,7 +73,16 @@ WSGI_APPLICATION = 'scriba.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-DATABASES = {}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', ''),
+        'USER': os.getenv('DB_USER', ''),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '5432')
+    }
+}
 
 
 # Password validation

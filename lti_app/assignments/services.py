@@ -5,73 +5,71 @@ from html import parser
 from lti import tool_provider
 
 from lti_app.core import checkers, interpreters
-
-
-class AssignmentDescriptionParser(parser.HTMLParser):
-    def __init__(self):
-        parser.HTMLParser.__init__(self)
-        self.excerpt = ''
-        self.reference = ''
-        self.in_excerpt = False
-        self.in_reference = False
-
-    def handle_data(self, data):
-        _data = data.lower()
-
-        if _data == 'excerpt':
-            self.in_excerpt = True
-            self.in_reference = False
-        elif _data == 'reference':
-            self.in_excerpt = False
-            self.in_reference = True
-        else:
-            if self.in_excerpt:
-                self.excerpt += data
-            elif self.in_reference:
-                self.reference += data
+from lti_app.assignments import repositories
 
 
 class AssignmentService:
-    def __init__(
-            self, assm_description, assm_type,
-            assm_points_possible, service_url, source_did):
-        self.type = assm_type
-        self.points_possible = assm_points_possible
-        self.interpreter = (
-            interpreters.FeedbackInterpreter()
-            if self.type == 'pilot'
-            else interpreters.GradeInterpreter(self.points_possible)
-        )
-        self.tool_provider = tool_provider.ToolProvider(
+    def __init__(self):
+        self.repository = repositories.AssignmentRepository()
+
+    def _send_grade(self, outcome_service_url, result_sourcedid, data):
+        tp = tool_provider.ToolProvider(
             consumer_key=settings.CANVAS['CONSUMER_KEY'],
             consumer_secret=settings.CANVAS['SHARED_SECRET'],
             params={
-                'lis_outcome_service_url': service_url,
-                'lis_result_sourcedid': source_did
+                'lis_outcome_service_url': outcome_service_url,
+                'lis_result_sourcedid': result_sourcedid
             }
         )
-        self._parse_description(assm_description)
 
-    def _parse_description(self, description):
-        parser = AssignmentDescriptionParser()
-        parser.feed(description)
-
-        self.excerpt = parser.excerpt.strip()
-        self.reference = parser.reference.strip()
-
-    def run_analysis(self, text):
-        checker = checkers.DefaultChecker(text, self.excerpt, self.reference)
-        data = checker.run()
-        data['text'] = text
-        data = self.interpreter.run(data)
-
-        if self.type != 'pilot':
-            self.send_grade(data)
-
-        return data
-
-    def send_grade(self, data):
-        self.tool_provider.post_replace_result(
+        tp.post_replace_result(
             data.get('score'),
             result_data={'text': data.get('comments')}
         )
+
+    def create(self, fields):
+        self.repository.create(fields)
+
+    def get_by_course_assignment_tuple(self, course_id, assignment_id):
+        return self.repository.get_by({
+            'course_id': course_id,
+            'assignment_id': assignment_id
+        })
+
+    def run_analysis(
+            self,
+            course_id,
+            assignment_id,
+            outcome_service_url,
+            result_sourcedid,
+            text):
+        # 1. Retrieve the assignment details
+        assignment = self.repository.get_by({
+            'course_id': course_id,
+            'assignment_id': assignment_id
+        }).first()
+
+        # 2. Create the interpreter for the raw data
+        interpreter = (
+            interpreters.FeedbackInterpreter()
+            if assignment.assignment_type == 'D'
+            else interpreters.GradeInterpreter(assignment.max_points)
+        )
+
+        # 3. Run the analysis
+        checker = checkers.DefaultChecker(
+            text,
+            assignment.excerpt,
+            assignment.reference
+        )
+        data = checker.run()
+        data['text'] = text
+
+        # 4. Run the interpreter
+        data = interpreter.run(data)
+
+        # 5. (Optional) Send the grade
+        if assignment.assignment_type != 'D':
+            self._send_grade(outcome_service_url, result_sourcedid, data)
+
+        return data

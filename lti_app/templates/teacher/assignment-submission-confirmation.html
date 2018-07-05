@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    {% include "includes/head.html" %}
+</head>
+
+<body>
+    <div class="container">
+        <div id="content" class="w-full max-w-md mx-auto my-4 shadow-md rounded">
+            <div class="bg-grey-lighter text-grey-darker p-3">
+                <h1 class="text-xl font-light">Confirmation</h1>
+            </div>
+
+            <div class="bg-white px-8 pt-6 pb-8">
+                <div class="mb-4">
+                    The assignment has been successfully updated.
+                    Now you can publish it for students to submit.
+                </div>
+                <div class="flex items-center justify-between">
+                    <a class="inline-block align-baseline font-bold text-sm text-blue hover:text-blue-darker" href="#">
+                        Help
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% include "includes/footer.html" %}
+    </div>
+</body>
+
+</html>

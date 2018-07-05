@@ -7,34 +7,16 @@ import requests
 
 @require_POST
 def index(request):
-    canvas_client = CanvasApiClient()
     data = request.POST
 
-    if request.session.get('lis_result_sourcedid') is None:
-        print('Not good')
-        pass  # error
+    # if request.session.get('lis_result_sourcedid') is None:
+    #        print('Not good')
 
-    response = canvas_client.get_assignment(
-        data.get('custom_canvas_course_id'),
-        data.get('custom_canvas_assignment_id')
-    )
+    max_points = data.get('custom_canvas_assignment_points_possible')
 
-    if response.status_code != 200:
-        # TODO: fix this
-        request.session['session_flash'] = {
-            'type': 'error',
-            'message': 'Could not load the assignment correctly.\
-                        Please refresh the page.'
-        }
-    else:
-        assm = response.json()
-
-        request.session['assignment_description'] = assm.get('description')
-
-        pilot = int(assm.get('points_possible')) == 0
-        request.session['assignment_type'] = 'pilot' if pilot else 'graded'
-
-        request.session['assignment_points_possible'] =\
-            float(assm.get('points_possible'))
+    request.session['course_id'] = data.get('custom_canvas_course_id')
+    request.session['assignment_id'] = data.get('custom_canvas_assignment_id')
+    request.session['assignment_type'] = 'D' if int(max_points) == 0 else 'G'
+    request.session['assignment_max_points'] = max_points
 
     return redirect('/assignments')

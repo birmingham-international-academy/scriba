@@ -94,6 +94,11 @@
                 <h1 class="text-xl font-light">Complete the assignment</h1>
             </div>
 
+            <div class="px-8 pt-6 pb-3 leading-normal text-grey-darkest">
+                <p class="border-l-4 pl-3 text-justify">{{ assignment.excerpt }}</p>
+                <p class="pt-3">{{ assignment.reference }}</p>
+            </div>
+
             <form method="POST" action="/assignments/" onsubmit="showLoader()" class="bg-white px-8 pt-6 pb-8">
                 <div class="mb-4">
                     <label class="block text-grey-darker text-sm font-bold mb-2" for="text">
@@ -124,6 +129,7 @@
         function showLoader() {
             document.getElementById('loader').style.display = 'block';
             document.getElementById('content').style.display = 'none';
+            document.getElementById('footer').style.display = 'none';
         }
     </script>
 </body>
