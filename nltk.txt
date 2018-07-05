@@ -1,1 +1,5 @@
 wordnet
+wordnet_ic
+stopwords
+words
+punkt
