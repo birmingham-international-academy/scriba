@@ -77,24 +77,27 @@ class Checker(TextProcessor):
             ud=ud
         )
 
-        self.text_pred_args = []
-        self.excerpt_pred_args = []
+        self.text_pred_args = self._get_pred_patterns(
+            self.text_sentences,
+            opts
+        )
+        self.excerpt_pred_args = self._get_pred_patterns(
+            self.excerpt_sentences,
+            opts
+        )
 
-        for text_sentence in self.text_sentences:
-            pp = PredPatt.from_sentence(text_sentence, opts=opts)
+    def _get_pred_patterns(self, sentences, opts):
+        pred_patt = []
+
+        for sentence in sentences:
+            pp = PredPatt.from_sentence(sentence, opts=opts)
             for predicate in pp.instances:
-                self.text_pred_args.append({
+                pred_patt.append({
                     'target': predicate,
                     'args': predicate.arguments
                 })
 
-        for excerpt_sentence in self.excerpt_sentences:
-            pp = PredPatt.from_sentence(excerpt_sentence, opts=opts)
-            for predicate in pp.instances:
-                self.excerpt_pred_args.append({
-                    'target': predicate,
-                    'args': predicate.arguments
-                })
+        return pred_patt
 
     def _is_target_negated(self, target):
         tokens = [token.text for token in target.tokens]

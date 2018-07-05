@@ -115,7 +115,8 @@ class Checker(TextProcessor):
     def get_comma_splices(self, sentence):
         """Get the comma splices in a sentence.
 
-        A comma splice or comma fault is the use of a comma to join two independent clauses.
+        A comma splice or comma fault is the use of a comma
+        to join two independent clauses.
 
         Args:
             sentence (Tree): The parse three of the sentence.
