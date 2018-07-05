@@ -74,10 +74,6 @@ class Checker(TextProcessor):
     def _is_clause(self, node):
         return node.label() in self.clause_types
 
-    def set_text(self, text):
-        self.text = text
-        self._preprocess()
-
     def get_malformed_sentences(self, sentence):
         """Get malformed sentences.
 
@@ -101,6 +97,7 @@ class Checker(TextProcessor):
         for tree in subtrees:
             compounds = [node.label() for node in tree]
 
+            # Not accepted compounds
             if (
                 not contains_list(compounds, ['NP', 'VP'])
                 and compounds != ['VP']
@@ -347,6 +344,13 @@ class Checker(TextProcessor):
         return [doc[start:end] for _, start, end in matches]
 
     def get_to_too_occurrences(self):
+        """Get to/too mistakes.
+
+        Example: it's to hot.
+
+        Returns:
+            list of str: The occurrences of to-too mistakes.
+        """
         pass
 
     def process_parse_tree(self, processors, key_function=None):
