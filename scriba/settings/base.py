@@ -73,16 +73,28 @@ WSGI_APPLICATION = 'scriba.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', ''),
-        'USER': os.getenv('DB_USER', ''),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DB_PORT', '5432')
+if 'RDS_DB_NAME' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ.get('RDS_DB_NAME'),
+            'USER': os.environ.get('RDS_USERNAME'),
+            'PASSWORD': os.environ.get('RDS_PASSWORD'),
+            'HOST': os.environ.get('RDS_HOSTNAME'),
+            'PORT': os.environ.get('RDS_PORT'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ.get('DB_NAME', ''),
+            'USER': os.environ.get('DB_USER', ''),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+            'PORT': os.environ.get('DB_PORT', '5432')
+        }
+    }
 
 
 # Password validation
@@ -123,19 +135,21 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'www', 'static')
+
 # Application settings
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.file'
 
 CANVAS = {
-    'CONSUMER_KEY': os.getenv('CANVAS_CONSUMER_KEY'),
-    'SHARED_SECRET': os.getenv('CANVAS_SHARED_SECRET'),
-    'PERSONAL_ACCESS_TOKEN': os.getenv('CANVAS_PERSONAL_ACCESS_TOKEN'),
-    'DEVELOPER_KEY': os.getenv('CANVAS_DEVELOPER_KEY')
+    'CONSUMER_KEY': os.environ.get('CANVAS_CONSUMER_KEY'),
+    'SHARED_SECRET': os.environ.get('CANVAS_SHARED_SECRET'),
+    'PERSONAL_ACCESS_TOKEN': os.environ.get('CANVAS_PERSONAL_ACCESS_TOKEN'),
+    'DEVELOPER_KEY': os.environ.get('CANVAS_DEVELOPER_KEY')
 }
 
 DANDELION = {
-    'API_KEY': os.getenv('DANDELION_API_KEY')
+    'API_KEY': os.environ.get('DANDELION_API_KEY')
 }
