@@ -7,7 +7,7 @@ ENVIRONMENT = 'production'
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['']
+ALLOWED_HOSTS = ['.herokuapp.com']
 
 DATABASES['default'] = dj_database_url.config(
     default=''
