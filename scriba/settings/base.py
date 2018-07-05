@@ -32,7 +32,6 @@ load_dotenv(dotenv_path, override=True)
 
 INSTALLED_APPS = [
     'lti_app.apps.LtiConfig',
-    'sslserver',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.messages',

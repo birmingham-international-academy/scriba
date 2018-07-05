@@ -55,6 +55,14 @@ Todo.
 
 ### 6. Run the server in development mode
 
+To run a local HTTPS server you have to install the following Django app:
+
+```
+$ pip install django-sslserver
+```
+
+Then run the server using:
+
 ```
 $ python manage.py runsslserver --settings=scriba.settings.local
 ```
