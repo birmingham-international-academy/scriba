@@ -5,7 +5,7 @@ from scriba.settings.base import *
 
 ENVIRONMENT = 'production'
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['.herokuapp.com']
 
