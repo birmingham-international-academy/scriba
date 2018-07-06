@@ -3,6 +3,8 @@ import sys
 
 import django
 import redis
+from redis import Redis
+import urllib
 from rq import Worker, Queue, Connection
 
 settings = 'scriba.settings.production'
@@ -18,8 +20,11 @@ listen = ['high', 'default', 'low']
 
 redis_url = os.getenv('REDISTOGO_URL', 'redis://localhost:6379')
 
-print('----------------------------------------------------')
-print(redis_url)
+redis_url = os.getenv('REDISTOGO_URL')
+
+urllib.parse.uses_netloc.append('redis')
+url = urllib.parse.urlparse(redis_url)
+conn = Redis(host=url.hostname, port=url.port, db=0, password=url.password)
 
 conn = redis.from_url(redis_url)
 
