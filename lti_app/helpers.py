@@ -1,8 +1,9 @@
 """Provides general utilities."""
 
-import fnmatch
+import glob
 import string
 import os
+
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
@@ -36,13 +37,16 @@ def find_file(pattern, path, first=False):
     Returns:
         str/list of str: The match(es).
     """
+    print('---------------------------')
+    print(path)
+    result = glob.glob(path + '/' + pattern)
 
-    result = []
-
+    """
     for root, _, files in os.walk(path):
         for name in files:
             if fnmatch.fnmatch(name, pattern):
                 result.append(os.path.join(root, name))
+    """
 
     return result[0] if first else result
 
