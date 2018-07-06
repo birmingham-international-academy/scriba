@@ -8,7 +8,9 @@ ENVIRONMENT = 'local'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '127.0.0.1'
+    '0.0.0.0',
+    '127.0.0.1',
+    'localhost'
 ]
 
 INSTALLED_APPS = INSTALLED_APPS + [
