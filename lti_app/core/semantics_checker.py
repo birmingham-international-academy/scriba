@@ -47,7 +47,7 @@ class Checker(TextProcessor):
         TextProcessor.__init__(self)
 
     def _load_tools(self):
-        _, self.dependency_parser = load_stanford_parser()
+        self.parser, _ = load_stanford_parser()
         # self.nlp = spacy.load('en')
         self.stemmer = PorterStemmer()
         self.lemmatizer = WordNetLemmatizer()
@@ -58,6 +58,9 @@ class Checker(TextProcessor):
 
         self.text_sentences = sent_tokenize(self.text)
         self.excerpt_sentences = sent_tokenize(self.excerpt)
+
+        self.pt_text_sentences = self.parser.raw_parse_sents(self.text_sentences)
+        self.pt_excerpt_sentences = self.parser.raw_parse_sents(self.excerpt_sentences)
 
         # Create target-arguments tuples
         # ------------------------------
@@ -78,24 +81,26 @@ class Checker(TextProcessor):
         )
 
         self.text_pred_args = self._get_pred_patterns(
-            self.text_sentences,
+            self.pt_text_sentences,
             opts
         )
         self.excerpt_pred_args = self._get_pred_patterns(
-            self.excerpt_sentences,
+            self.pt_excerpt_sentences,
             opts
         )
 
     def _get_pred_patterns(self, sentences, opts):
         pred_patt = []
 
-        for sentence in sentences:
-            pp = PredPatt.from_sentence(sentence, opts=opts)
-            for predicate in pp.instances:
-                pred_patt.append({
-                    'target': predicate,
-                    'args': predicate.arguments
-                })
+        for line in sentences:
+            for sentence in line:
+                pp = PredPatt.from_constituency(str(sentence), opts=opts)
+                # pp = PredPatt.from_sentence(sentence, opts=opts)
+                for predicate in pp.instances:
+                    pred_patt.append({
+                        'target': predicate,
+                        'args': predicate.arguments
+                    })
 
         return pred_patt
 

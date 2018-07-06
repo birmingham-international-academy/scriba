@@ -9,6 +9,8 @@ os.environ.setdefault(
     "scriba.settings.production"
 )
 
+# https://nlp.stanford.edu/software/stanford-parser-full-2018-02-27.zip
+
 date = '2018-02-27'
 base = 'https://nlp.stanford.edu/software/stanford-parser-full-'
 resource_url = base + date + '.zip'
