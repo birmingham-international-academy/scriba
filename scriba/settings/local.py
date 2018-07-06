@@ -1,6 +1,8 @@
 from scriba.settings.base import *
 
 
+# local
+
 ENVIRONMENT = 'local'
 
 DEBUG = True
