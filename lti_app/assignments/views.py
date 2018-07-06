@@ -1,7 +1,10 @@
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
+from rq import Queue
 
 from lti_app.assignments import services
+from worker import conn
 
 
 def _create_or_update_assignment(request):
@@ -28,8 +31,10 @@ def _submit_assignment(request):
     result_sourcedid = request.session.get('lis_result_sourcedid')
     text = request.POST.get('text')
     service = services.AssignmentService()
+    q = Queue(connection=conn)
 
-    data = service.run_analysis(
+    result = q.enqueue(
+        service.run_analysis,
         course_id,
         assignment_id,
         outcome_service_url,
@@ -37,13 +42,15 @@ def _submit_assignment(request):
         text
     )
 
+    request.session['job_id'] = result.id
+
     template = (
         'learner/feedback.html'
         if assignment_type == 'D'
         else 'learner/submission-confirmation.html'
     )
 
-    return data, template
+    return {}, template
 
 
 def show(request):
@@ -71,7 +78,12 @@ def submit(request):
     else:
         data, template = _submit_assignment(request)
 
-    return render(request, template, data)
+    return JsonResponse({
+        'status': 'submitted',
+        'message': 'The assignment is currently being analysed.',
+        'poll_url': '/jobs'
+    })
+    # return render(request, template, data)
 
 
 @require_http_methods(['GET', 'POST'])

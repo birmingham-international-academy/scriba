@@ -165,8 +165,8 @@ class Checker(TextProcessor):
         text_pred_args = self.text_pred_args[:]
         excerpt_pred_args = self.excerpt_pred_args[:]
 
-        print(self.text_pred_args)
-        print(self.excerpt_pred_args)
+        # print(self.text_pred_args)
+        # print(self.excerpt_pred_args)
 
         while len(text_pred_args) > 0 and len(excerpt_pred_args) > 0:
             similarity_results = []
@@ -182,6 +182,9 @@ class Checker(TextProcessor):
 
             text_pred_args.remove(best_pair[0])
             excerpt_pred_args.remove(best_pair[1])
+
+        if len(pairs) == 0:
+            return 0
 
         aggregate_result = sum([sim for _, _, sim in pairs]) / len(pairs)
 

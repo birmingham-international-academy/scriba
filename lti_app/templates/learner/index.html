@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html>
 
@@ -99,7 +101,7 @@
                 <p class="pt-3">{{ assignment.reference }}</p>
             </div>
 
-            <form method="POST" action="/assignments/" onsubmit="showLoader()" class="bg-white px-8 pt-6 pb-8">
+            <form id="assignment-form" method="POST" action="/assignments/" class="bg-white px-8 pt-6 pb-8">
                 <div class="mb-4">
                     <label class="block text-grey-darker text-sm font-bold mb-2" for="text">
                         Paraphrase
@@ -112,7 +114,7 @@
                         rows="7"></textarea>
                 </div>
                 <div class="flex items-center justify-between">
-                    <button class="bg-blue hover:bg-blue-dark text-white font-bold py-2 px-4 rounded" type="submit">
+                    <button id="submit-assignment" class="bg-blue hover:bg-blue-dark text-white font-bold py-2 px-4 rounded" type="button">
                         Submit
                     </button>
                     <a class="inline-block align-baseline font-bold text-sm text-blue hover:text-blue-darker" href="#">
@@ -125,13 +127,8 @@
         {% include "includes/footer.html" %}
     </div>
 
-    <script>
-        function showLoader() {
-            document.getElementById('loader').style.display = 'block';
-            document.getElementById('content').style.display = 'none';
-            document.getElementById('footer').style.display = 'none';
-        }
-    </script>
+    <script src="{% static "lti_app/jquery.js" %}"></script>
+    <script src="{% static "lti_app/main.js" %}"></script>
 </body>
 
 </html>
