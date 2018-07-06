@@ -4,6 +4,11 @@ import requests
 import zipfile
 from django.conf import settings
 
+os.environ.setdefault(
+    "DJANGO_SETTINGS_MODULE",
+    "scriba.settings.production"
+)
+
 date = '2018-02-27'
 base = 'https://nlp.stanford.edu/software/stanford-parser-full-'
 resource_url = base + date + '.zip'
