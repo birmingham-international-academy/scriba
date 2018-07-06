@@ -3,6 +3,7 @@
 import re
 import os
 
+import en_core_web_sm
 import language_check
 import spacy
 from nltk import ngrams, pos_tag, word_tokenize, WhitespaceTokenizer
@@ -45,7 +46,7 @@ class Checker(TextProcessor):
 
     def _load_tools(self):
         self.parser, self.dependency_parser = load_stanford_parser()
-        self.nlp = spacy.load('en')
+        self.nlp = en_core_web_sm.load()
         self.spell = SpellChecker()
         self.spell.word_frequency.load_words(["we're", "you're", "won't"])
         self.languagetool = language_check.LanguageTool('en-GB')

@@ -7,7 +7,7 @@ are not used in academic texts.
 import json
 import os
 
-import spacy
+import en_core_web_sm
 from nltk import pos_tag, tokenize
 from nltk.stem import WordNetLemmatizer
 
@@ -28,7 +28,7 @@ class Checker(TextProcessor):
 
     def _load_tools(self):
         self.lemmatizer = WordNetLemmatizer()
-        self.nlp = spacy.load('en')
+        self.nlp = en_core_web_sm.load()
 
     def _preprocess(self):
         self.tokens = tokenize.word_tokenize(self.text)
