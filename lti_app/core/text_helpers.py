@@ -7,8 +7,6 @@ from django.conf import settings
 from nltk.corpus import wordnet as wn
 from nltk.parse.stanford import StanfordParser, StanfordDependencyParser
 
-from lti_app.helpers import find_file, get_current_dir
-
 
 def load_stanford_parser():
     """Loads the Stanford parsers
@@ -18,6 +16,7 @@ def load_stanford_parser():
             the Stanford Dependency Parser
     """
 
+    version = '3.9.1'
     stanford_parser_dir = os.path.join(
         settings.BASE_DIR,
         'lti_app',
@@ -29,10 +28,9 @@ def load_stanford_parser():
         stanford_parser_dir,
         'stanford-parser.jar'
     )
-    models_jar_filename = find_file(
-        'stanford-parser-*-models.jar',
+    models_jar_filename = os.path.join(
         stanford_parser_dir,
-        first=True
+        'stanford-parser-' + version + '-models.jar'
     )
 
     return (
