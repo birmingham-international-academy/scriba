@@ -16,7 +16,7 @@ import itertools
 import re
 import os
 
-import en_core_web_sm
+import spacy
 from nltk import pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.stem import PorterStemmer, WordNetLemmatizer
@@ -48,7 +48,7 @@ class Checker(TextProcessor):
 
     def _load_tools(self):
         _, self.dependency_parser = load_stanford_parser()
-        self.nlp = en_core_web_sm.load()
+        self.nlp = spacy.load('en')
         self.stemmer = PorterStemmer()
         self.lemmatizer = WordNetLemmatizer()
 
