@@ -18,17 +18,17 @@ def load_stanford_parser():
             the Stanford Dependency Parser
     """
 
-    # current_dir = get_current_dir(__file__)
-    parser = 'stanford-parser'
-    parser_jar = 'stanford-parser.jar'
     stanford_parser_dir = os.path.join(
         settings.BASE_DIR,
         'lti_app',
         'core',
         'data',
-        parser
+        'stanford-parser'
     )
-    parser_jar_filename = os.path.join(stanford_parser_dir, parser_jar)
+    parser_jar_filename = os.path.join(
+        stanford_parser_dir,
+        'stanford-parser.jar'
+    )
     models_jar_filename = find_file(
         'stanford-parser-*-models.jar',
         stanford_parser_dir,

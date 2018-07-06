@@ -38,15 +38,9 @@ def find_file(pattern, path, first=False):
         str/list of str: The match(es).
     """
     print('---------------------------')
-    print(path)
-    result = glob.glob(path + '/' + pattern)
-
-    """
-    for root, _, files in os.walk(path):
-        for name in files:
-            if fnmatch.fnmatch(name, pattern):
-                result.append(os.path.join(root, name))
-    """
+    p = os.path.join(path, pattern)
+    print(p)
+    result = glob.glob(p)
 
     return result[0] if first else result
 
