@@ -16,7 +16,6 @@ Then set the keys appropriately:
 - `SECRET_KEY`: Django secret key.
 - `CANVAS_CONSUMER_KEY`: Canvas consumer key for LTI communication. This can be generated as a 256-bit key.
 - `CANVAS_SHARED_SECRET`: Canvas consumer/shared secret for LTI communication. This can be generated as a 256-bit key.
-- `CANVAS_PERSONAL_ACCESS_TOKEN`: Canvas personal access token for testing purposes.
 - `CANVAS_DEVELOPER_KEY`: Canvas API key.
 - `DANDELION_API_KEY`: Text semantic similarity service offered by Dandelion (deprecated).
 
