@@ -3,3 +3,4 @@ wordnet_ic
 stopwords
 words
 punkt
+averaged_perceptron_tagger
