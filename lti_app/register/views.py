@@ -4,7 +4,7 @@ from django.urls import reverse
 
 
 def index(request):
-    app_title = 'Scriba'
+    app_title = 'English Academic Paraphrase Practice'
     app_description = 'Provides automated grading for paraphrase assignments.'
     launch_view_name = 'launch_index'
     launch_url = request.build_absolute_uri(reverse(launch_view_name))
