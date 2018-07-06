@@ -45,7 +45,7 @@ class Checker(TextProcessor):
 
     def _load_tools(self):
         self.parser, self.dependency_parser = load_stanford_parser()
-        self.nlp = spacy.load('en')
+        # self.nlp = spacy.load('en')
         self.spell = SpellChecker()
         self.spell.word_frequency.load_words(["we're", "you're", "won't"])
         self.languagetool = language_check.LanguageTool('en-GB')
@@ -324,7 +324,7 @@ class Checker(TextProcessor):
         Returns:
             list of str: The occurrences of there-their mistakes.
         """
-
+        """
         patterns = [
             [
                 {'LOWER': 'there'},
@@ -340,8 +340,11 @@ class Checker(TextProcessor):
 
         doc = self.nlp(self.text)
         matches = matcher_obj(doc)
+        """
 
-        return [doc[start:end] for _, start, end in matches]
+        return []
+
+        # return [doc[start:end] for _, start, end in matches]
 
     def get_to_too_occurrences(self):
         """Get to/too mistakes.

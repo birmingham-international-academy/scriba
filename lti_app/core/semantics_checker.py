@@ -48,7 +48,7 @@ class Checker(TextProcessor):
 
     def _load_tools(self):
         _, self.dependency_parser = load_stanford_parser()
-        self.nlp = spacy.load('en')
+        # self.nlp = spacy.load('en')
         self.stemmer = PorterStemmer()
         self.lemmatizer = WordNetLemmatizer()
 
