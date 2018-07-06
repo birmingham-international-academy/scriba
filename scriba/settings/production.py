@@ -10,5 +10,5 @@ DEBUG = True
 ALLOWED_HOSTS = ['.herokuapp.com']
 
 DATABASES['default'] = dj_database_url.config(
-    default=''
+    default=os.environ.get('DATABASE_URL', '')
 )
