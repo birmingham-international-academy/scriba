@@ -9,7 +9,7 @@ resource_url = base + date + '.zip'
 current_filename = os.path.dirname(os.path.realpath(__file__))
 filename = os.path.abspath(
     os.path.dirname(os.path.realpath(__file__))
-    + '/../lti/core/data/stanford-parser.zip'
+    + '/../lti_app/core/data/stanford-parser.zip'
 )
 
 with open(filename, 'wb') as f:
@@ -34,7 +34,7 @@ stanford_zip = zipfile.ZipFile(filename)
 stanford_zip.extractall(os.path.dirname(filename))
 stanford_zip.close()
 
-datapath = os.path.abspath(current_filename + '/../lti/core/data')
+datapath = os.path.abspath(current_filename + '/../lti_app/core/data')
 os.rename(
     os.path.join(datapath, 'stanford-parser-full-' + date),
     os.path.join(datapath, 'stanford-parser')
