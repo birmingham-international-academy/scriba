@@ -1,2 +1,2 @@
 web: gunicorn scriba.wsgi --log-file -
-release: ./scripts/release.sh
+release: bash ./scripts/release.sh
