@@ -30,6 +30,9 @@ class AssignmentService:
     def create(self, fields):
         self.repository.create(fields)
 
+    def update(self, model_id, fields):
+        self.repository.update(model_id, fields)
+
     def get_by_course_assignment_tuple(self, course_id, assignment_id):
         return self.repository.get_by({
             'course_id': course_id,

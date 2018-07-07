@@ -18,15 +18,20 @@ def _create_or_update_assignment(request):
         'excerpt': request.POST.get('excerpt')
     }
 
-    service.create(fields)
+    assignment = service.get_by_course_assignment_tuple(
+        fields['course_id'],
+        fields['assignment_id']
+    ).first()
 
-    return {}, 'teacher/assignment-submission-confirmation.html'
+    if assignment is None:
+        service.create(fields)
+    else:
+        service.update(assignment.id, fields)
 
 
 def _submit_assignment(request):
     course_id = request.session.get('course_id')
     assignment_id = request.session.get('assignment_id')
-    assignment_type = request.session.get('assignment_type')
     outcome_service_url = request.session.get('lis_outcome_service_url')
     result_sourcedid = request.session.get('lis_result_sourcedid')
     text = request.POST.get('text')
@@ -43,14 +48,6 @@ def _submit_assignment(request):
     )
 
     request.session['job_id'] = result.id
-
-    template = (
-        'learner/feedback.html'
-        if assignment_type == 'D'
-        else 'learner/submission-confirmation.html'
-    )
-
-    return {}, template
 
 
 def show(request):
@@ -74,16 +71,20 @@ def submit(request):
     is_instructor = request.session.get('is_instructor')
 
     if is_instructor:
-        data, template = _create_or_update_assignment(request)
-    else:
-        data, template = _submit_assignment(request)
+        _create_or_update_assignment(request)
 
-    return JsonResponse({
-        'status': 'submitted',
-        'message': 'The assignment is currently being analysed.',
-        'poll_url': '/jobs'
-    })
-    # return render(request, template, data)
+        return render(
+            request,
+            'teacher/assignment-submission-confirmation.html'
+        )
+    else:
+        _submit_assignment(request)
+
+        return JsonResponse({
+            'status': 'submitted',
+            'message': 'The assignment is currently being analysed.',
+            'poll_url': '/jobs'
+        })
 
 
 @require_http_methods(['GET', 'POST'])

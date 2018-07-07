@@ -21,3 +21,6 @@ class CrudRepository:
     def create(self, fields):
         obj = self.model(**fields)
         obj.save()
+
+    def update(self, model_instance, fields):
+        pass
