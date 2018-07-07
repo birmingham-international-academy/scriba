@@ -1,38 +1,25 @@
 import os
 import sys
 
-import django
 import requests
 import zipfile
-from django.conf import settings
 
-
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE",
-    "scriba.settings.production"
-)
-
-django.setup()
 
 # https://nlp.stanford.edu/software/stanford-parser-full-2018-02-27.zip
 
 date = '2018-02-27'
 base = 'https://nlp.stanford.edu/software/stanford-parser-full-'
 resource_url = base + date + '.zip'
-# current_filename = os.path.dirname(os.path.realpath(__file__))
-data_dir = os.path.join(
-    settings.BASE_DIR,
+current_filename = os.path.dirname(os.path.realpath(__file__))
+data_dir = os.path.abspath(os.path.join(
+    current_filename,
+    '..'
     'lti_app',
     'core',
     'data'
-)
+))
 
 filename = os.path.join(data_dir, 'stanford-parser.zip')
-
-# filename = os.path.abspath(
-#    os.path.dirname(os.path.realpath(__file__))
-#    + '/../lti_app/core/data/stanford-parser.zip'
-# )
 
 with open(filename, 'wb') as f:
     print('> Downloading stanford-parser.zip')
