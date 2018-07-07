@@ -5,13 +5,13 @@ import os
 
 import language_check
 import spacy
+import spellchecker
 from nltk import ngrams, pos_tag, word_tokenize, WhitespaceTokenizer
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import sent_tokenize
 from nltk.tree import Tree
 from spacy.matcher import Matcher
-from spellchecker import SpellChecker
 
 from lti_app.core.text_helpers import (
     clean_text, load_stanford_parser, TextProcessor
@@ -46,7 +46,7 @@ class Checker(TextProcessor):
     def _load_tools(self):
         self.parser, self.dependency_parser = load_stanford_parser()
         # self.nlp = spacy.load('en')
-        self.spell = SpellChecker()
+        self.spell = spellchecker.SpellChecker()
         self.spell.word_frequency.load_words(["we're", "you're", "won't"])
         self.languagetool = language_check.LanguageTool('en-GB')
         self.lemmatizer = WordNetLemmatizer()
