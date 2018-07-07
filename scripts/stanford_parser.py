@@ -13,7 +13,7 @@ resource_url = base + date + '.zip'
 current_filename = os.path.dirname(os.path.realpath(__file__))
 data_dir = os.path.abspath(os.path.join(
     current_filename,
-    '..'
+    '../'
     'lti_app',
     'core',
     'data'
