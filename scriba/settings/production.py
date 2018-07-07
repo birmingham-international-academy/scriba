@@ -9,6 +9,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '178.128.41.130',
+    'englishapp.tk',
     '.herokuapp.com'
 ]
 
