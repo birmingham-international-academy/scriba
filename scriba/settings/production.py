@@ -14,7 +14,9 @@ ALLOWED_HOSTS = [
     '.herokuapp.com'
 ]
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
 
 """
 DATABASES['default'] = dj_database_url.config(
