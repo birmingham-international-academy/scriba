@@ -13,7 +13,7 @@ from nltk.tokenize import sent_tokenize
 from nltk.tree import Tree
 from spacy.matcher import Matcher
 
-import languagetool
+from lti_app.core import languagetool
 from lti_app.core.text_helpers import (
     clean_text, load_stanford_parser, TextProcessor
 )
