@@ -21,28 +21,23 @@ Then set the keys appropriately:
 
 ### 2. NLTK (Natural Language Toolkit) package
 
-After installing the required packages, we need to download corpora that is used by NLTK.
-
-- Run the Python interpreter: `$ python`
-- Run the following:
+After installing the required packages, we need to download corpora that is used by NLTK:
 
 ```
->>> import nltk
->>> nltk.download()
+$ ./bin/nltk_data.sh
 ```
-
-- Press `d`
-- Then enter `popular` to download the 'popular' packages of NLTK
 
 ### 3. NLTK interface to the Stanford Parser
 
 The Stanford Parser is a probabilistic parser written in Java. NLTK provides a Python interface to it;
 so let's setup the Java environment:
 
-- `sudo apt-get install default-jre`
-- `sudo apt-get install default-jdk`
+```
+$ sudo apt-get install default-jre
+$ sudo apt-get install default-jdk
+```
 
-Then run `python scripts/stanford_parser.py` to download and extract the Stanford parser.
+Then run `python bin/stanford_parser.py` to download and extract the Stanford parser.
 
 ### 4. SpaCy package
 
