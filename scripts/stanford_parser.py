@@ -1,13 +1,18 @@
 import os
 import sys
+
+import django
 import requests
 import zipfile
 from django.conf import settings
+
 
 os.environ.setdefault(
     "DJANGO_SETTINGS_MODULE",
     "scriba.settings.production"
 )
+
+django.setup()
 
 # https://nlp.stanford.edu/software/stanford-parser-full-2018-02-27.zip
 
