@@ -3,7 +3,7 @@
 import re
 import os
 
-import language_check
+# import language_check
 import spacy
 import spellchecker
 from nltk import ngrams, pos_tag, word_tokenize, WhitespaceTokenizer
@@ -13,6 +13,7 @@ from nltk.tokenize import sent_tokenize
 from nltk.tree import Tree
 from spacy.matcher import Matcher
 
+import languagetool
 from lti_app.core.text_helpers import (
     clean_text, load_stanford_parser, TextProcessor
 )
@@ -48,7 +49,7 @@ class Checker(TextProcessor):
         # self.nlp = spacy.load('en')
         self.spell = spellchecker.SpellChecker()
         self.spell.word_frequency.load_words(["we're", "you're", "won't"])
-        self.languagetool = language_check.LanguageTool('en-GB')
+        # self.languagetool = language_check.LanguageTool('en-GB')
         self.lemmatizer = WordNetLemmatizer()
 
     def _preprocess(self):
@@ -404,11 +405,7 @@ class Checker(TextProcessor):
 
         data = {
             'spell_check': self.get_spelling_mistakes(),
-            'languagetool_check': [
-                entry
-                for entry in self.languagetool.check(self.text)
-                if entry.locqualityissuetype != 'misspelling'
-            ],
+            'languagetool_check': languagetool.check(self.text),
             'there_their': self.get_there_their_occurrences()
         }
 

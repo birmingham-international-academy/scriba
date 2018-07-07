@@ -62,7 +62,7 @@
             <p>General mistakes:</p>
             <ul>
                 {% for mistake in grammar_check.languagetool_check %}
-                <li>"{{ mistake.context }}". {{ mistake.msg }}</li>
+                <li>{{ mistake.message }}: {{ mistake.context.text }}</li>
                 {% endfor %}
             </ul>
             {% endif %}

@@ -100,12 +100,4 @@ db.sqlite3
 # LTI-related
 
 stanford-parser
-
-# AWS
-
-.elasticbeanstalk
-
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
+languagetool

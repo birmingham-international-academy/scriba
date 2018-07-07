@@ -1,5 +1,4 @@
 git+https://github.com/hltcoe/PredPatt.git
-language_check==1.1
 psycopg2==2.7.1
 requests==2.18.4
 oauthlib==2.1.0
