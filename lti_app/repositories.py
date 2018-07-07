@@ -22,5 +22,5 @@ class CrudRepository:
         obj = self.model(**fields)
         obj.save()
 
-    def update(self, model_instance, fields):
-        pass
+    def update(self, model_id, fields):
+        self.model.objects.filter(id=model_id).update(**fields)
