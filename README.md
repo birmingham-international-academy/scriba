@@ -43,11 +43,31 @@ Then run `python bin/stanford_parser.py` to download and extract the Stanford pa
 
 Run the following command to download the 'en' model for SpaCy: `python -m spacy download en`
 
-### 5. Setup the database
+### 5. Language Tool
+
+LanguageTool is a service that offers spell and grammar checking. Scriba adds it to its own grammar checking.
+
+Run the following to get the Language Tool stable release:
+
+```
+$ ./bin/languagetool.sh
+```
+
+This will download the necessary files in `lti_app/core/data/languagetool`.
+
+### 6. Setup the database
 
 Todo.
 
-### 6. Run the server in development mode
+### 7. Setup Redis
+
+Redis is used as a storage for jobs from RQ (Redis Queue) for
+queueing jobs and processing them in the background with
+workers.
+
+To setup Redis follow step 1 and 2 of this guide: https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-18-04.
+
+### 8. Run the server in development mode
 
 To run a local HTTPS server you have to install the following Django app:
 
@@ -59,6 +79,18 @@ Then run the server using:
 
 ```
 $ python manage.py runsslserver --settings=scriba.settings.local
+```
+
+### 9. Run the worker
+
+```
+python worker.py
+```
+
+### 10. Run the Language Tool server
+
+```
+java -cp lti_app/core/data/languagetool/languagetool-server.jar org.languagetool.server.HTTPServer --port 8081
 ```
 
 ## Testing

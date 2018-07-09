@@ -1,0 +1,30 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    {% include "includes/head.html" %}
+
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+    <div class="container">
+        {% block toplevel %}{% endblock %}
+
+        <div id="content" class="w-full max-w-md mx-auto my-4 shadow-md rounded">
+            <div class="bg-grey-lighter text-grey-darker p-3">
+                <h1 id='title' class="text-xl font-light">{{ title }}</h1>
+            </div>
+
+            {% block content %}{% endblock %}
+        </div>
+
+        {% include "includes/footer.html" %}
+    </div>
+
+    {% block foot %}{% endblock %}
+</body>
+
+</html>

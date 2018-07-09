@@ -28,7 +28,7 @@ class Checker(TextProcessor):
 
     def _load_tools(self):
         self.lemmatizer = WordNetLemmatizer()
-        # self.nlp = spacy.load('en')  # en_core_web_sm.load()
+        self.nlp = spacy.load('en')
 
     def _preprocess(self):
         self.tokens = tokenize.word_tokenize(self.text)
@@ -39,7 +39,7 @@ class Checker(TextProcessor):
             else self.lemmatizer.lemmatize(i)
             for i, j in self.tagged_tokens
         ]
-        # self.doc = self.nlp(self.text)
+        self.doc = self.nlp(self.text)
 
     def get_phrasal_verbs(self):
         """Get the phrasal verbs.
@@ -50,13 +50,11 @@ class Checker(TextProcessor):
 
         phrasal_verbs = []
 
-        """
         for token in self.doc:
             if token.dep_ == 'prt' and token.head.pos_ == 'VERB':
                 verb = token.head.orth_
                 particle = token.orth_
                 phrasal_verbs.append(verb + ' ' + particle)
-        """
 
         return phrasal_verbs
 
@@ -88,7 +86,7 @@ class Checker(TextProcessor):
             informal_words = json.load(f)
 
             return [
-                word
+                word.get('entity')
                 for word in informal_words
                 if word.get('entity') in lemmas
             ]

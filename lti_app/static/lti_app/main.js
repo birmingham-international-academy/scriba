@@ -24,11 +24,14 @@ $(document).ready(function () {
   };
 
   $('#submit-assignment').on('click', function (event) {
-    showLoader();
-
     $.post('/assignments/', { text: $('#text').val() }, function (data) {
-      // console.log(data);
-      getJobsPoll = setInterval(getJobs, 1500);
+      if (data.assignment_type == 'D') {
+        showLoader();
+        getJobsPoll = setInterval(getJobs, 1500);
+      } else {
+        $('#title').text('Confirmation')
+        $('#content').html($('#graded-assignment-confirmation').html())
+      }
     });
   });
 });

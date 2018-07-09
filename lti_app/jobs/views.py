@@ -1,6 +1,6 @@
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import render
-from rq import Queue, registry
+from rq import Queue
 
 from worker import conn
 
@@ -11,14 +11,17 @@ def index(request):
     assignment_type = request.session.get('assignment_type')
     job_id = request.session.get('job_id')
     job = q.fetch_job(job_id)
+    data = job.result
 
-    if job is None or job.result is None:
+    if job is None or data is None and not job.is_failed:
         return HttpResponse(status=204)
 
-    template = (
-        'learner/feedback.html'
-        if assignment_type == 'D'
-        else 'learner/submission-confirmation.html'
-    )
+    if job.is_failed:
+        return render(request, 'errors/500.html')
 
-    return render(request, template, job.result)
+    if assignment_type == 'D':
+        template = 'learner/feedback.html'
+    else:
+        template = 'learner/submission-confirmation.html'
+
+    return render(request, template, data)

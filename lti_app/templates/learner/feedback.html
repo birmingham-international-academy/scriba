@@ -207,7 +207,7 @@
             <p>The following informal words have been found:</p>
             <ul>
                 {% for word in academic_style_check.general_informalities %}
-                <li>"{{ word.entity }}" can be replaced by {{ word.suggestion }}</li>
+                <li>{{ word }}</li>
                 {% endfor %}
             </ul>
             {% endif %}

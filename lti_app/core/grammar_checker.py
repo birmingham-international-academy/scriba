@@ -1,9 +1,9 @@
 """Provides grammar checkers."""
 
 import re
+import string
 import os
 
-# import language_check
 import spacy
 import spellchecker
 from nltk import ngrams, pos_tag, word_tokenize, WhitespaceTokenizer
@@ -46,10 +46,9 @@ class Checker(TextProcessor):
 
     def _load_tools(self):
         self.parser, self.dependency_parser = load_stanford_parser()
-        # self.nlp = spacy.load('en')
+        self.nlp = spacy.load('en')
         self.spell = spellchecker.SpellChecker()
         self.spell.word_frequency.load_words(["we're", "you're", "won't"])
-        # self.languagetool = language_check.LanguageTool('en-GB')
         self.lemmatizer = WordNetLemmatizer()
 
     def _preprocess(self):
@@ -60,17 +59,6 @@ class Checker(TextProcessor):
             for line in list(self.parser.raw_parse_sents(sentences))
             for sentence in line
         ]
-
-        for sentence in self.sentences:
-            print(sentence)
-
-        """
-        sents = self.dependency_parser.raw_parse_sents(sentences)
-
-        for line in sents:
-            for sentence in line:
-                print(list(sentence.triples()))
-        """
 
     def _is_clause(self, node):
         return node.label() in self.clause_types
@@ -292,17 +280,21 @@ class Checker(TextProcessor):
 
         # Tokenize text and ignore numbers.
         tokenizer = WhitespaceTokenizer()
-        pattern = re.compile(r'^\(\d+\)$')
+        date_pattern = re.compile(r'^\(\d+\)$')
+        contraction_pattern = re.compile(r'^.*\'(t|ve|ll|d)$')
+        text = self.text.replace('(', '( ').replace(')', ' )')
         words = [
             remove_punctuation(word.lower())
-            for word in tokenizer.tokenize(self.text)
+            for word in tokenizer.tokenize(text)
         ]
         words = [
             word
             for word in words
             if word != ''
             and not is_number(word)
-            and pattern.match(word) is None
+            and date_pattern.match(word) is None
+            and contraction_pattern.match(word) is None
+            and word not in string.punctuation
         ]
 
         mapped_words = []
@@ -325,7 +317,7 @@ class Checker(TextProcessor):
         Returns:
             list of str: The occurrences of there-their mistakes.
         """
-        """
+
         patterns = [
             [
                 {'LOWER': 'there'},
@@ -341,11 +333,8 @@ class Checker(TextProcessor):
 
         doc = self.nlp(self.text)
         matches = matcher_obj(doc)
-        """
 
-        return []
-
-        # return [doc[start:end] for _, start, end in matches]
+        return [doc[start:end] for _, start, end in matches]
 
     def get_to_too_occurrences(self):
         """Get to/too mistakes.
@@ -418,8 +407,6 @@ class Checker(TextProcessor):
             self.get_transitive_verbs_without_object,
             self.get_noun_verb_disagreements,
         ])
-
-        # print(parse_tree_data)
 
         parse_tree_data['sentence_fragments'] = (
             parse_tree_data.get('sentence_fragments', []) +

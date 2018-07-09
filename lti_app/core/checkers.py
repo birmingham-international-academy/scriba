@@ -1,5 +1,7 @@
 """Provides the paraphrase analyzers."""
 
+import logging
+
 from lti_app.core import (
     academic_style_checker,
     citation_checker,
@@ -7,6 +9,11 @@ from lti_app.core import (
     plagiarism_checker,
     semantics_checker
 )
+from lti_app.setup_logging import setup_logging
+
+
+logger = logging.getLogger(__name__)
+setup_logging()
 
 
 class DefaultChecker:
@@ -60,10 +67,14 @@ class DefaultChecker:
         grammar_check = self.grammar_checker.run(citation_check.get('authors'))
         plagiarism_check = self.plagiarism_checker.run()
 
-        return {
+        data = {
             'citation_check': citation_check,
             'academic_style_check': academic_style_check,
             'semantics_check': semantics_check,
             'grammar_check': grammar_check,
             'plagiarism_check': plagiarism_check
         }
+
+        logger.debug('%s', data)
+
+        return data

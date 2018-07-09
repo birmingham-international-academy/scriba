@@ -32,6 +32,7 @@ def _create_or_update_assignment(request):
 def _submit_assignment(request):
     course_id = request.session.get('course_id')
     assignment_id = request.session.get('assignment_id')
+    assignment_type = request.session.get('assignment_type')
     outcome_service_url = request.session.get('lis_outcome_service_url')
     result_sourcedid = request.session.get('lis_result_sourcedid')
     text = request.POST.get('text')
@@ -49,6 +50,10 @@ def _submit_assignment(request):
 
     request.session['job_id'] = result.id
 
+    return JsonResponse({
+        'assignment_type': assignment_type
+    })
+
 
 def show(request):
     service = services.AssignmentService()
@@ -62,7 +67,17 @@ def show(request):
 
     is_instructor = request.session.get('is_instructor')
     context = {'assignment': assignment}
-    template = 'teacher/index.html' if is_instructor else 'learner/index.html'
+
+    if is_instructor:
+        template = 'teacher/index.html'
+        context['title'] = (
+            'Create the assignment'
+            if assignment is None
+            else 'Update the assignment'
+        )
+    else:
+        template = 'learner/index.html'
+        context['title'] = 'Complete the assignment'
 
     return render(request, template, context=context)
 
@@ -75,16 +90,11 @@ def submit(request):
 
         return render(
             request,
-            'teacher/assignment-submission-confirmation.html'
+            'teacher/assignment-submission-confirmation.html',
+            context={'title': 'Confirmation'}
         )
     else:
-        _submit_assignment(request)
-
-        return JsonResponse({
-            'status': 'submitted',
-            'message': 'The assignment is currently being analysed.',
-            'poll_url': '/jobs'
-        })
+        return _submit_assignment(request)
 
 
 @require_http_methods(['GET', 'POST'])

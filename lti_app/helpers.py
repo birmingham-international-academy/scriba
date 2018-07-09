@@ -37,9 +37,8 @@ def find_file(pattern, path, first=False):
     Returns:
         str/list of str: The match(es).
     """
-    print('---------------------------')
+
     p = os.path.join(path, pattern)
-    print(p)
     result = glob.glob(p)
 
     return result[0] if first else result
