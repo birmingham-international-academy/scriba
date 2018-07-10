@@ -230,7 +230,7 @@ class GradeInterpreter:
         if len(grammar_check['languagetool_check']) > 0:
             no_grammar_errors = False
             html += '<p>The following noun-verb disagreements have been found:</p>'
-            html += self._render_html_list(grammar_check['languagetool_check'], lambda mistake: mistake.message + ': ' + mistake.context.text)
+            html += self._render_html_list(grammar_check['languagetool_check'], lambda mistake: mistake['message'] + ': ' + mistake['context']['text'])
 
         if no_grammar_errors:
             html += '<p>Great! There are no grammar errors.</p>'
@@ -240,7 +240,7 @@ class GradeInterpreter:
         html += '<h3>Spelling</h3>'
 
         if len(spell_check) > 0:
-            html += self._render_html_list(spell_check, lambda mistake: '"' + mistake.word + '" can be corrected as ' + ', '.join(mistake.corrections))
+            html += self._render_html_list(spell_check, lambda mistake: '"' + mistake['word'] + '" can be corrected as ' + ', '.join(mistake['corrections']))
         else:
             html += '<p>Good, there are no spelling mistakes.</p>'
 

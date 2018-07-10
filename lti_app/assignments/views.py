@@ -66,20 +66,15 @@ def show(request):
     ).first()
 
     is_instructor = request.session.get('is_instructor')
-    context = {'assignment': assignment}
 
     if is_instructor:
         template = 'teacher/index.html'
-        context['title'] = (
-            'Create the assignment'
-            if assignment is None
-            else 'Update the assignment'
-        )
     else:
         template = 'learner/index.html'
-        context['title'] = 'Complete the assignment'
 
-    return render(request, template, context=context)
+    return render(request, template, {
+        'assignment': assignment
+    })
 
 
 def submit(request):
@@ -90,8 +85,7 @@ def submit(request):
 
         return render(
             request,
-            'teacher/assignment-submission-confirmation.html',
-            context={'title': 'Confirmation'}
+            'teacher/assignment-submission-confirmation.html'
         )
     else:
         return _submit_assignment(request)

@@ -17,7 +17,7 @@ def index(request):
         return HttpResponse(status=204)
 
     if job.is_failed:
-        return render(request, 'errors/500.html')
+        return render(request, '500.html')
 
     if assignment_type == 'D':
         template = 'learner/feedback.html'
