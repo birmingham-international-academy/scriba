@@ -1,0 +1,213 @@
+<div class="bg-white text-grey-darker px-8 pt-6 pb-8 leading-normal">
+    <div class="mb-4">
+        <div class="mb-8">
+            <p>
+                {{ text }}
+            </p>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="flex items-center mb-2 text-base font-bold">
+                {% if plagiarism_status and semantics_status %}
+                <svg class="fill-current text-green inline-block h-6 w-6" viewBox="0 0 20 20">
+                    <path d="M10.219,1.688c-4.471,0-8.094,3.623-8.094,8.094s3.623,8.094,8.094,8.094s8.094-3.623,8.094-8.094S14.689,1.688,10.219,1.688 M10.219,17.022c-3.994,0-7.242-3.247-7.242-7.241c0-3.994,3.248-7.242,7.242-7.242c3.994,0,7.241,3.248,7.241,7.242C17.46,13.775,14.213,17.022,10.219,17.022 M15.099,7.03c-0.167-0.167-0.438-0.167-0.604,0.002L9.062,12.48l-2.269-2.277c-0.166-0.167-0.437-0.167-0.603,0c-0.166,0.166-0.168,0.437-0.002,0.603l2.573,2.578c0.079,0.08,0.188,0.125,0.3,0.125s0.222-0.045,0.303-0.125l5.736-5.751C15.268,7.466,15.265,7.196,15.099,7.03"></path>
+                </svg>
+                {% else %}
+                <svg class="fill-current text-orange inline-block h-6 w-6" viewBox="0 0 20 20">
+                    <path d="M18.344,16.174l-7.98-12.856c-0.172-0.288-0.586-0.288-0.758,0L1.627,16.217c0.339-0.543-0.603,0.668,0.384,0.682h15.991C18.893,16.891,18.167,15.961,18.344,16.174 M2.789,16.008l7.196-11.6l7.224,11.6H2.789z M10.455,7.552v3.561c0,0.244-0.199,0.445-0.443,0.445s-0.443-0.201-0.443-0.445V7.552c0-0.245,0.199-0.445,0.443-0.445S10.455,7.307,10.455,7.552M10.012,12.439c-0.733,0-1.33,0.6-1.33,1.336s0.597,1.336,1.33,1.336c0.734,0,1.33-0.6,1.33-1.336S10.746,12.439,10.012,12.439M10.012,14.221c-0.244,0-0.443-0.199-0.443-0.445c0-0.244,0.199-0.445,0.443-0.445s0.443,0.201,0.443,0.445C10.455,14.021,10.256,14.221,10.012,14.221"></path>
+                </svg>
+                {% endif %}
+
+                <span class="ml-3 {% if plagiarism_status and semantics_status %}text-green{% else %}text-orange{% endif %}">
+                    Paraphrase
+                </span>
+            </h2>
+
+            {% if not plagiarism_status %}
+            <p>You may have copied these keywords from the reference text:</p>
+            <ul>
+                {% for words in plagiarism_check %}
+                <li>{{ words }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if not semantics_status %}
+            <p>Your paraphrase may not have similar meaning to the text given.</p>
+            {% endif %}
+        </div>
+
+        <div class="mb-6">
+            <h2 class="flex items-center mb-2 text-base font-bold">
+                {% if grammar_status %}
+                <svg class="fill-current text-green inline-block h-6 w-6" viewBox="0 0 20 20">
+                    <path d="M10.219,1.688c-4.471,0-8.094,3.623-8.094,8.094s3.623,8.094,8.094,8.094s8.094-3.623,8.094-8.094S14.689,1.688,10.219,1.688 M10.219,17.022c-3.994,0-7.242-3.247-7.242-7.241c0-3.994,3.248-7.242,7.242-7.242c3.994,0,7.241,3.248,7.241,7.242C17.46,13.775,14.213,17.022,10.219,17.022 M15.099,7.03c-0.167-0.167-0.438-0.167-0.604,0.002L9.062,12.48l-2.269-2.277c-0.166-0.167-0.437-0.167-0.603,0c-0.166,0.166-0.168,0.437-0.002,0.603l2.573,2.578c0.079,0.08,0.188,0.125,0.3,0.125s0.222-0.045,0.303-0.125l5.736-5.751C15.268,7.466,15.265,7.196,15.099,7.03"></path>
+                </svg>
+                {% else %}
+                <svg class="fill-current text-orange inline-block h-6 w-6" viewBox="0 0 20 20">
+                    <path d="M18.344,16.174l-7.98-12.856c-0.172-0.288-0.586-0.288-0.758,0L1.627,16.217c0.339-0.543-0.603,0.668,0.384,0.682h15.991C18.893,16.891,18.167,15.961,18.344,16.174 M2.789,16.008l7.196-11.6l7.224,11.6H2.789z M10.455,7.552v3.561c0,0.244-0.199,0.445-0.443,0.445s-0.443-0.201-0.443-0.445V7.552c0-0.245,0.199-0.445,0.443-0.445S10.455,7.307,10.455,7.552M10.012,12.439c-0.733,0-1.33,0.6-1.33,1.336s0.597,1.336,1.33,1.336c0.734,0,1.33-0.6,1.33-1.336S10.746,12.439,10.012,12.439M10.012,14.221c-0.244,0-0.443-0.199-0.443-0.445c0-0.244,0.199-0.445,0.443-0.445s0.443,0.201,0.443,0.445C10.455,14.021,10.256,14.221,10.012,14.221"></path>
+                </svg>
+                {% endif %}
+
+                <span class="ml-3 {% if grammar_status %}text-green{% else %}text-orange{% endif %}">
+                    Grammar
+                </span>
+            </h2>
+
+            {% if grammar_check.languagetool_check|length > 0 %}
+            <p>General mistakes:</p>
+            <ul>
+                {% for mistake in grammar_check.languagetool_check %}
+                <li>{{ mistake.message }}: {{ mistake.context.text }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if grammar_check.run_ons|length > 0 %}
+            <p>Fused sentences:</p>
+            <ul>
+                {% for sentence in grammar_check.run_ons %}
+                <li>{{ sentence }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if grammar_check.sentence_fragments|length > 0 %}
+            <p>Sentence fragments:</p>
+            <ul>
+                {% for word in grammar_check.sentence_fragments %}
+                <li>{{ word }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if grammar_check.transitive_verbs_without_object|length > 0 %}
+            <p>Transitive verbs without object:</p>
+            <ul>
+                {% for word in grammar_check.transitive_verbs_without_object %}
+                <li>{{ word }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if grammar_check.there_their|length > 0 %}
+            <p>In the following fragments, instead of 'there' use 'their':</p>
+            <ul>
+                {% for words in grammar_check.there_their %}
+                <li>{{ words }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if grammar_check.noun_verb_disagreements|length > 0 %}
+            <p>The following phrases may contain noun-verb disagreements:</p>
+            <ul>
+                {% for disagreement in grammar_check.noun_verb_disagreements %}
+                <li>{{ disagreement }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <div class="mb-6">
+            <h2 class="flex items-center mb-2 text-base font-bold">
+                {% if spelling_status %}
+                <svg class="fill-current text-green inline-block h-6 w-6" viewBox="0 0 20 20">
+                    <path d="M10.219,1.688c-4.471,0-8.094,3.623-8.094,8.094s3.623,8.094,8.094,8.094s8.094-3.623,8.094-8.094S14.689,1.688,10.219,1.688 M10.219,17.022c-3.994,0-7.242-3.247-7.242-7.241c0-3.994,3.248-7.242,7.242-7.242c3.994,0,7.241,3.248,7.241,7.242C17.46,13.775,14.213,17.022,10.219,17.022 M15.099,7.03c-0.167-0.167-0.438-0.167-0.604,0.002L9.062,12.48l-2.269-2.277c-0.166-0.167-0.437-0.167-0.603,0c-0.166,0.166-0.168,0.437-0.002,0.603l2.573,2.578c0.079,0.08,0.188,0.125,0.3,0.125s0.222-0.045,0.303-0.125l5.736-5.751C15.268,7.466,15.265,7.196,15.099,7.03"></path>
+                </svg>
+                {% else %}
+                <svg class="fill-current text-orange inline-block h-6 w-6" viewBox="0 0 20 20">
+                    <path d="M18.344,16.174l-7.98-12.856c-0.172-0.288-0.586-0.288-0.758,0L1.627,16.217c0.339-0.543-0.603,0.668,0.384,0.682h15.991C18.893,16.891,18.167,15.961,18.344,16.174 M2.789,16.008l7.196-11.6l7.224,11.6H2.789z M10.455,7.552v3.561c0,0.244-0.199,0.445-0.443,0.445s-0.443-0.201-0.443-0.445V7.552c0-0.245,0.199-0.445,0.443-0.445S10.455,7.307,10.455,7.552M10.012,12.439c-0.733,0-1.33,0.6-1.33,1.336s0.597,1.336,1.33,1.336c0.734,0,1.33-0.6,1.33-1.336S10.746,12.439,10.012,12.439M10.012,14.221c-0.244,0-0.443-0.199-0.443-0.445c0-0.244,0.199-0.445,0.443-0.445s0.443,0.201,0.443,0.445C10.455,14.021,10.256,14.221,10.012,14.221"></path>
+                </svg>
+                {% endif %}
+
+                <span class="ml-3 {% if spelling_status %}text-green{% else %}text-orange{% endif %}">
+                    Spelling
+                </span>
+            </h2>
+
+            {% if grammar_check.spell_check|length > 0 %}
+            <ul>
+                {% for mistake in grammar_check.spell_check %}
+                <li>"{{ mistake.word }}" can be corrected as {{ mistake.corrections|join:', ' }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <div class="mb-6">
+            <h2 class="flex items-center mb-2 text-base font-bold">
+                {% if citation_check.result %}
+                <svg class="fill-current text-green inline-block h-6 w-6" viewBox="0 0 20 20">
+                    <path d="M10.219,1.688c-4.471,0-8.094,3.623-8.094,8.094s3.623,8.094,8.094,8.094s8.094-3.623,8.094-8.094S14.689,1.688,10.219,1.688 M10.219,17.022c-3.994,0-7.242-3.247-7.242-7.241c0-3.994,3.248-7.242,7.242-7.242c3.994,0,7.241,3.248,7.241,7.242C17.46,13.775,14.213,17.022,10.219,17.022 M15.099,7.03c-0.167-0.167-0.438-0.167-0.604,0.002L9.062,12.48l-2.269-2.277c-0.166-0.167-0.437-0.167-0.603,0c-0.166,0.166-0.168,0.437-0.002,0.603l2.573,2.578c0.079,0.08,0.188,0.125,0.3,0.125s0.222-0.045,0.303-0.125l5.736-5.751C15.268,7.466,15.265,7.196,15.099,7.03"></path>
+                </svg>
+                {% else %}
+                <svg class="fill-current text-orange inline-block h-6 w-6" viewBox="0 0 20 20">
+                    <path d="M18.344,16.174l-7.98-12.856c-0.172-0.288-0.586-0.288-0.758,0L1.627,16.217c0.339-0.543-0.603,0.668,0.384,0.682h15.991C18.893,16.891,18.167,15.961,18.344,16.174 M2.789,16.008l7.196-11.6l7.224,11.6H2.789z M10.455,7.552v3.561c0,0.244-0.199,0.445-0.443,0.445s-0.443-0.201-0.443-0.445V7.552c0-0.245,0.199-0.445,0.443-0.445S10.455,7.307,10.455,7.552M10.012,12.439c-0.733,0-1.33,0.6-1.33,1.336s0.597,1.336,1.33,1.336c0.734,0,1.33-0.6,1.33-1.336S10.746,12.439,10.012,12.439M10.012,14.221c-0.244,0-0.443-0.199-0.443-0.445c0-0.244,0.199-0.445,0.443-0.445s0.443,0.201,0.443,0.445C10.455,14.021,10.256,14.221,10.012,14.221"></path>
+                </svg>
+                {% endif %}
+
+                <span class="ml-3 {% if citation_check.result %}text-green{% else %}text-orange{% endif %}">
+                    Citation
+                </span>
+            </h2>
+
+            {% if not citation_check.result %}
+            <p>
+                You may not have correctly cited the excerpt. Here are some suggestions:
+            </p>
+            <ul>
+                {% for citation in citation_check.possible_citations %}
+                <li>{{ citation }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <div class="mb-6">
+            <h2 class="flex items-center mb-2 text-base font-bold">
+                {% if academic_style_status %}
+                <svg class="fill-current text-green inline-block h-6 w-6" viewBox="0 0 20 20">
+                    <path d="M10.219,1.688c-4.471,0-8.094,3.623-8.094,8.094s3.623,8.094,8.094,8.094s8.094-3.623,8.094-8.094S14.689,1.688,10.219,1.688 M10.219,17.022c-3.994,0-7.242-3.247-7.242-7.241c0-3.994,3.248-7.242,7.242-7.242c3.994,0,7.241,3.248,7.241,7.242C17.46,13.775,14.213,17.022,10.219,17.022 M15.099,7.03c-0.167-0.167-0.438-0.167-0.604,0.002L9.062,12.48l-2.269-2.277c-0.166-0.167-0.437-0.167-0.603,0c-0.166,0.166-0.168,0.437-0.002,0.603l2.573,2.578c0.079,0.08,0.188,0.125,0.3,0.125s0.222-0.045,0.303-0.125l5.736-5.751C15.268,7.466,15.265,7.196,15.099,7.03"></path>
+                </svg>
+                {% else %}
+                <svg class="fill-current text-orange inline-block h-6 w-6" viewBox="0 0 20 20">
+                    <path d="M18.344,16.174l-7.98-12.856c-0.172-0.288-0.586-0.288-0.758,0L1.627,16.217c0.339-0.543-0.603,0.668,0.384,0.682h15.991C18.893,16.891,18.167,15.961,18.344,16.174 M2.789,16.008l7.196-11.6l7.224,11.6H2.789z M10.455,7.552v3.561c0,0.244-0.199,0.445-0.443,0.445s-0.443-0.201-0.443-0.445V7.552c0-0.245,0.199-0.445,0.443-0.445S10.455,7.307,10.455,7.552M10.012,12.439c-0.733,0-1.33,0.6-1.33,1.336s0.597,1.336,1.33,1.336c0.734,0,1.33-0.6,1.33-1.336S10.746,12.439,10.012,12.439M10.012,14.221c-0.244,0-0.443-0.199-0.443-0.445c0-0.244,0.199-0.445,0.443-0.445s0.443,0.201,0.443,0.445C10.455,14.021,10.256,14.221,10.012,14.221"></path>
+                </svg>
+                {% endif %}
+
+                <span class="ml-3 {% if academic_style_status %}text-green{% else %}text-orange{% endif %}">
+                    Style
+                </span>
+            </h2>
+
+            {% if academic_style_check.contractions|length > 0 %}
+            <p>The following contractions have been found:</p>
+            <ul>
+                {% for contraction in academic_style_check.contractions %}
+                <li>{{ contraction }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if academic_style_check.phrasal_verbs|length > 0 %}
+            <p>You have used the following phrasal verbs:</p>
+            <ul>
+                {% for verb in academic_style_check.phrasal_verbs %}
+                <li>{{ verb }}</li>
+                {% endfor %}
+            </ul>
+            <p>It is generally informal to use many phrasal verbs.</p>
+            {% endif %}
+
+            {% if academic_style_check.general_informalities|length > 0 %}
+            <p>The following informal words have been found:</p>
+            <ul>
+                {% for word in academic_style_check.general_informalities %}
+                <li>{{ word }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+</div>

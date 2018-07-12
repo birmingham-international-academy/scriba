@@ -28,6 +28,11 @@ def _create_or_update_assignment(request):
     else:
         service.update(assignment.id, fields)
 
+    return render(
+        request,
+        'teacher/assignment-submission-confirmation.html'
+    )
+
 
 def _submit_assignment(request):
     course_id = request.session.get('course_id')
@@ -43,6 +48,7 @@ def _submit_assignment(request):
         service.run_analysis,
         course_id,
         assignment_id,
+        assignment_type,
         outcome_service_url,
         result_sourcedid,
         text
@@ -81,12 +87,7 @@ def submit(request):
     is_instructor = request.session.get('is_instructor')
 
     if is_instructor:
-        _create_or_update_assignment(request)
-
-        return render(
-            request,
-            'teacher/assignment-submission-confirmation.html'
-        )
+        return _create_or_update_assignment(request)
     else:
         return _submit_assignment(request)
 

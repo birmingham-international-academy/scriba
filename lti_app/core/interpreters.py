@@ -6,7 +6,7 @@ Todo:
     - Use HTML library to build comments
 """
 
-semantics_similarity_threshold = 0.6
+semantics_similarity_threshold = 0.3
 
 
 class FeedbackInterpreter:

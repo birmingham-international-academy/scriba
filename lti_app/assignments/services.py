@@ -43,6 +43,7 @@ class AssignmentService:
             self,
             course_id,
             assignment_id,
+            assignment_type,
             outcome_service_url,
             result_sourcedid,
             text):
@@ -55,7 +56,7 @@ class AssignmentService:
         # 2. Create the interpreter for the raw data
         interpreter = (
             interpreters.FeedbackInterpreter()
-            if assignment.assignment_type == 'D'
+            if assignment_type == 'D'
             else interpreters.GradeInterpreter(assignment.max_points)
         )
 
@@ -72,7 +73,7 @@ class AssignmentService:
         data = interpreter.run(data)
 
         # 5. (Optional) Send the grade
-        if assignment.assignment_type != 'D':
+        if assignment_type != 'D':
             self._send_grade(outcome_service_url, result_sourcedid, data)
 
         return data

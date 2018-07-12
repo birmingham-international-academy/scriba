@@ -2,6 +2,8 @@
 
 import re
 
+from lti_app.core.exceptions import BadlyFormattedCitationException
+
 
 class Checker:
     """Implements the default Harvard citation checking.
@@ -27,13 +29,12 @@ class Checker:
             r'^(?P<authors>(?:(?:\w+,\s?(?:\w\.)+)(?:,\s?|\sand\s)?)+)\s?'
             r'\((?P<year>\d{4})\)\s'
             r'(?:\"|\')?(?P<title>[^\"\'\.]+)(?:\"|\')?\.?'
-            r'(?:(?P<edition>\s*\d+.+?)\.)?'
-            r'(?:(?P<publisher>.+?:.+?)\.)?$',
+            r'.*$',
             self.reference
         )
 
         if m is None:
-            pass  # raise exception
+            raise BadlyFormattedCitationException()
 
         data = m.groupdict()
 
@@ -65,8 +66,10 @@ class Checker:
 
         result = False
 
+        text = self.text.lower()
+
         for cit in possible_citations:
-            if cit in self.text:
+            if cit.lower() in text:
                 result = True
                 break
 

@@ -84,14 +84,22 @@ $ python manage.py runsslserver --settings=scriba.settings.local
 ### 9. Run the worker
 
 ```
-python worker.py
+$ python worker.py
 ```
 
 ### 10. Run the Language Tool server
 
 ```
-java -cp lti_app/core/data/languagetool/languagetool-server.jar org.languagetool.server.HTTPServer --port 8081
+$ java -cp lti_app/core/data/languagetool/languagetool-server.jar org.languagetool.server.HTTPServer --port 8081
 ```
+
+## Production setup
+
+### Routine
+
+1. `$ git pull origin master`
+2. `$ python manage.py migrate`
+3. `$ pythong manage.py collectstatic`
 
 ## Testing
 

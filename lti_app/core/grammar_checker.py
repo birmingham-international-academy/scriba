@@ -1,4 +1,9 @@
-"""Provides grammar checkers."""
+"""Provides grammar checkers.
+
+Todo:
+    - ...
+
+"""
 
 import re
 import string
@@ -10,7 +15,7 @@ from nltk import ngrams, pos_tag, word_tokenize, WhitespaceTokenizer
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import sent_tokenize
-from nltk.tree import Tree
+from nltk.tree import Tree, ParentedTree
 from spacy.matcher import Matcher
 
 from lti_app.core import languagetool
@@ -36,8 +41,8 @@ class Checker(TextProcessor):
 
     clause_types = ['S', 'SBAR', 'SINV', 'SQ']
     transitive_verbs = ['bring', 'cost', 'give', 'lend', 'offer',
-                        'pass', 'play', 'read', 'send', 'sing', 'teach',
-                        'write', 'buy', 'get', 'leave', 'make', 'owe',
+                        'pass', 'play', 'send', 'sing', 'teach',
+                        'buy', 'get', 'leave', 'make', 'owe',
                         'pay', 'promise', 'refuse', 'show', 'take', 'tell']
 
     def __init__(self, text):
@@ -55,13 +60,28 @@ class Checker(TextProcessor):
         self.text = clean_text(self.text)
         sentences = sent_tokenize(self.text)
         self.sentences = [
-            sentence
+            ParentedTree.fromstring(str(sentence))
             for line in list(self.parser.raw_parse_sents(sentences))
             for sentence in line
         ]
 
+        for sentence in self.sentences:
+            print(sentence)
+
     def _is_clause(self, node):
         return node.label() in self.clause_types
+
+    def _get_node_label(self, node):
+        return node if type(node) is str else node.label()
+
+    def _has_wh_clause(self, node):
+        for child in node:
+            label = self._get_node_label(child)
+
+            if label.startswith('WH'):
+                return True
+
+        return False
 
     def get_malformed_sentences(self, sentence):
         """Get malformed sentences.
@@ -77,14 +97,14 @@ class Checker(TextProcessor):
 
         # Get clause types
         malformed = []
-        subtrees = list(sentence.subtrees(filter=self._is_clause))
+        subtrees = list(sentence.subtrees(filter=lambda n: n.label() == 'S'))
 
         # There is no sentence, this means it's malformed.
         if len(subtrees) == 0:
             return [' '.join(sentence.leaves())]
 
         for tree in subtrees:
-            compounds = [node.label() for node in tree]
+            compounds = [self._get_node_label(node) for node in tree]
 
             # Not accepted compounds
             if (
@@ -92,7 +112,6 @@ class Checker(TextProcessor):
                 and compounds != ['VP']
                 and not contains_list(compounds, ['SBAR', 'VP'])
                 and not contains_list(compounds, ['S', 'CC', 'S'])
-                and not contains_list(compounds, ['IN', 'S'])
             ):
                 malformed.append(tree.flatten())
 
@@ -201,24 +220,14 @@ class Checker(TextProcessor):
             list of str: The fused sentences.
         """
 
-        def filter(n):
-            found_sentence = False
-            found_sub_conj = False
+        subtrees = list(sentence.subtrees(lambda n: n.label() == 'SBAR'))
+        run_ons = []
 
-            for c in n:
-                if type(c) is Tree:
-                    if c.label() == 'S':
-                        found_sentence = True
-                    if c.label() == 'IN':
-                        found_sub_conj = True
+        for tree in subtrees:
+            if tree.parent().label() != 'VP':
+                run_ons.append(' '.join(tree.flatten()))
 
-            return n.label() == 'SBAR'\
-                and found_sentence\
-                and not found_sub_conj
-
-        subtrees = list(sentence.subtrees(filter=filter))
-
-        return [' '.join(node.leaves()) for node in subtrees]
+        return run_ons
 
     def get_sentence_fragments(self, sentence):
         """Get sentence fragments.
@@ -257,10 +266,12 @@ class Checker(TextProcessor):
             has_object = False
 
             for node in tree:
-                if node.label().startswith('VB'):
+                n = node.label()
+
+                if n.startswith('VB'):
                     verb = self.lemmatizer.lemmatize(node[0].lower(), 'v')
 
-                if node.label() == 'NP':
+                if n == 'NP' or (n == 'SBAR' and self._has_wh_clause(node)):
                     has_object = True
 
             if not has_object and verb in self.transitive_verbs:

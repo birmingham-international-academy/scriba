@@ -16,7 +16,8 @@ $(document).ready(function () {
   var getJobs = function () {
     $.get('/jobs/', function (response, status) {
       if (status !== 'nocontent') {
-        $('#content').html(response);
+        $('#title').html('Feedback');
+        $('#inner-content').html(response);
         hideLoader();
         clearInterval(getJobsPoll);
       }
@@ -30,7 +31,7 @@ $(document).ready(function () {
         getJobsPoll = setInterval(getJobs, 1500);
       } else {
         $('#title').text('Confirmation')
-        $('#content').html($('#graded-assignment-confirmation').html())
+        $('#inner-content').html($('#graded-assignment-confirmation').html())
       }
     });
   });

@@ -17,10 +17,10 @@ def index(request):
         return HttpResponse(status=204)
 
     if job.is_failed:
-        return render(request, '500.html')
+        return render(request, '500-ajax.html')
 
     if assignment_type == 'D':
-        template = 'learner/feedback.html'
+        template = 'learner/feedback-ajax.html'
     else:
         template = 'learner/submission-confirmation.html'
 
