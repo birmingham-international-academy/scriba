@@ -43,6 +43,9 @@ def clean_text(text):
     text = text.strip()
     text = re.sub(' +', ' ', text)
     text = re.sub('\n+', ' ', text)
+    text = re.sub(r'\.(?=[^ \W\d])', '. ', text)
+    text = re.sub(r'(\S)\(', r'\1 (', text)
+    text = re.sub(r'\)(\S)', r') \1', text)
 
     return text
 
@@ -73,12 +76,13 @@ def are_hierarchically_related(word1, word2):
 class TextProcessor:
     """Abstract class for text processing."""
 
-    def __init__(self):
+    def __init__(self, deferred_preprocess=False):
         self._load_tools()
-        self._preprocess()
+        if not deferred_preprocess:
+            self._preprocess()
 
     def _load_tools(self):
         raise NotImplementedError
 
-    def _preprocess(self):
+    def _preprocess(self, **kwargs):
         raise NotImplementedError

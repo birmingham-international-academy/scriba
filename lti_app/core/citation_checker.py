@@ -67,14 +67,20 @@ class Checker:
         result = False
 
         text = self.text.lower()
+        possible_citations_lower = [cit.lower() for cit in possible_citations]
 
-        for cit in possible_citations:
-            if cit.lower() in text:
+        for cit in possible_citations_lower:
+            if cit in text:
                 result = True
                 break
+
+        # Check if citation is after a full stop.
+        last_sentence = text.split('.')[-1].strip()
+        citation_after_full_stop = last_sentence in possible_citations_lower
 
         return {
             'result': result,
             'possible_citations': possible_citations,
+            'citation_after_full_stop': citation_after_full_stop,
             'authors': authors
         }

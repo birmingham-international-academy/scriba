@@ -1,7 +1,7 @@
 """Provides grammar checkers.
 
 Todo:
-    - ...
+    - Remove citation
 
 """
 
@@ -45,9 +45,9 @@ class Checker(TextProcessor):
                         'buy', 'get', 'leave', 'make', 'owe',
                         'pay', 'promise', 'refuse', 'show', 'take', 'tell']
 
-    def __init__(self, text):
+    def __init__(self, text, deferred_preprocess=False):
         self.text = text
-        TextProcessor.__init__(self)
+        TextProcessor.__init__(self, deferred_preprocess)
 
     def _load_tools(self):
         self.parser, self.dependency_parser = load_stanford_parser()
@@ -56,8 +56,38 @@ class Checker(TextProcessor):
         self.spell.word_frequency.load_words(["we're", "you're", "won't"])
         self.lemmatizer = WordNetLemmatizer()
 
-    def _preprocess(self):
+    def _preprocess(self, **kwargs):
+        authors = kwargs.get('authors')
+
+        # Make the spell checker to ignore the author last names
+        self.spell.word_frequency.load_words(authors + ["i'm"])
+
+        # Remove citation from text
+        pattern = r'\((.*?)\)'
+        paren_chunks = [
+            m.span()
+            for m in re.finditer(pattern, self.text)
+            if authors[0] in m.group(0)
+        ]
+
+        if len(paren_chunks) > 0:
+            indexes = list(sum(paren_chunks, ()))
+            text_copy = self.text[:indexes[0]]
+
+            for i in range(1, len(indexes) - 1, 2):
+                index_start = indexes[i]
+                index_end = indexes[i + 1]
+
+                text_copy += self.text[index_start:index_end]
+
+            text_copy += self.text[indexes[len(indexes) - 1]:]
+
+            self.text = text_copy
+
+        # Normalise text (e.g. remove unnecessary whitespace)
         self.text = clean_text(self.text)
+
+        # Build parse tree
         sentences = sent_tokenize(self.text)
         self.sentences = [
             ParentedTree.fromstring(str(sentence))
@@ -112,6 +142,7 @@ class Checker(TextProcessor):
                 and compounds != ['VP']
                 and not contains_list(compounds, ['SBAR', 'VP'])
                 and not contains_list(compounds, ['S', 'CC', 'S'])
+                and not contains_list(compounds, ['S', ';', 'S'])
             ):
                 malformed.append(tree.flatten())
 
@@ -224,7 +255,9 @@ class Checker(TextProcessor):
         run_ons = []
 
         for tree in subtrees:
-            if tree.parent().label() != 'VP':
+            fst_label = tree[0].label()
+
+            if fst_label != 'IN' and not fst_label.startswith('WH'):
                 run_ons.append(' '.join(tree.flatten()))
 
         return run_ons
@@ -389,19 +422,12 @@ class Checker(TextProcessor):
 
         return data
 
-    def run(self, authors):
+    def run(self):
         """Run the grammar checker.
-
-        Args:
-            authors (list of str): The list of authors of the excerpt
-                to exclude from spell checking.
 
         Returns:
             dict: The grammar check data using the described methods.
         """
-
-        # Make the spell checker to ignore the author last names
-        self.spell.word_frequency.load_words(authors + ["i'm"])
 
         data = {
             'spell_check': self.get_spelling_mistakes(),

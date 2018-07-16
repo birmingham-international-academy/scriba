@@ -6,7 +6,7 @@ Todo:
     - Use HTML library to build comments
 """
 
-semantics_similarity_threshold = 0.3
+semantics_similarity_threshold = 0.1
 
 
 class FeedbackInterpreter:
@@ -61,13 +61,13 @@ class GradeInterpreter:
             which may fail an assignment.
 
     Args:
-        points_possible (int): Possible points for the assignment.
+        assignment_type (str): The assignment type.
     """
 
     major_grammar_errors = ['sentence_fragments', 'run_ons']
 
-    def __init__(self, points_possible):
-        self.points_possible = points_possible
+    def __init__(self, assignment_type):
+        self.assignment_type = assignment_type
 
     def _get_errors(self, d, exclude=[], include='*'):
         keys = d.keys()
@@ -293,7 +293,10 @@ class GradeInterpreter:
         comments += data['text'] + '<br /><br />'
         comments += '<h2>Feedback</h2>'
 
-        if self._is_in_band_4(data):
+        if self.assignment_type == 'D':
+            data['score'] = 0
+            comments += '<p>Remember: this is only a diagnostic assignment and it is NOT graded!</p>'
+        elif self._is_in_band_4(data):
             data['score'] = 0
             comments += '<p>The submission requires tutor guidance.</p>'
         elif self._is_in_band_3(data):

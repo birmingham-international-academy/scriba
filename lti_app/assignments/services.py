@@ -54,11 +54,8 @@ class AssignmentService:
         }).first()
 
         # 2. Create the interpreter for the raw data
-        interpreter = (
-            interpreters.FeedbackInterpreter()
-            if assignment_type == 'D'
-            else interpreters.GradeInterpreter(assignment.max_points)
-        )
+        feedback_interpreter = interpreters.FeedbackInterpreter()
+        grade_interpreter = interpreters.GradeInterpreter(assignment_type)
 
         # 3. Run the analysis
         checker = checkers.DefaultChecker(
@@ -69,11 +66,12 @@ class AssignmentService:
         data = checker.run()
         data['text'] = text
 
-        # 4. Run the interpreter
-        data = interpreter.run(data)
+        # 4. Run the interpreter(s)
+        data = grade_interpreter.run(data)
+        if assignment_type == 'D':
+            data = {**data, **feedback_interpreter.run(data)}
 
-        # 5. (Optional) Send the grade
-        if assignment_type != 'D':
-            self._send_grade(outcome_service_url, result_sourcedid, data)
+        # 5. Send the (dummy) grade
+        self._send_grade(outcome_service_url, result_sourcedid, data)
 
         return data

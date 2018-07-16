@@ -47,7 +47,8 @@ class DefaultChecker:
             self.excerpt
         )
         self.grammar_checker = grammar_checker.Checker(
-            self.text
+            self.text,
+            deferred_preprocess=True
         )
         self.plagiarism_checker = plagiarism_checker.Checker(
             self.text,
@@ -61,11 +62,22 @@ class DefaultChecker:
             dict: The raw data from the analyzers described above.
         """
 
+        # Citation check
         citation_check = self.citation_checker.run()
+
+        # Academic style check
         academic_style_check = self.academic_style_checker.run()
+
+        # Semantics check
         semantics_check = self.semantics_checker.run()
-        grammar_check = self.grammar_checker.run(citation_check.get('authors'))
+
+        # Plagiarism check
         plagiarism_check = self.plagiarism_checker.run()
+
+        # Grammar check
+        authors = citation_check.get('authors')
+        self.grammar_checker._preprocess(authors=authors)
+        grammar_check = self.grammar_checker.run()
 
         data = {
             'citation_check': citation_check,

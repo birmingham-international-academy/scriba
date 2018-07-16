@@ -162,6 +162,10 @@
                 {% endfor %}
             </ul>
             {% endif %}
+
+            {% if citation_check.citation_after_full_stop %}
+            <p>Your citation is correct but it is located after the full stop.</p>
+            {% endif %}
         </div>
 
         <div class="mb-6">
