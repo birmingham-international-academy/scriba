@@ -1,0 +1,11 @@
+<p>The following run-on phrases have been found in your text:</p>
+
+<ul>
+{% for words in grammar_check.run_ons %}
+    <li>{{ words }}</li>
+{% endfor %}
+</ul>
+
+<p>A <strong>run-on</strong> sentence is a written sequence of two or more main clauses that are not separated by a period or semicolon or joined by a conjunction.</p>
+<p><strong>Example</strong>: <i>I rushed out to the shop I had no milk left.</i></p>
+

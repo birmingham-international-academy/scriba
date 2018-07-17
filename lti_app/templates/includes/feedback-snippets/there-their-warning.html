@@ -1,0 +1,12 @@
+<p>The following there/their mistakes have been found:</p>
+<ul>
+{% for words in grammar_check.there_their %}
+    <li>{{ words }}</li>
+{% endfor %}
+</ul>
+
+<p>The difference between there and their is:</p>
+<ul>
+    <li>There does not show possession. Only the word their (not there) shows possession.</li>
+    <li>Their is almost always followed by a noun. That is not true of the word "there".</li>
+</ul>

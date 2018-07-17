@@ -1,0 +1,15 @@
+<p>The following subject-verb disagreements have been found:</p>
+<ul>
+{% for words in grammar_check.noun_verb_disagreements %}
+    <li>{{ words }}</li>
+{% endfor %}
+</ul>
+
+<p>The subject of a sentence must agree with the verb of the sentence in number (singular vs plural) and in person (first, second, or third person).</p>
+<p><strong>Example</strong>: <i>They is my favourite Canadian authors.</i></p>
+<ul>
+    <li>The subject: They (<strong>plural</strong>)</li>
+    <li>The verb: is (<strong>singular</strong>)</li>
+</ul>
+<p>To fix the above sentence: <i>They <strong>are</strong> my favourite Canadian authors.</i></p>
+

@@ -3,6 +3,17 @@
 
 {% block head %}
 <style>
+    #loader {
+        display: none;
+    }
+
+    #loader .loading-text {
+        position: fixed;
+        top: 57%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
     .sk-cube-grid {
         position: fixed;
         top:0;
@@ -12,7 +23,6 @@
         margin: auto;
         width: 40px;
         height: 40px;
-        display: none;
      }
 
     .sk-cube-grid .sk-cube {
@@ -97,24 +107,24 @@
         <button id="submit-assignment" class="bg-blue hover:bg-blue-dark text-white font-bold py-2 px-4 rounded" type="button">
             Submit
         </button>
-        <a class="inline-block align-baseline font-bold text-sm text-blue hover:text-blue-darker" href="#">
-            Help
-        </a>
     </div>
 </form>
 {% endblock %}
 
 {% block toplevel %}
-<div id="loader" class="sk-cube-grid">
-    <div class="sk-cube sk-cube1"></div>
-    <div class="sk-cube sk-cube2"></div>
-    <div class="sk-cube sk-cube3"></div>
-    <div class="sk-cube sk-cube4"></div>
-    <div class="sk-cube sk-cube5"></div>
-    <div class="sk-cube sk-cube6"></div>
-    <div class="sk-cube sk-cube7"></div>
-    <div class="sk-cube sk-cube8"></div>
-    <div class="sk-cube sk-cube9"></div>
+<div id="loader">
+    <div class="sk-cube-grid">
+        <div class="sk-cube sk-cube1"></div>
+        <div class="sk-cube sk-cube2"></div>
+        <div class="sk-cube sk-cube3"></div>
+        <div class="sk-cube sk-cube4"></div>
+        <div class="sk-cube sk-cube5"></div>
+        <div class="sk-cube sk-cube6"></div>
+        <div class="sk-cube sk-cube7"></div>
+        <div class="sk-cube sk-cube8"></div>
+        <div class="sk-cube sk-cube9"></div>
+    </div>
+    <p class="loading-text">Processing the paraphrase. Please be patient...</p>
 </div>
 
 <div id="graded-assignment-confirmation" class="hidden">

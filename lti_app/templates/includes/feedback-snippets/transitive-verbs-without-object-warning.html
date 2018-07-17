@@ -1,0 +1,10 @@
+<p>The following transitive verbs without object have been found:</p>
+<ul>
+{% for verb in grammar_check.transitive_verbs_without_object %}
+    <li>{{ verb }}</li>
+{% endfor %}
+</ul>
+
+<p>Some verbs require a direct object. These are called transitive verbs.</p>
+<p>An <strong>example</strong> of transitive verb without object is: <i>John loves.</i></p>
+<p>The above example can be fixed by adding an object to the sentence: <i>John loves his dog.</i></p>

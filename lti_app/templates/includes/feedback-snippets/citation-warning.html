@@ -1,0 +1,7 @@
+<p>You may not have correctly cited the original text. Here are some suggestions:</p>
+
+<ul>
+    {% for citation in citation_check.possible_citations %}
+    <li>{{ citation }}</li>
+    {% endfor %}
+</ul>

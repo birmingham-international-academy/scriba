@@ -6,6 +6,9 @@ Todo:
     - Use HTML library to build comments
 """
 
+from django.template.loader import render_to_string
+
+
 semantics_similarity_threshold = 0.1
 
 
@@ -289,27 +292,26 @@ class GradeInterpreter:
             dict: The interpreted data to process in the templates.
         """
 
-        comments = '<h2>Submission</h2>'
-        comments += data['text'] + '<br /><br />'
-        comments += '<h2>Feedback</h2>'
-
         if self.assignment_type == 'D':
             data['score'] = 0
-            comments += '<p>Remember: this is only a diagnostic assignment and it is NOT graded!</p>'
+            band = None
         elif self._is_in_band_4(data):
             data['score'] = 0
-            comments += '<p>The submission requires tutor guidance.</p>'
+            band = 4
         elif self._is_in_band_3(data):
             data['score'] = 0.6
-            comments += '<p>You did good; however check the feedback for more details.</p>'
+            band = 3
         elif self._is_in_band_2(data):
             data['score'] = 0.8
-            comments += '<p>Great job! You only made few mistakes.</p>'
+            band = 2
         elif self._is_in_band_1(data):
             data['score'] = 1
-            comments += '<p>Great job! Your paraphrase is consistent and accurate.</p>'
+            band = 1
 
-        comments += self._to_html(data)
-        data['comments'] = comments
+        data['comments'] = render_to_string('learner/canvas-feedback.html', {
+            'band': band,
+            'semantics_similarity_threshold': semantics_similarity_threshold,
+            **data
+        })
 
         return data

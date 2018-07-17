@@ -1,0 +1,10 @@
+<p>The following sentence fragments have been found:</p>
+<ul>
+{% for words in grammar_check.sentence_fragments %}
+    <li>{{ words }}</li>
+{% endfor %}
+</ul>
+
+<p><strong>Fragments</strong> are incomplete sentences. Usually, fragments are pieces of sentences that have become disconnected from the main clause.</p>
+<p><strong>Example</strong>: <i>This university offers many majors in engineering. <strong>Such as electrical, chemical, and industrial engineering.</strong></i></p>
+<p>One way to resolve this issue is to replace the full stop with a comma.</p>

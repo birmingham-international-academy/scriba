@@ -1,0 +1,107 @@
+<h2>Submission</h2>
+
+<p>{{ text }}</p>
+
+<h2>Feedback</h2>
+
+{% if band is None %}
+<p>Remember: this is only a diagnostic assignment and it is NOT graded!</p>
+{% elif band == 4 %}
+<p>The submission requires tutor guidance.</p>
+{% elif band == 3 %}
+<p>You did good; however check the feedback for more details.</p>
+{% elif band == 2 %}
+<p>Great job! You only made few mistakes.</p>
+{% elif band == 1 %}
+<p>Great job! Your paraphrase is consistent and accurate.</p>
+{% endif %}
+
+<p>Please keep in mind that this is an automated test. If you think that the feedback is not correct please contact an instructor.</p>
+
+<h3>Paraphrase</h3>
+
+{% if semantics_check >= semantics_similarity_threshold %}
+<p>The paraphrase text reflects the meaning of the original text.</p>
+{% else %}
+{% include "includes/feedback-snippets/semantics-check-warning.html" %}
+{% endif %}
+
+{% if plagiarism_check|length > 0 %}
+{% include "includes/feedback-snippets/plagiarsim-check-warning.html" %}
+{% else %}
+<p>Good job! You have not copied substantial content from the original text.</p>
+{% endif %}
+
+<h3>Grammar</h3>
+
+{% if grammar_check.run_ons|length > 0 %}
+<h4>Run-on sentences</h4>
+
+{% include "includes/feedback-snippets/run-ons-warning.html" %}
+{% endif %}
+
+{% if grammar_check.comma_splices|length > 0 %}
+<h4>Comma splices</h4>
+
+{% include "includes/feedback-snippets/comma-splices-warning.html" %}
+{% endif %}
+
+{% if grammar_check.sentence_fragments|length > 0 %}
+<h4>Sentence fragments</h4>
+
+{% include "includes/feedback-snippets/sentence-fragments-warning.html" %}
+{% endif %}
+
+{% if grammar_check.transitive_verbs_without_object|length > 0 %}
+<h4>Transitive verbs without objects</h4>
+
+{% include "includes/feedback-snippets/transitive-verbs-without-object-warning.html" %}
+{% endif %}
+
+{% if grammar_check.there_their|length > 0 %}
+<h4>There vs Their mistakes</h4>
+
+{% include "includes/feedback-snippets/there-their-warning.html" %}
+{% endif %}
+
+{% if grammar_check.noun_verb_disagreements|length > 0 %}
+<h4>Subject-verb disagreements</h4>
+
+{% include "includes/feedback-snippets/subject-verb-disagreements-warning.html" %}
+{% endif %}
+
+{% if grammar_check.languagetool_check|length > 0 %}
+<h4>General mistakes</h4>
+
+{% include "includes/feedback-snippets/general-mistakes-warning.html" %}
+{% endif %}
+
+<h3>Spelling</h3>
+
+{% if grammar_check.spell_check|length > 0 %}
+{% include "includes/feedback-snippets/spelling-warning.html" %}
+{% else %}
+<p>Good, there are no spelling mistakes!</p>
+{% endif %}
+
+<h3>Citation</h3>
+
+{% if citation_check.result %}
+<p>You have correctly cited the text. {% if citation_check.citation_after_full_stop %}However the citation must NOT lie after a full-stop. To correct this mistake, put the full-stop <strong>after</strong> the citation.{% endif %}</p>
+{% else %}
+{% include "includes/feedback-snippets/citation-warning.html" %}
+{% endif %}
+
+<h3>Style</h3>
+
+{% if academic_style_check.contractions|length > 0 %}
+{% include "includes/feedback-snippets/contractions-warning.html" %}
+{% endif %}
+
+{% if academic_style_check.phrasal_verbs|length > 0 %}
+{% include "includes/feedback-snippets/phrasal-verbs-warning.html" %}
+{% endif %}
+
+{% if academic_style_check.general_informalities|length > 0 %}
+{% include "includes/feedback-snippets/general-informalities-warning.html" %}
+{% endif %}

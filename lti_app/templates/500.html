@@ -3,10 +3,5 @@
 {% block title %}Internal error{% endblock %}
 
 {% block content %}
-<div class="bg-white text-grey-darker px-8 pt-6 pb-8 leading-normal">
-    <p>
-        An internal error has occurred.
-        We will fix it as soon as possible.
-    </p>
-</div>
+{% include "500-ajax.html" %}
 {% endblock %}

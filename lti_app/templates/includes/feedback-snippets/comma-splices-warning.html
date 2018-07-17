@@ -1,0 +1,11 @@
+<p>The following comma splices have been found in your text:</p>
+<ul>
+{% for words in grammar_check.comma_splices %}
+    <li>{{ words }}</li>
+{% endfor %}
+</ul>
+
+<p>The <strong>comma splice</strong> occurs when a comma is used to connect two independent clauses.</p>
+<p><strong>Example</strong>: <i>Jim usually gets on with everybody, he is an understanding person.</i></p>
+<p>If you have two independent clauses that need to be separated, you can do so by using a full stop:</p>
+<p><i>Jim usually gets on with everybody. He is an understanding person.</i></p>

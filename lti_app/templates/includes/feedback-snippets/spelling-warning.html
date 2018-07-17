@@ -1,0 +1,7 @@
+<p>You may have made spelling mistakes in the paraphrase text:</p>
+
+{% for mistake in grammar_check.spell_check %}
+<ul>
+    <li>"{{ mistake.word }}" can be corrected as {{ mistake.corrections|join:", " }}</li>
+</ul>
+{% endfor %}
