@@ -111,6 +111,12 @@ Whenever local changes are made the server must always perform the following:
 2. `$ python manage.py migrate`
 3. `$ pythong manage.py collectstatic`
 
+In addition, if using the Digital Ocean setup described above, run:
+
+```
+sudo supervisorctl englishapp restart
+```
+
 ## Testing
 
 Run `pytest`
