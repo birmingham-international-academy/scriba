@@ -9,7 +9,6 @@ rq==0.11.0
 spacy==2.0.11
 pyspellchecker==0.1.2
 pytest==3.6.2
-dj_database_url==0.5.0
 nltk==3.3
 Django==2.0.6
 python-dotenv==0.8.2
