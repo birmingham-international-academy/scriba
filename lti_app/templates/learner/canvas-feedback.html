@@ -95,13 +95,19 @@
 <h3>Style</h3>
 
 {% if academic_style_check.contractions|length > 0 %}
+<h4>Contraction/short forms</h4>
+
 {% include "includes/feedback-snippets/contractions-warning.html" %}
 {% endif %}
 
 {% if academic_style_check.phrasal_verbs|length > 0 %}
+<h4>Phrasal verbs</h4>
+
 {% include "includes/feedback-snippets/phrasal-verbs-warning.html" %}
 {% endif %}
 
 {% if academic_style_check.general_informalities|length > 0 %}
+<h4>Informal words</h4>
+
 {% include "includes/feedback-snippets/general-informalities-warning.html" %}
 {% endif %}

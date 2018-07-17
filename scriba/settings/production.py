@@ -5,7 +5,7 @@ from scriba.settings.base import *
 
 ENVIRONMENT = 'production'
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     '178.128.41.130',

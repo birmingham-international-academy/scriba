@@ -90,6 +90,18 @@
             </div>
             {% endif %}
 
+            {% if grammar_check.comma_splices|length > 0 %}
+            <div class="{{ accordion_class }}">
+                <h3 class="{{ accordion_title_class }}">
+                    Comma splices
+                </h3>
+
+                <div class="{{ accordion_content_class }}">
+                    {% include "includes/feedback-snippets/comma-splices-warning.html" %}
+                </div>
+            </div>
+            {% endif %}
+
             {% if grammar_check.transitive_verbs_without_object|length > 0 %}
             <div class="{{ accordion_class }}">
                 <h3 class="{{ accordion_title_class }}">
