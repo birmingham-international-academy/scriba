@@ -83,11 +83,19 @@ $ python manage.py runsslserver --settings=scriba.settings.local
 
 ### 9. Run the worker
 
+Scriba uses Python RQ for background tasks management.
+Run the worker using:
+
 ```
 $ python worker.py
 ```
 
 ### 10. Run the Language Tool server
+
+Language Tool is a rule-based grammar checker. Scriba's
+grammar checker uses it as an added check.
+
+To run the Language Tool server execute the following command:
 
 ```
 $ java -cp lti_app/core/data/languagetool/languagetool-server.jar org.languagetool.server.HTTPServer --port 8081
@@ -96,6 +104,8 @@ $ java -cp lti_app/core/data/languagetool/languagetool-server.jar org.languageto
 ## Production setup
 
 ### Routine
+
+Whenever local changes are made the server must always perform the following:
 
 1. `$ git pull origin master`
 2. `$ python manage.py migrate`
