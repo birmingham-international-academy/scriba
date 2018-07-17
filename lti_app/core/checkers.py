@@ -27,12 +27,14 @@ class DefaultChecker:
     Args:
         text (str): The text submitted by the student.
         excerpt (str): The excerpt to paraphrase.
+        supporting_excerpts (str): Paraphrase excerpts examples.
         reference (str): The reference to cite in the text.
     """
 
-    def __init__(self, text, excerpt, reference):
+    def __init__(self, text, excerpt, supporting_excerpts, reference):
         self.text = text
         self.excerpt = excerpt
+        self.supporting_excerpts = supporting_excerpts
         self.reference = reference
 
         self.citation_checker = citation_checker.Checker(
@@ -44,7 +46,8 @@ class DefaultChecker:
         )
         self.semantics_checker = semantics_checker.Checker(
             self.text,
-            self.excerpt
+            self.excerpt,
+            self.supporting_excerpts
         )
         self.grammar_checker = grammar_checker.Checker(
             self.text,

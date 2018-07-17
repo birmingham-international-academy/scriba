@@ -13,9 +13,9 @@ def _create_or_update_assignment(request):
         'course_id': request.session.get('course_id'),
         'assignment_id': request.session.get('assignment_id'),
         'assignment_type': request.session.get('assignment_type'),
-        'max_points': request.session.get('assignment_max_points'),
         'reference': request.POST.get('reference'),
-        'excerpt': request.POST.get('excerpt')
+        'excerpt': request.POST.get('excerpt'),
+        'supporting_excerpts': request.POST.get('supporting_excerpts')
     }
 
     assignment = service.get_by_course_assignment_tuple(

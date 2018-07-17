@@ -4,9 +4,7 @@ A semantic checker must detect the topic
 as well as the semantic structure similarity.
 
 Todo:
-    - Single word synonyms
     - Compound word synonyms
-    - Detect negations
     - Detect idioms
     - Different POS tags
 
@@ -17,6 +15,7 @@ import re
 import os
 
 import spacy
+from gensim import corpora, models, similarities
 from nltk import pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.stem import PorterStemmer, WordNetLemmatizer
@@ -39,11 +38,13 @@ class Checker(TextProcessor):
     Args:
         text (str): The text submitted by the student.
         excerpt (str): The assignment's excerpt.
+        supporting_excerpts (str): Paraphrase excerpts examples.
     """
 
-    def __init__(self, text, excerpt):
+    def __init__(self, text, excerpt, supporting_excerpts):
         self.text = text
         self.excerpt = excerpt
+        self.supporting_excerpts = supporting_excerpts
         TextProcessor.__init__(self)
 
     def _load_tools(self):
@@ -55,11 +56,25 @@ class Checker(TextProcessor):
         self.text = clean_text(self.text)
         self.excerpt = clean_text(self.excerpt)
 
+        self.supporting_excerpts = (
+            [
+                line
+                for line in clean_text(self.supporting_excerpts).splitlines()
+                if line.strip() != ''
+            ]
+            if self.supporting_excerpts is not None
+            else []
+        )
+
         self.text_sentences = sent_tokenize(self.text)
         self.excerpt_sentences = sent_tokenize(self.excerpt)
 
-        self.pt_text_sentences = self.parser.raw_parse_sents(self.text_sentences)
-        self.pt_excerpt_sentences = self.parser.raw_parse_sents(self.excerpt_sentences)
+        self.pt_text_sentences = self.parser.raw_parse_sents(
+            self.text_sentences
+        )
+        self.pt_excerpt_sentences = self.parser.raw_parse_sents(
+            self.excerpt_sentences
+        )
 
         # Create target-arguments tuples
         # ------------------------------
@@ -88,13 +103,29 @@ class Checker(TextProcessor):
             opts
         )
 
+        # Load document vectors
+        # ---------------------
+
+        documents = [self.excerpt] + self.supporting_excerpts
+        self.vectors_corpus = self._docs_to_vectors(documents)
+
+    def _docs_to_vectors(self, documents):
+        stoplist = set('for a of the and to in'.split())
+        texts = [
+            [word for word in document.lower().split() if word not in stoplist]
+            for document in documents
+        ]
+
+        self.dictionary = corpora.Dictionary(texts)
+
+        return [self.dictionary.doc2bow(text) for text in texts]
+
     def _get_pred_patterns(self, sentences, opts):
         pred_patt = []
 
         for line in sentences:
             for sentence in line:
                 pp = PredPatt.from_constituency(str(sentence), opts=opts)
-                # pp = PredPatt.from_sentence(sentence, opts=opts)
                 for predicate in pp.instances:
                     pred_patt.append({
                         'target': predicate,
@@ -160,12 +191,12 @@ class Checker(TextProcessor):
         return round(similarity / normalization_factor, 2)
 
     def run(self):
+        # 1. Predicate patterns method
+        # ----------------------------
+
         pairs = []
         text_pred_args = self.text_pred_args[:]
         excerpt_pred_args = self.excerpt_pred_args[:]
-
-        # print(self.text_pred_args)
-        # print(self.excerpt_pred_args)
 
         while len(text_pred_args) > 0 and len(excerpt_pred_args) > 0:
             similarity_results = []
@@ -185,6 +216,20 @@ class Checker(TextProcessor):
         if len(pairs) == 0:
             return 0
 
-        aggregate_result = sum([sim for _, _, sim in pairs]) / len(pairs)
+        pp_method_result = sum([sim for _, _, sim in pairs]) / len(pairs)
 
-        return aggregate_result
+        # 2. Vector similarity method
+        # ---------------------------
+
+        tfidf = models.TfidfModel(self.vectors_corpus)
+        index = similarities.SparseMatrixSimilarity(
+            tfidf[self.vectors_corpus],
+            num_features=len(self.dictionary)
+        )
+        vec = self.dictionary.doc2bow(self.text.lower().split())
+
+        sims = index[tfidf[vec]]
+
+        vs_method_result = sum(sims) / len(sims)
+
+        return (pp_method_result + vs_method_result) / 2

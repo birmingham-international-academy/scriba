@@ -1,15 +1,14 @@
 """Provides interpreters for the analysis data.
 
 Todo:
-    - Fix comments
+    - GradeInterpreter -> grammar and/or style correct
     - Store settings
-    - Use HTML library to build comments
 """
 
 from django.template.loader import render_to_string
 
 
-semantics_similarity_threshold = 0.1
+semantics_similarity_threshold = 0.3
 
 
 class FeedbackInterpreter:
@@ -166,121 +165,6 @@ class GradeInterpreter:
         major_errors = self._get_major_errors_aggregate(data)
 
         return minor_errors >= 4 or major_errors == 1
-
-    def _render_html_list(self, ls, fn=lambda item: str(item)):
-        html = '<ul>'
-        for item in ls:
-            html += '<li>' + fn(item) + '</li>'
-        html += '</ul>'
-
-        return html
-
-    def _to_html(self, data):
-        # Paraphrase
-        html = '<h3>Paraphrase</h3>'
-        check_status =\
-            data['semantics_check'] >= semantics_similarity_threshold
-
-        html += '<p>'
-        if check_status:
-            html += 'Your paraphrase reflects the correct meaning.'
-        else:
-            html += 'Your paraphrase does not reflect the correct meaning.'
-        html += '</p>'
-
-        plagiarism_check = data['plagiarism_check']
-        if len(plagiarism_check) > 0:
-            html += '<p>You may have copied the following words/phrases:</p>'
-            html += self._render_html_list(plagiarism_check)
-        else:
-            html += '<p>Good job! You have not copied substantial content from the original text.</p>'
-
-        # Grammar
-        grammar_check = data['grammar_check']
-        html += '<h3>Grammar</h3>'
-        no_grammar_errors = True
-
-        if len(grammar_check['run_ons']) > 0:
-            no_grammar_errors = False
-            html += '<p>The following run ons have been found:</p>'
-            html += self._render_html_list(grammar_check['run_ons'])
-
-        if len(grammar_check['comma_splices']) > 0:
-            no_grammar_errors = False
-            html += '<p>The following comma splices have been found:</p>'
-            html += self._render_html_list(grammar_check['comma_splices'])
-
-        if len(grammar_check['sentence_fragments']) > 0:
-            no_grammar_errors = False
-            html += '<p>The following sentence fragments have been found:</p>'
-            html += self._render_html_list(grammar_check['sentence_fragments'])
-
-        if len(grammar_check['transitive_verbs_without_object']) > 0:
-            no_grammar_errors = False
-            html += '<p>The following transitive verbs without object have been found:</p>'
-            html += self._render_html_list(grammar_check['transitive_verbs_without_object'])
-
-        if len(grammar_check['there_their']) > 0:
-            no_grammar_errors = False
-            html += '<p>The following there/their mistakes have been found:</p>'
-            html += self._render_html_list(grammar_check['there_their'])
-
-        if len(grammar_check['noun_verb_disagreements']) > 0:
-            no_grammar_errors = False
-            html += '<p>The following noun-verb disagreements have been found:</p>'
-            html += self._render_html_list(grammar_check['noun_verb_disagreements'])
-
-        if len(grammar_check['languagetool_check']) > 0:
-            no_grammar_errors = False
-            html += '<p>The following noun-verb disagreements have been found:</p>'
-            html += self._render_html_list(grammar_check['languagetool_check'], lambda mistake: mistake['message'] + ': ' + mistake['context']['text'])
-
-        if no_grammar_errors:
-            html += '<p>Great! There are no grammar errors.</p>'
-
-        # Spelling
-        spell_check = grammar_check['spell_check']
-        html += '<h3>Spelling</h3>'
-
-        if len(spell_check) > 0:
-            html += self._render_html_list(spell_check, lambda mistake: '"' + mistake['word'] + '" can be corrected as ' + ', '.join(mistake['corrections']))
-        else:
-            html += '<p>Good, there are no spelling mistakes.</p>'
-
-        # Citation
-        citation_check = data['citation_check']
-        html += '<h3>Citation</h3>'
-
-        if citation_check['result']:
-            html += '<p>Correctly cited the text.</p>'
-        else:
-            html += '<p>The citation cannot be found or wrong. Here are some examples of possible citations:</p>'
-            html += self._render_html_list(citation_check['possible_citations'])
-
-        # Style
-        style_check = data['academic_style_check']
-        no_style_errors = True
-        html += '<h3>Style</h3>'
-
-        if len(style_check['contractions']) > 0:
-            no_style_errors = False
-            html += '<p>The following contraction forms have been found:</p>'
-            html += self._render_html_list(style_check['contractions'])
-
-        if len(style_check['phrasal_verbs']) > 0:
-            no_style_errors = False
-            html += '<p>The following phrasal verbs have been found:</p>'
-            html += self._render_html_list(style_check['phrasal_verbs'])
-
-        if len(style_check['general_informalities']) > 0:
-            no_style_errors = False
-            html += '<p>The following general informalities have been found:</p>'
-            html += self._render_html_list(style_check['general_informalities'])
-
-        if no_style_errors:
-            html += 'Great! There are no style warnings.'
-
-        return html
 
     def run(self, data):
         """Runs the interpreter.

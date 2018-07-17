@@ -61,6 +61,7 @@ class AssignmentService:
         checker = checkers.DefaultChecker(
             text,
             assignment.excerpt,
+            assignment.supporting_excerpts,
             assignment.reference
         )
         data = checker.run()
