@@ -114,7 +114,7 @@ Whenever local changes are made the server must always perform the following:
 In addition, if using the Digital Ocean setup described above, run:
 
 ```
-sudo supervisorctl englishapp restart
+$ sudo supervisorctl restart englishapp
 ```
 
 ## Testing
