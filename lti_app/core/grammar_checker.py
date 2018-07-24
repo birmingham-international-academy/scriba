@@ -7,27 +7,19 @@ Todo:
 
 import re
 import string
-import os
 
-import spacy
 import spellchecker
-from nltk import ngrams, pos_tag, word_tokenize, WhitespaceTokenizer
-from nltk.corpus import wordnet as wn
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import sent_tokenize
-from nltk.tree import Tree, ParentedTree
+from nltk import WhitespaceTokenizer
+from nltk.tree import ParentedTree
 from spacy.matcher import Matcher
 
 from lti_app.core import languagetool
-from lti_app.core.text_helpers import (
-    clean_text, load_stanford_parser, TextProcessor
-)
-from lti_app.helpers import (
-    contains_list, is_punctuation, remove_punctuation
-)
+from lti_app.core.text_helpers import clean_text
+from lti_app.core.tools import Tools
+from lti_app.helpers import remove_punctuation
 
 
-class Checker(TextProcessor):
+class Checker:
     """Implements the default grammar checker.
 
     Attributes:
@@ -36,7 +28,7 @@ class Checker(TextProcessor):
             that require an object.
 
     Args:
-        text: The text submitted by the student.
+        text_document (Document): The text submitted by the student.
     """
 
     clause_types = ['S', 'SBAR', 'SINV', 'SQ']
@@ -45,64 +37,9 @@ class Checker(TextProcessor):
                         'buy', 'get', 'leave', 'make', 'owe',
                         'pay', 'promise', 'refuse', 'show', 'take', 'tell']
 
-    def __init__(self, text, deferred_preprocess=False):
-        self.text = text
-        TextProcessor.__init__(self, deferred_preprocess)
-
-    def _load_tools(self):
-        self.parser, self.dependency_parser = load_stanford_parser()
-        self.nlp = spacy.load('en')
-        self.spell = spellchecker.SpellChecker()
-        self.spell.word_frequency.load_words(["we're", "you're", "won't"])
-        self.lemmatizer = WordNetLemmatizer()
-
-    def _preprocess(self, **kwargs):
-        authors = kwargs.get('authors')
-        year = kwargs.get('year')
-
-        # Make the spell checker ignore the author last names
-        self.spell.word_frequency.load_words(authors + ["i'm"])
-
-        # Remove citation from text
-        pattern = (
-            r'\((.*?'
-            + re.escape(authors[0])
-            + r'|'
-            + re.escape(year)
-            + r'.*?)\)'
-        )
-        paren_chunks = [
-            m.span()
-            for m in re.finditer(pattern, self.text)
-        ]
-
-        if len(paren_chunks) > 0:
-            indexes = list(sum(paren_chunks, ()))
-            text_copy = self.text[:indexes[0]]
-
-            for i in range(1, len(indexes) - 1, 2):
-                index_start = indexes[i]
-                index_end = indexes[i + 1]
-
-                text_copy += self.text[index_start:index_end]
-
-            text_copy += self.text[indexes[len(indexes) - 1]:]
-
-            self.text = text_copy
-
-        # Normalise text (e.g. remove unnecessary whitespace)
-        self.text = clean_text(self.text)
-
-        # Build parse tree
-        sentences = sent_tokenize(self.text)
-        self.sentences = [
-            ParentedTree.fromstring(str(sentence))
-            for line in list(self.parser.raw_parse_sents(sentences))
-            for sentence in line
-        ]
-
-        for sentence in self.sentences:
-            print(sentence)
+    def __init__(self, text_document):
+        self.text_document = text_document
+        self.tools = Tools()
 
     def _is_clause(self, node):
         return node.label() in self.clause_types
@@ -311,7 +248,7 @@ class Checker(TextProcessor):
                 n = node.label()
 
                 if n.startswith('VB'):
-                    verb = self.lemmatizer.lemmatize(node[0].lower(), 'v')
+                    verb = self.tools.lemmatizer.lemmatize(node[0].lower(), 'v')
 
                 if n == 'NP' or (n == 'SBAR' and self._has_wh_clause(node)):
                     has_object = True
@@ -336,7 +273,8 @@ class Checker(TextProcessor):
         number_pattern = re.compile(r'^\(\d+\)|\d+\w{2}|\d+$')
         contraction_pattern = re.compile(r'^.*\'(t|ve|ll|d)$')
         proper_noun_pattern = re.compile(r'^[A-Z].*$')
-        text = self.text.replace('(', '( ').replace(')', ' )')
+        text = self.text_document.get('cleaned_text')
+        text = text.replace('(', '( ').replace(')', ' )')
         words = [
             remove_punctuation(word)
             for word in tokenizer.tokenize(text)
@@ -361,8 +299,8 @@ class Checker(TextProcessor):
                 mapped_words.append(word)
 
         return [
-            {'word': word, 'corrections': self.spell.candidates(word)}
-            for word in self.spell.unknown(mapped_words)
+            {'word': word, 'corrections': self.tools.spell.candidates(word)}
+            for word in self.tools.spell.unknown(mapped_words)
         ]
 
     def get_there_their_occurrences(self):
@@ -382,10 +320,10 @@ class Checker(TextProcessor):
             ]
         ]
 
-        matcher_obj = Matcher(self.nlp.vocab)
+        matcher_obj = Matcher(self.tools.nlp.vocab)
         matcher_obj.add('THERE_THEIR', None, *patterns)
 
-        doc = self.nlp(self.text)
+        doc = self.text_document.get('spacy_doc')
         matches = matcher_obj(doc)
 
         return [doc[start:end] for _, start, end in matches]
@@ -420,7 +358,12 @@ class Checker(TextProcessor):
 
         data = {}
 
-        for sentence in self.sentences:
+        sentences = [
+            ParentedTree.fromstring(str(sentence))
+            for sentence in self.text_document.get('parse_tree')
+        ]
+
+        for sentence in sentences:
             for index, processor in enumerate(processors):
                 key = key_function(processor.__name__, index)
                 result = processor(sentence)
@@ -439,9 +382,11 @@ class Checker(TextProcessor):
             dict: The grammar check data using the described methods.
         """
 
+        cleaned_text = self.text_document.get('cleaned_text')
+
         data = {
             'spell_check': self.get_spelling_mistakes(),
-            'languagetool_check': languagetool.check(self.text),
+            'languagetool_check': languagetool.check(cleaned_text),
             'there_their': self.get_there_their_occurrences()
         }
 

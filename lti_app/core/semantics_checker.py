@@ -12,102 +12,42 @@ Todo:
 
 import itertools
 import re
-import os
 
-import spacy
 from gensim import corpora, models, similarities
-from nltk import pos_tag
-from nltk.corpus import wordnet as wn
-from nltk.stem import PorterStemmer, WordNetLemmatizer
-from nltk.tokenize import sent_tokenize, word_tokenize
-from predpatt import PredPatt, PredPattOpts
-from predpatt.util.ud import dep_v1, dep_v2
+from predpatt import PredPatt
 
-from lti_app.helpers import (
-    get_current_dir, find_file, tok_and_lem, is_punctuation
-)
-from lti_app.core.text_helpers import (
-    are_synonyms, are_hierarchically_related,  clean_text,
-    load_stanford_parser, TextProcessor
-)
+from lti_app.core.text_helpers import are_synonyms, clean_text
+from lti_app.core.tools import Tools
 
 
-class Checker(TextProcessor):
+class Checker:
     """Implements the default semantics checker.
 
     Args:
-        text (str): The text submitted by the student.
-        excerpt (str): The assignment's excerpt.
+        text_document (Document): The text submitted by the student.
+        excerpt_document (Document): The assignment's excerpt.
         supporting_excerpts (str): Paraphrase excerpts examples.
     """
 
-    def __init__(self, text, excerpt, supporting_excerpts):
-        self.text = text
-        self.excerpt = excerpt
-        self.supporting_excerpts = supporting_excerpts
-        TextProcessor.__init__(self)
-
-    def _load_tools(self):
-        self.parser, _ = load_stanford_parser()
-        self.stemmer = PorterStemmer()
-        self.lemmatizer = WordNetLemmatizer()
-
-    def _preprocess(self):
-        self.text = clean_text(self.text)
-        self.excerpt = clean_text(self.excerpt)
-
+    def __init__(self, text_document, excerpt_document, supporting_excerpts):
+        self.text_document = text_document
+        self.excerpt_document = excerpt_document
         self.supporting_excerpts = (
             [
                 line
-                for line in clean_text(self.supporting_excerpts).splitlines()
+                for line in clean_text(supporting_excerpts).splitlines()
                 if line.strip() != ''
             ]
-            if self.supporting_excerpts is not None
+            if supporting_excerpts is not None
             else []
         )
 
-        self.text_sentences = sent_tokenize(self.text)
-        self.excerpt_sentences = sent_tokenize(self.excerpt)
-
-        self.pt_text_sentences = self.parser.raw_parse_sents(
-            self.text_sentences
-        )
-        self.pt_excerpt_sentences = self.parser.raw_parse_sents(
-            self.excerpt_sentences
-        )
-
-        # Create target-arguments tuples
-        # ------------------------------
-
-        resolve_relcl = True  # relative clauses
-        resolve_appos = True  # appositional modifiers
-        # resolve_amod = True   # adjectival modifiers
-        resolve_conj = True   # conjuction
-        resolve_poss = True   # possessives
-        ud = dep_v1.VERSION   # the version of UD
-        opts = PredPattOpts(
-            resolve_relcl=resolve_relcl,
-            resolve_appos=resolve_appos,
-            # resolve_amod=resolve_amod,
-            resolve_conj=resolve_conj,
-            resolve_poss=resolve_poss,
-            ud=ud
-        )
-
-        self.text_pred_args = self._get_pred_patterns(
-            self.pt_text_sentences,
-            opts
-        )
-        self.excerpt_pred_args = self._get_pred_patterns(
-            self.pt_excerpt_sentences,
-            opts
-        )
-
         # Load document vectors
-        # ---------------------
-
-        documents = [self.excerpt] + self.supporting_excerpts
+        documents = [self.excerpt_document.text] + self.supporting_excerpts
         self.vectors_corpus = self._docs_to_vectors(documents)
+
+        # Load tools
+        self.tools = Tools()
 
     def _docs_to_vectors(self, documents):
         stoplist = set('for a of the and to in'.split())
@@ -144,10 +84,10 @@ class Checker(TextProcessor):
         weight_arg = 1
         num_args_shared = 0
 
-        target1 = self.stemmer.stem(t1['target'].root.text)
+        target1 = self.tools.stemmer.stem(t1['target'].root.text)
         args1 = t1['args']
 
-        target2 = self.stemmer.stem(t2['target'].root.text)
+        target2 = self.tools.stemmer.stem(t2['target'].root.text)
         args2 = t2['args']
 
         # Reverse arguments if passive voice is used
@@ -172,8 +112,8 @@ class Checker(TextProcessor):
             similarity += weight_target
 
         for arg1, arg2 in list(itertools.zip_longest(args1, args2)):
-            arg1_text = arg1 and self.stemmer.stem(arg1.root.text)
-            arg2_text = arg2 and self.stemmer.stem(arg2.root.text)
+            arg1_text = arg1 and self.tools.stemmer.stem(arg1.root.text)
+            arg2_text = arg2 and self.tools.stemmer.stem(arg2.root.text)
 
             if (
                 arg1 is not None
@@ -195,8 +135,8 @@ class Checker(TextProcessor):
         # ----------------------------
 
         pairs = []
-        text_pred_args = self.text_pred_args[:]
-        excerpt_pred_args = self.excerpt_pred_args[:]
+        text_pred_args = self.text_document.get('predicate_patterns')[:]
+        excerpt_pred_args = self.excerpt_document.get('predicate_patterns')[:]
 
         while len(text_pred_args) > 0 and len(excerpt_pred_args) > 0:
             similarity_results = []
@@ -226,7 +166,7 @@ class Checker(TextProcessor):
             tfidf[self.vectors_corpus],
             num_features=len(self.dictionary)
         )
-        vec = self.dictionary.doc2bow(self.text.lower().split())
+        vec = self.dictionary.doc2bow(self.text_document.text.lower().split())
 
         sims = index[tfidf[vec]]
 

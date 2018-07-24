@@ -17,6 +17,13 @@ class Checker:
         self.text = text
         self.reference = reference
 
+    def _get_citation_patterns(self, authors, year):
+        return [
+            authors + ' (' + year + ')',
+            '(' + authors + ', ' + year + ')',
+            '(' + authors + ' ' + year + ')'
+        ]
+
     def run(self):
         """Run the checker.
 
@@ -58,11 +65,21 @@ class Checker:
                 elif index != len(authors) - 1:
                     lastnames_citation += ', '
 
-        possible_citations = [
-            lastnames_citation + ' (' + year + ')',
-            '(' + lastnames_citation + ', ' + year + ')',
-            '(' + lastnames_citation + ' ' + year + ')'
-        ]
+        possible_citations = self._get_citation_patterns(
+            lastnames_citation,
+            year
+        )
+
+        if ' and ' in lastnames_citation:
+            lastnames_citation_ampersand = lastnames_citation.replace(
+                ' and ',
+                ' & '
+            )
+
+            possible_citations += self._get_citation_patterns(
+                lastnames_citation_ampersand,
+                year
+            )
 
         result = False
 

@@ -7,39 +7,19 @@ are not used in academic texts.
 import json
 import os
 
-import spacy
-from nltk import pos_tag, tokenize
-from nltk.stem import WordNetLemmatizer
-
-from lti_app.core.text_helpers import remove_stopwords, TextProcessor
+from lti_app.core.text_helpers import remove_stopwords
 from lti_app.helpers import get_current_dir
 
 
-class Checker(TextProcessor):
+class Checker:
     """Implements the default academic style checker.
 
     Args:
-        text (str): The text submitted by the student.
+        text_document (Document): The text submitted by the student.
     """
 
-    def __init__(self, text):
-        self.text = text
-        TextProcessor.__init__(self)
-
-    def _load_tools(self):
-        self.lemmatizer = WordNetLemmatizer()
-        self.nlp = spacy.load('en')
-
-    def _preprocess(self):
-        self.tokens = tokenize.word_tokenize(self.text)
-        self.tagged_tokens = pos_tag(self.tokens)
-        self.lemmas = [
-            self.lemmatizer.lemmatize(i, j[0].lower())
-            if j[0].lower() in ['a', 'n', 'v']
-            else self.lemmatizer.lemmatize(i)
-            for i, j in self.tagged_tokens
-        ]
-        self.doc = self.nlp(self.text)
+    def __init__(self, text_document):
+        self.text_document = text_document
 
     def get_phrasal_verbs(self):
         """Get the phrasal verbs.
@@ -50,7 +30,7 @@ class Checker(TextProcessor):
 
         phrasal_verbs = []
 
-        for token in self.doc:
+        for token in self.text_document.get('spacy_doc'):
             if token.dep_ == 'prt' and token.head.pos_ == 'VERB':
                 verb = token.head.orth_
                 particle = token.orth_
@@ -65,9 +45,11 @@ class Checker(TextProcessor):
             list of str: The contractions.
         """
 
+        tagged_tokens = self.text_document.get('tagged_tokens')
+
         return [
-            self.tagged_tokens[index - 1][0] + token
-            for index, (token, pos) in enumerate(self.tagged_tokens)
+            tagged_tokens[index - 1][0] + token
+            for index, (token, pos) in enumerate(tagged_tokens)
             if "'" in token and pos != 'POS'
         ]
 
@@ -77,7 +59,8 @@ class Checker(TextProcessor):
         Returns:
             list of str: The quotation overuses.
         """
-        text = remove_stopwords(self.text)
+        # text = remove_stopwords(self.text)
+        pass
 
     def get_general_informalities(self):
         """Get general informal words such as 'nice', 'good', 'bad'.
@@ -86,7 +69,7 @@ class Checker(TextProcessor):
             list of str: General informalities.
         """
 
-        lemmas = ' '.join(self.lemmas)
+        lemmas = ' '.join(self.text_document.get('lemmas'))
         current_dir = get_current_dir(__file__)
         filename = os.path.join(current_dir, 'data', 'informal.json')
 

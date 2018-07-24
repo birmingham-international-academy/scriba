@@ -1,7 +1,8 @@
 """Provides text utilities."""
 
-import re
 import os
+import re
+import string
 
 from django.conf import settings
 from nltk.corpus import stopwords, wordnet as wn
@@ -60,6 +61,19 @@ def clean_text(text):
     return text
 
 
+def is_punctuation(s):
+    """Checks if the input string is a punctuation character.
+
+    Args:
+        s (str): The string.
+
+    Returns:
+        bool: Whether the string contains a punctuation character.
+    """
+
+    return s in string.punctuation
+
+
 def get_synonyms(word):
     return set([
         lemma
@@ -89,18 +103,3 @@ def remove_stopwords(text):
     filtered_text = [word for word in tokens if not word in stop_words]
 
     return filtered_text
-
-
-class TextProcessor:
-    """Abstract class for text processing."""
-
-    def __init__(self, deferred_preprocess=False):
-        self._load_tools()
-        if not deferred_preprocess:
-            self._preprocess()
-
-    def _load_tools(self):
-        raise NotImplementedError
-
-    def _preprocess(self, **kwargs):
-        raise NotImplementedError

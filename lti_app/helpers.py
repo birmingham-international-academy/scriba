@@ -9,24 +9,20 @@ from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
 
-def contains_list(list1, list2, in_order=False):
-    if not in_order:
-        return all(elem in list1 for elem in list2)
+class Singleton(type):
+    """
+    Define an Instance operation that lets clients access its unique
+    instance.
+    """
 
-    length2 = len(list2)
+    def __init__(cls, name, bases, attrs, **kwargs):
+        super().__init__(name, bases, attrs)
+        cls._instance = None
 
-    for i1, _ in enumerate(list1):
-        lower_index = i1
-        upper_index = lower_index + length2
-        slice1 = list1[lower_index:upper_index]
-
-        if len(slice1) < length2:
-            return False
-
-        if slice1 == list2:
-            return True
-
-    return False
+    def __call__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__call__(*args, **kwargs)
+        return cls._instance
 
 
 def get_current_dir(current_file):
@@ -72,34 +68,6 @@ def remove_punctuation(s):
     """
 
     return ''.join(c for c in s if c not in '!?.,;:')
-
-
-def is_punctuation(s):
-    """Checks if the input string is a punctuation character.
-
-    Args:
-        s (str): The string.
-
-    Returns:
-        bool: Whether the string contains a punctuation character.
-    """
-
-    return s in string.punctuation
-
-
-def tok_and_lem(text):
-    """Tokenize and lemmatize an input text.
-
-    Args:
-        text (str): The sentence text.
-
-    Returns:
-        list: A list of lemmatized tokens from the original text.
-    """
-
-    lemmatizer = WordNetLemmatizer()
-    text_tokens = word_tokenize(text)
-    return [lemmatizer.lemmatize(token) for token in text_tokens]
 
 
 def is_number(s):

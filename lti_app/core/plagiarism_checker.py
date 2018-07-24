@@ -6,36 +6,18 @@ repeated word strings from two texts.
 
 from difflib import ndiff
 
-from lti_app.core.text_helpers import TextProcessor
-from lti_app.helpers import is_punctuation, tok_and_lem
 
-
-class Checker(TextProcessor):
+class Checker:
     """Implements the deafult plagiarism checker.
 
     Args:
-        text (str): The text submitted by the student.
-        excerpt (str): The assignment's excerpt.
+        text_document (Document): The text submitted by the student.
+        excerpt_document (Document): The assignment's excerpt.
     """
 
-    def __init__(self, text, excerpt):
-        self.text = text
-        self.excerpt = excerpt
-        TextProcessor.__init__(self)
-
-    def _load_tools(self):
-        pass
-
-    def _preprocess(self):
-        def get_lemmas(text):
-            return [
-                s.lower()
-                for s in tok_and_lem(text)
-                if not is_punctuation(s)
-            ]
-
-        self.text_lemmas = get_lemmas(self.text)
-        self.excerpt_lemmas = get_lemmas(self.excerpt)
+    def __init__(self, text_document, excerpt_document):
+        self.text_document = text_document
+        self.excerpt_document = excerpt_document
 
     def get_matches(self):
         """Get the diff matches.
@@ -49,7 +31,10 @@ class Checker(TextProcessor):
         index = -1
         min_length = 4
 
-        for i, d in enumerate(ndiff(self.text_lemmas, self.excerpt_lemmas)):
+        text_lemmas = self.text_document.get('lemmas')
+        excerpt_lemmas = self.excerpt_document.get('lemmas')
+
+        for i, d in enumerate(ndiff(text_lemmas, excerpt_lemmas)):
             if d[0] == ' ':
                 word = d.split(' ')[-1]
 

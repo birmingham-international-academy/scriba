@@ -6,6 +6,7 @@ from lti_app.core import (
     academic_style_checker,
     citation_checker,
     grammar_checker,
+    pipelines,
     plagiarism_checker,
     semantics_checker
 )
@@ -36,26 +37,51 @@ class DefaultChecker:
         self.excerpt = excerpt
         self.supporting_excerpts = supporting_excerpts
         self.reference = reference
+        self.data = {}
 
+        # Run citation checker in advance
+        # for pipeline preprocessing
+        # -------------------------------
         self.citation_checker = citation_checker.Checker(
             self.text,
             self.reference
         )
+        self.data['citation_check'] = self.citation_checker.run()
+
+        # Run text pipeline
+        # -----------------
+        self.text_pipeline = pipelines.Pipeline(
+            self.text,
+            pipelines.text_pipeline
+        )
+        self.text_document = self.text_pipeline.run(
+            args=self.data.get('citation_check')
+        )
+
+        # Run excerpt pipeline
+        # --------------------
+        self.excerpt_pipeline = pipelines.Pipeline(
+            self.excerpt,
+            pipelines.excerpt_pipeline
+        )
+        self.excerpt_document = self.excerpt_pipeline.run()
+
+        # Initialize checkers
+        # -------------------
         self.academic_style_checker = academic_style_checker.Checker(
-            self.text
+            self.text_document
         )
         self.semantics_checker = semantics_checker.Checker(
-            self.text,
-            self.excerpt,
+            self.text_document,
+            self.excerpt_document,
             self.supporting_excerpts
         )
         self.grammar_checker = grammar_checker.Checker(
-            self.text,
-            deferred_preprocess=True
+            self.text_document
         )
         self.plagiarism_checker = plagiarism_checker.Checker(
-            self.text,
-            self.excerpt
+            self.text_document,
+            self.excerpt_document
         )
 
     def run(self):
@@ -65,32 +91,18 @@ class DefaultChecker:
             dict: The raw data from the analyzers described above.
         """
 
-        # Citation check
-        citation_check = self.citation_checker.run()
-
         # Academic style check
-        academic_style_check = self.academic_style_checker.run()
+        self.data['academic_style_check'] = self.academic_style_checker.run()
 
         # Semantics check
-        semantics_check = self.semantics_checker.run()
+        self.data['semantics_check'] = self.semantics_checker.run()
 
         # Plagiarism check
-        plagiarism_check = self.plagiarism_checker.run()
+        self.data['plagiarism_check'] = self.plagiarism_checker.run()
 
         # Grammar check
-        authors = citation_check.get('authors')
-        year = citation_check.get('year')
-        self.grammar_checker._preprocess(authors=authors, year=year)
-        grammar_check = self.grammar_checker.run()
+        self.data['grammar_check'] = self.grammar_checker.run()
 
-        data = {
-            'citation_check': citation_check,
-            'academic_style_check': academic_style_check,
-            'semantics_check': semantics_check,
-            'grammar_check': grammar_check,
-            'plagiarism_check': plagiarism_check
-        }
+        logger.debug('%s', self.data)
 
-        logger.debug('%s', data)
-
-        return data
+        return self.data
