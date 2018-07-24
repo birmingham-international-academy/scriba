@@ -23,7 +23,7 @@ from lti_app.core.text_helpers import (
     clean_text, load_stanford_parser, TextProcessor
 )
 from lti_app.helpers import (
-    contains_list, is_number, is_punctuation, remove_punctuation
+    contains_list, is_punctuation, remove_punctuation
 )
 
 
@@ -58,16 +58,22 @@ class Checker(TextProcessor):
 
     def _preprocess(self, **kwargs):
         authors = kwargs.get('authors')
+        year = kwargs.get('year')
 
-        # Make the spell checker to ignore the author last names
+        # Make the spell checker ignore the author last names
         self.spell.word_frequency.load_words(authors + ["i'm"])
 
         # Remove citation from text
-        pattern = r'\((.*?)\)'
+        pattern = (
+            r'\((.*?'
+            + re.escape(authors[0])
+            + r'|'
+            + re.escape(year)
+            + r'.*?)\)'
+        )
         paren_chunks = [
             m.span()
             for m in re.finditer(pattern, self.text)
-            if authors[0] in m.group(0)
         ]
 
         if len(paren_chunks) > 0:
@@ -113,40 +119,48 @@ class Checker(TextProcessor):
 
         return False
 
-    def get_malformed_sentences(self, sentence):
-        """Get malformed sentences.
+    def get_sentence_fragments(self, sentence):
+        """Get sentence fragments.
 
-        A sentence is malformed if it doesn't convey a "full" thought.
+        A sentence fragment is a sentence which
+        doesn't have an independent clause.
 
         Args:
             sentence (Tree): The parse tree of the sentence.
 
         Returns:
-            list of str: The malformed sentences.
+            list of str: The sentence fragments found.
         """
 
-        # Get clause types
+        # Search for subtrees with POS tag == FRAG
+        subtrees = list(sentence.subtrees(filter=lambda n: n.label() == 'FRAG'))
+
+        if len(subtrees) > 0:
+            return [clean_text(' '.join(node.leaves())) for node in subtrees]
+
+        # Search for malformed sentences
         malformed = []
         subtrees = list(sentence.subtrees(filter=lambda n: n.label() == 'S'))
 
         # There is no sentence, this means it's malformed.
         if len(subtrees) == 0:
-            return [' '.join(sentence.leaves())]
+            return [clean_text(' '.join(sentence.leaves()))]
 
         for tree in subtrees:
-            compounds = [self._get_node_label(node) for node in tree]
+            compounds = ' '.join([self._get_node_label(node) for node in tree])
 
-            # Not accepted compounds
             if (
-                not contains_list(compounds, ['NP', 'VP'])
-                and compounds != ['VP']
-                and not contains_list(compounds, ['SBAR', 'VP'])
-                and not contains_list(compounds, ['S', 'CC', 'S'])
-                and not contains_list(compounds, ['S', ';', 'S'])
+                re.search(r'VP', compounds) is None
+                and re.search(r'SBAR VP', compounds) is None
+                and re.search(r'S( CC S)+', compounds) is None
+                and re.search(r'S( ; S)+', compounds) is None
             ):
                 malformed.append(tree.flatten())
 
-        return [' '.join(malformed_str) for malformed_str in malformed]
+        return [
+            clean_text(' '.join(malformed_str))
+            for malformed_str in malformed
+        ]
 
     def get_comma_splices(self, sentence):
         """Get the comma splices in a sentence.
@@ -161,16 +175,30 @@ class Checker(TextProcessor):
             list of str: The comma splices.
         """
 
-        subtrees = list(sentence.subtrees(filter=self._is_clause))
         comma_splices = []
 
-        for tree in subtrees:
-            compounds = [node.label() for node in tree]
+        # Find clauses with patterns: S , NP VP | S , S , ...
+        subtrees = list(sentence.subtrees(filter=self._is_clause))
 
-            if 'CC' not in compounds and contains_list(compounds, ['S', ","]):
+        for tree in subtrees:
+            compounds = ' '.join([node.label() for node in tree])
+
+            if (
+                re.search(r'S , NP VP', compounds) is not None
+                or re.search(r'S( , S)+', compounds) is not None
+            ):
                 comma_splices.append(tree.flatten())
 
-        return [' '.join(token) for token in comma_splices]
+        # Find verb phrases with patterns: VP , VP , ...
+        subtrees = list(sentence.subtrees(filter=lambda n: n.label() == 'VP'))
+
+        for tree in subtrees:
+            compounds = ' '.join([node.label() for node in tree])
+
+            if re.search(r'VP( , VP)+', compounds) is not None:
+                comma_splices.append(tree.flatten())
+
+        return [clean_text(' '.join(token)) for token in comma_splices]
 
     def get_noun_verb_disagreements(self, sentence):
         """Get noun-verb disagreements.
@@ -258,28 +286,9 @@ class Checker(TextProcessor):
             fst_label = tree[0].label()
 
             if fst_label != 'IN' and not fst_label.startswith('WH'):
-                run_ons.append(' '.join(tree.flatten()))
+                run_ons.append(clean_text(' '.join(tree.flatten())))
 
         return run_ons
-
-    def get_sentence_fragments(self, sentence):
-        """Get sentence fragments.
-
-        A sentence fragment is a sentence which
-        doesn't have an independent clause.
-
-        Args:
-            sentence (Tree): The parse tree of the sentence.
-
-        Returns:
-            list of str: The sentence fragments found.
-        """
-
-        # Search for subtrees with POS tag == FRAG
-        def is_frag(n): n.label() == 'FRAG'
-        subtrees = list(sentence.subtrees(filter=is_frag))
-
-        return [' '.join(node.leaves()) for node in subtrees]
 
     def get_transitive_verbs_without_object(self, sentence):
         """Get transitive verbs without a mandatory object.
@@ -311,7 +320,7 @@ class Checker(TextProcessor):
                 transitive_verbs_without_object.append(tree)
 
         return [
-            ' '.join(node.leaves())
+            clean_text(' '.join(node.leaves()))
             for node in transitive_verbs_without_object
         ]
 
@@ -324,20 +333,21 @@ class Checker(TextProcessor):
 
         # Tokenize text and ignore numbers.
         tokenizer = WhitespaceTokenizer()
-        date_pattern = re.compile(r'^\(\d+\)$')
+        number_pattern = re.compile(r'^\(\d+\)|\d+\w{2}|\d+$')
         contraction_pattern = re.compile(r'^.*\'(t|ve|ll|d)$')
+        proper_noun_pattern = re.compile(r'^[A-Z].*$')
         text = self.text.replace('(', '( ').replace(')', ' )')
         words = [
-            remove_punctuation(word.lower())
+            remove_punctuation(word)
             for word in tokenizer.tokenize(text)
         ]
         words = [
-            word
+            word.lower()
             for word in words
             if word != ''
-            and not is_number(word)
-            and date_pattern.match(word) is None
+            and number_pattern.match(word) is None
             and contraction_pattern.match(word) is None
+            and proper_noun_pattern.match(word) is None
             and word not in string.punctuation
         ]
 
@@ -380,13 +390,13 @@ class Checker(TextProcessor):
 
         return [doc[start:end] for _, start, end in matches]
 
-    def get_to_too_occurrences(self):
-        """Get to/too mistakes.
+    def get_countability_mistakes(self):
+        """Get countability mistakes.
 
-        Example: it's to hot.
+        Example: I installed (the) system.
 
         Returns:
-            list of str: The occurrences of to-too mistakes.
+            list of str: The occurrences of countability mistakes.
         """
         pass
 
@@ -438,17 +448,10 @@ class Checker(TextProcessor):
         # Process the parse tree sentences
         parse_tree_data = self.process_parse_tree([
             self.get_comma_splices,
-            self.get_malformed_sentences,
             self.get_sentence_fragments,
             self.get_run_ons,
-            self.get_transitive_verbs_without_object,
+            # self.get_transitive_verbs_without_object,
             self.get_noun_verb_disagreements,
         ])
-
-        parse_tree_data['sentence_fragments'] = (
-            parse_tree_data.get('sentence_fragments', []) +
-            parse_tree_data.get('malformed_sentences', [])[:]
-        )
-        parse_tree_data.pop('malformed_sentences', None)
 
         return {**data, **parse_tree_data}

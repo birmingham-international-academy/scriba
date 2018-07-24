@@ -8,7 +8,7 @@ Todo:
 from django.template.loader import render_to_string
 
 
-semantics_similarity_threshold = 0.3
+semantics_similarity_threshold = 0.2
 
 
 class FeedbackInterpreter:
@@ -26,14 +26,11 @@ class FeedbackInterpreter:
 
         # Grammar status
         gc = data['grammar_check']
-        data['grammar_status'] = (
-            len(gc['languagetool_check']) == 0
-            and len(gc['run_ons']) == 0
-            and len(gc['transitive_verbs_without_object']) == 0
-            and len(gc['sentence_fragments']) == 0
-            and len(gc['noun_verb_disagreements']) == 0
-            and len(gc['there_their']) == 0
-        )
+        data['grammar_status'] = all([
+            len(value) == 0
+            for key, value in gc.items()
+            if key != 'spell_check'
+        ])
 
         # Spelling status
         data['spelling_status'] = len(gc['spell_check']) == 0

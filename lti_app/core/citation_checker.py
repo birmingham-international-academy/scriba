@@ -26,7 +26,7 @@ class Checker:
         """
 
         m = re.match(
-            r'^(?P<authors>(?:(?:\w+,\s?(?:\w\.)+)(?:,\s?|\sand\s)?)+)\s?'
+            r'^(?P<authors>(?:(?:\w+,\s?(?:\w\.)+)(?:,\s?|\sand\s|,\s?and\s)?)+)\s?'
             r'\((?P<year>\d{4})\)\s'
             r'(?:\"|\')?(?P<title>[^\"\'\.]+)(?:\"|\')?\.?'
             r'.*$',
@@ -82,5 +82,6 @@ class Checker:
             'result': result,
             'possible_citations': possible_citations,
             'citation_after_full_stop': citation_after_full_stop,
-            'authors': authors
+            'authors': authors,
+            'year': year
         }

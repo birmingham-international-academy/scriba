@@ -4,8 +4,9 @@ import re
 import os
 
 from django.conf import settings
-from nltk.corpus import wordnet as wn
+from nltk.corpus import stopwords, wordnet as wn
 from nltk.parse.stanford import StanfordParser, StanfordDependencyParser
+from nltk.tokenize import word_tokenize
 
 
 def load_stanford_parser():
@@ -41,11 +42,20 @@ def load_stanford_parser():
 
 def clean_text(text):
     text = text.strip()
+
+    # Remove unnecessary spaces
     text = re.sub(' +', ' ', text)
     text = re.sub('\n+', ' ', text)
-    text = re.sub(r'\.(?=[^ \W\d])', '. ', text)
-    text = re.sub(r'(\S)\(', r'\1 (', text)
-    text = re.sub(r'\)(\S)', r') \1', text)
+
+    # Add spaces for parenthesis
+    text = re.sub(r'(\S)([\(\{\[])', r'\1 \2', text)
+    text = re.sub(r'([\)\}\]])(\S)', r'\1 \2', text)
+
+    # Add space after punctuation
+    text = re.sub(r'([?.,!])(\S)', r'\1 \2', text)
+
+    # Remove space before punctuation
+    text = re.sub(r'\s([?.,!])', r'\1', text)
 
     return text
 
@@ -71,6 +81,14 @@ def are_hierarchically_related(word1, word2):
     w1_synsets = set(wn.synsets(word1))
 
     return len(w1_synsets & w2_hypernyms) > 0
+
+
+def remove_stopwords(text):
+    stop_words = set(stopwords.words('english'))
+    tokens = word_tokenize(text)
+    filtered_text = [word for word in tokens if not word in stop_words]
+
+    return filtered_text
 
 
 class TextProcessor:

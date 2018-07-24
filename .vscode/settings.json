@@ -1,6 +1,5 @@
 {
     "python.pythonPath": "/home/ossama/.virtualenvs/scriba/bin/python",
     "python.linting.pylintEnabled": true,
-    "python.linting.pep8Enabled": true,
     "python.linting.enabled": true
 }

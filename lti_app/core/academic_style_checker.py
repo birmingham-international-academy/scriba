@@ -11,7 +11,7 @@ import spacy
 from nltk import pos_tag, tokenize
 from nltk.stem import WordNetLemmatizer
 
-from lti_app.core.text_helpers import TextProcessor
+from lti_app.core.text_helpers import remove_stopwords, TextProcessor
 from lti_app.helpers import get_current_dir
 
 
@@ -70,6 +70,14 @@ class Checker(TextProcessor):
             for index, (token, pos) in enumerate(self.tagged_tokens)
             if "'" in token and pos != 'POS'
         ]
+
+    def get_quotation_overuses(self):
+        """Get quotation overuses.
+
+        Returns:
+            list of str: The quotation overuses.
+        """
+        text = remove_stopwords(self.text)
 
     def get_general_informalities(self):
         """Get general informal words such as 'nice', 'good', 'bad'.

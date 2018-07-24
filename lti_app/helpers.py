@@ -1,6 +1,7 @@
 """Provides general utilities."""
 
 import glob
+import math
 import string
 import os
 
@@ -8,8 +9,24 @@ from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
 
-def contains_list(list1, list2):
-    return all(elem in list1 for elem in list2)
+def contains_list(list1, list2, in_order=False):
+    if not in_order:
+        return all(elem in list1 for elem in list2)
+
+    length2 = len(list2)
+
+    for i1, _ in enumerate(list1):
+        lower_index = i1
+        upper_index = lower_index + length2
+        slice1 = list1[lower_index:upper_index]
+
+        if len(slice1) < length2:
+            return False
+
+        if slice1 == list2:
+            return True
+
+    return False
 
 
 def get_current_dir(current_file):

@@ -79,7 +79,8 @@ class DefaultChecker:
 
         # Grammar check
         authors = citation_check.get('authors')
-        self.grammar_checker._preprocess(authors=authors)
+        year = citation_check.get('year')
+        self.grammar_checker._preprocess(authors=authors, year=year)
         grammar_check = self.grammar_checker.run()
 
         data = {

@@ -102,18 +102,6 @@
             </div>
             {% endif %}
 
-            {% if grammar_check.transitive_verbs_without_object|length > 0 %}
-            <div class="{{ accordion_class }}">
-                <h3 class="{{ accordion_title_class }}">
-                    Transitive verbs without object
-                </h3>
-
-                <div class="{{ accordion_content_class }}">
-                    {% include "includes/feedback-snippets/transitive-verbs-without-object-warning.html" %}
-                </div>
-            </div>
-            {% endif %}
-
             {% if grammar_check.there_their|length > 0 %}
             <div class="{{ accordion_class }}">
                 <h3 class="{{ accordion_title_class }}">
