@@ -11,3 +11,7 @@ The following phrase should have comma splices, however the parser gives a paren
 > Nowadays, most of the people with age over 65 are still healthy, we should not assume that people who aged 65 or above are unproductive.
 
 There were fragment issues in this response. But this particular problem is of a relative clause.  The solution could have been either: 'people aged 65 or above' (no relative clause pronoun) or 'people who are aged 65 or above'.
+
+The following should NOT give run-on sentences:
+
+> According to Hirvela & Du (2013), in light of the way students have to engage with a text, paraphrasing helps us to understand students' ability both to read and write.

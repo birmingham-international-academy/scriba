@@ -216,16 +216,7 @@ class Checker:
             list of str: The fused sentences.
         """
 
-        subtrees = list(sentence.subtrees(lambda n: n.label() == 'SBAR'))
-        run_ons = []
-
-        for tree in subtrees:
-            fst_label = tree[0].label()
-
-            if fst_label != 'IN' and not fst_label.startswith('WH'):
-                run_ons.append(clean_text(' '.join(tree.flatten())))
-
-        return run_ons
+        pass
 
     def get_transitive_verbs_without_object(self, sentence):
         """Get transitive verbs without a mandatory object.
@@ -268,13 +259,20 @@ class Checker:
             list of dict: A list of spelling mistake and corrections
         """
 
-        # Tokenize text and ignore numbers.
+        # Tokenize text:
+        # - Ignore numbers
+        # - Ignore proper nouns
+        # - Add spacing around parenthetical sections
+        # - Remove unnecessary spaces
         tokenizer = WhitespaceTokenizer()
         number_pattern = re.compile(r'^\(\d+\)|\d+\w{2}|\d+$')
         contraction_pattern = re.compile(r'^.*\'(t|ve|ll|d)$')
         proper_noun_pattern = re.compile(r'^[A-Z].*$')
         text = self.text_document.get('cleaned_text')
-        text = text.replace('(', '( ').replace(')', ' )')
+        text = re.sub(r'([\(\)\[\]\{\}\'"])', r' \g<1> ', text)
+        text = re.sub(' +', ' ', text)
+        text = re.sub('\n+', ' ', text)
+
         words = [
             remove_punctuation(word)
             for word in tokenizer.tokenize(text)
@@ -364,6 +362,9 @@ class Checker:
         ]
 
         for sentence in sentences:
+
+            print(sentence)
+
             for index, processor in enumerate(processors):
                 key = key_function(processor.__name__, index)
                 result = processor(sentence)
@@ -394,8 +395,6 @@ class Checker:
         parse_tree_data = self.process_parse_tree([
             self.get_comma_splices,
             self.get_sentence_fragments,
-            self.get_run_ons,
-            # self.get_transitive_verbs_without_object,
             self.get_noun_verb_disagreements,
         ])
 

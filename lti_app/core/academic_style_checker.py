@@ -6,6 +6,9 @@ are not used in academic texts.
 
 import json
 import os
+import re
+
+from nltk import tokenize
 
 from lti_app.core.text_helpers import remove_stopwords
 from lti_app.helpers import get_current_dir
@@ -20,6 +23,12 @@ class Checker:
 
     def __init__(self, text_document):
         self.text_document = text_document
+        self.enabled_checks = [
+            'phrasal_verbs',
+            'contractions',
+            'quotation_overuses',
+            'general_informalities'
+        ]
 
     def get_phrasal_verbs(self):
         """Get the phrasal verbs.
@@ -45,7 +54,11 @@ class Checker:
             list of str: The contractions.
         """
 
-        tagged_tokens = self.text_document.get('tagged_tokens')
+        tagged_tokens = [
+            token
+            for token in self.text_document.get('tagged_tokens')
+            if token[0] != "''"
+        ]
 
         return [
             tagged_tokens[index - 1][0] + token
@@ -59,8 +72,19 @@ class Checker:
         Returns:
             list of str: The quotation overuses.
         """
-        # text = remove_stopwords(self.text)
-        pass
+        text = self.text_document.get('cleaned_text')
+        quotes_pattern = r'["\'](.*?)["\']'
+        matches = re.findall(quotes_pattern, text)
+        matches = [match.strip() for match in matches]
+        quotation_overuses = []
+
+        for match in matches:
+            tokens = tokenize.word_tokenize(remove_stopwords(match))
+
+            if len(tokens) > 2:
+                quotation_overuses.append(match)
+
+        return quotation_overuses
 
     def get_general_informalities(self):
         """Get general informal words such as 'nice', 'good', 'bad'.
@@ -89,8 +113,9 @@ class Checker:
             dict: The academic style check data using the described methods.
         """
 
-        return {
-            'phrasal_verbs': self.get_phrasal_verbs(),
-            'contractions': self.get_contractions(),
-            'general_informalities': self.get_general_informalities()
-        }
+        data = {}
+
+        for check in self.enabled_checks:
+            data[check] = getattr(self, 'get_' + check)()
+
+        return data

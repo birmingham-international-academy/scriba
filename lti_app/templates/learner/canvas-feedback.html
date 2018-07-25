@@ -34,12 +34,6 @@
 
 <h3>Grammar</h3>
 
-{% if grammar_check.run_ons|length > 0 %}
-<h4>Run-on sentences</h4>
-
-{% include "includes/feedback-snippets/run-ons-warning.html" %}
-{% endif %}
-
 {% if grammar_check.comma_splices|length > 0 %}
 <h4>Comma splices</h4>
 
@@ -104,6 +98,12 @@
 <h4>Phrasal verbs</h4>
 
 {% include "includes/feedback-snippets/phrasal-verbs-warning.html" %}
+{% endif %}
+
+{% if academic_style_check.quotation_overuses|length > 0 %}
+<h4>Quotation overuse</h4>
+
+{% include "includes/feedback-snippets/quotation-overuses-warning.html" %}
 {% endif %}
 
 {% if academic_style_check.general_informalities|length > 0 %}

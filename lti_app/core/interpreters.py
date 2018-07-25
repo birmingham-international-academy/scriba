@@ -40,6 +40,7 @@ class FeedbackInterpreter:
         data['academic_style_status'] = (
             len(asc['contractions']) == 0
             and len(asc['phrasal_verbs']) < 3
+            and len(asc['quotation_overuses']) == 0
             and len(asc['general_informalities']) == 0
         )
 
@@ -63,7 +64,7 @@ class GradeInterpreter:
         assignment_type (str): The assignment type.
     """
 
-    major_grammar_errors = ['sentence_fragments', 'run_ons']
+    major_grammar_errors = ['sentence_fragments', 'comma_splices']
 
     def __init__(self, assignment_type):
         self.assignment_type = assignment_type

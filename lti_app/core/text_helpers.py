@@ -5,9 +5,9 @@ import re
 import string
 
 from django.conf import settings
+from nltk import WhitespaceTokenizer
 from nltk.corpus import stopwords, wordnet as wn
 from nltk.parse.stanford import StanfordParser, StanfordDependencyParser
-from nltk.tokenize import word_tokenize
 
 
 def load_stanford_parser():
@@ -99,7 +99,9 @@ def are_hierarchically_related(word1, word2):
 
 def remove_stopwords(text):
     stop_words = set(stopwords.words('english'))
-    tokens = word_tokenize(text)
+    tokenizer = WhitespaceTokenizer()
+
+    tokens = tokenizer.tokenize(text)
     filtered_text = [word for word in tokens if not word in stop_words]
 
-    return filtered_text
+    return ' '.join(filtered_text)

@@ -1,6 +1,6 @@
-{% with accordion_class="my-3 px-3 py-2 border border-orange-lighter bg-orange-lightest" %}
-{% with accordion_title_class="mb-2 text-sm uppercase tracking-wide text-orange-dark" %}
-{% with accordion_content_class="text-sm text-orange-darker" %}
+{% with box_class="my-3 px-3 py-2 border border-orange-lighter bg-orange-lightest" %}
+{% with box_title_class="mb-2 text-sm uppercase tracking-wide text-orange-dark" %}
+{% with box_content_class="text-sm text-orange-darker" %}
 
 <div class="bg-white text-grey-darker px-8 pt-6 pb-8 leading-normal">
     <div class="mb-4">
@@ -54,73 +54,61 @@
             </h2>
 
             {% if grammar_check.languagetool_check|length > 0 %}
-            <div class="{{ accordion_class }}">
-                <h3 class="{{ accordion_title_class }}">
+            <div class="{{ box_class }}">
+                <h3 class="{{ box_title_class }}">
                     General mistakes
                 </h3>
 
-                <div class="{{ accordion_content_class }}">
+                <div class="{{ box_content_class }}">
                     {% include "includes/feedback-snippets/general-mistakes-warning.html" %}
                 </div>
             </div>
 
             {% endif %}
 
-            {% if grammar_check.run_ons|length > 0 %}
-            <div class="{{ accordion_class }}">
-                <h3 class="{{ accordion_title_class }}">
-                    Run-on sentences
-                </h3>
-
-                <div class="{{ accordion_content_class }}">
-                    {% include "includes/feedback-snippets/run-ons-warning.html" %}
-                </div>
-            </div>
-            {% endif %}
-
             {% if grammar_check.sentence_fragments|length > 0 %}
-            <div class="{{ accordion_class }}">
-                <h3 class="{{ accordion_title_class }}">
+            <div class="{{ box_class }}">
+                <h3 class="{{ box_title_class }}">
                     Sentence fragments
                 </h3>
 
-                <div class="{{ accordion_content_class }}">
+                <div class="{{ box_content_class }}">
                     {% include "includes/feedback-snippets/sentence-fragments-warning.html" %}
                 </div>
             </div>
             {% endif %}
 
             {% if grammar_check.comma_splices|length > 0 %}
-            <div class="{{ accordion_class }}">
-                <h3 class="{{ accordion_title_class }}">
+            <div class="{{ box_class }}">
+                <h3 class="{{ box_title_class }}">
                     Comma splices
                 </h3>
 
-                <div class="{{ accordion_content_class }}">
+                <div class="{{ box_content_class }}">
                     {% include "includes/feedback-snippets/comma-splices-warning.html" %}
                 </div>
             </div>
             {% endif %}
 
             {% if grammar_check.there_their|length > 0 %}
-            <div class="{{ accordion_class }}">
-                <h3 class="{{ accordion_title_class }}">
+            <div class="{{ box_class }}">
+                <h3 class="{{ box_title_class }}">
                     There vs Their mistakes
                 </h3>
 
-                <div class="{{ accordion_content_class }}">
+                <div class="{{ box_content_class }}">
                     {% include "includes/feedback-snippets/there-their-warning.html" %}
                 </div>
             </div>
             {% endif %}
 
             {% if grammar_check.noun_verb_disagreements|length > 0 %}
-            <div class="{{ accordion_class }}">
-                <h3 class="{{ accordion_title_class }}">
+            <div class="{{ box_class }}">
+                <h3 class="{{ box_title_class }}">
                     Subject-verb disagreements
                 </h3>
 
-                <div class="{{ accordion_content_class }}">
+                <div class="{{ box_content_class }}">
                     {% include "includes/feedback-snippets/subject-verb-disagreements-warning.html" %}
                 </div>
             </div>
@@ -193,36 +181,48 @@
             </h2>
 
             {% if academic_style_check.contractions|length > 0 %}
-            <div class="{{ accordion_class }}">
-                <h3 class="{{ accordion_title_class }}">
+            <div class="{{ box_class }}">
+                <h3 class="{{ box_title_class }}">
                     Contraction/short forms
                 </h3>
 
-                <div class="{{ accordion_content_class }}">
+                <div class="{{ box_content_class }}">
                     {% include "includes/feedback-snippets/contractions-warning.html" %}
                 </div>
             </div>
             {% endif %}
 
             {% if academic_style_check.phrasal_verbs|length > 0 %}
-            <div class="{{ accordion_class }}">
-                <h3 class="{{ accordion_title_class }}">
+            <div class="{{ box_class }}">
+                <h3 class="{{ box_title_class }}">
                     Phrasal verbs
                 </h3>
 
-                <div class="{{ accordion_content_class }}">
+                <div class="{{ box_content_class }}">
                     {% include "includes/feedback-snippets/phrasal-verbs-warning.html" %}
                 </div>
             </div>
             {% endif %}
 
+            {% if academic_style_check.quotation_overuses|length > 0 %}
+            <div class="{{ box_class }}">
+                <h3 class="{{ box_title_class }}">
+                    Quotation overuse
+                </h3>
+
+                <div class="{{ box_content_class }}">
+                    {% include "includes/feedback-snippets/quotation-overuses-warning.html" %}
+                </div>
+            </div>
+            {% endif %}
+
             {% if academic_style_check.general_informalities|length > 0 %}
-            <div class="{{ accordion_class }}">
-                <h3 class="{{ accordion_title_class }}">
+            <div class="{{ box_class }}">
+                <h3 class="{{ box_title_class }}">
                     Informal words
                 </h3>
 
-                <div class="{{ accordion_content_class }}">
+                <div class="{{ box_content_class }}">
                     {% include "includes/feedback-snippets/general-informalities-warning.html" %}
                 </div>
             </div>
