@@ -324,7 +324,10 @@ class Checker:
         doc = self.text_document.get('spacy_doc')
         matches = matcher_obj(doc)
 
-        return [doc[start:end] for _, start, end in matches]
+        return [
+            ' '.join([str(token) for token in doc[start:end]])
+            for _, start, end in matches
+        ]
 
     def get_countability_mistakes(self):
         """Get countability mistakes.
