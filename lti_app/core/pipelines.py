@@ -59,11 +59,11 @@ class Pipeline:
         year = args.get('year')
 
         pattern = (
-            r'\((.*?'
-            + re.escape(authors[0])
+            r'\((.*?(?:'
+            + re.escape(str(authors[0]))
             + r'|'
-            + re.escape(year)
-            + r'.*?)\)'
+            + re.escape(str(year))
+            + r').*?)\)'
         )
         paren_chunks = [
             m.span()
