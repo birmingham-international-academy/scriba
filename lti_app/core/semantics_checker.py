@@ -34,7 +34,7 @@ class Checker:
         self.excerpt_document = excerpt_document
         self.supporting_excerpts = (
             [
-                line
+                line.strip()
                 for line in clean_text(supporting_excerpts).splitlines()
                 if line.strip() != ''
             ]
@@ -170,6 +170,6 @@ class Checker:
 
         sims = index[tfidf[vec]]
 
-        vs_method_result = max(sims)
+        vs_method_result = sum(sims) / len(sims)
 
         return (pp_method_result + vs_method_result) / 2

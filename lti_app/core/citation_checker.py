@@ -33,7 +33,7 @@ class Checker:
         """
 
         m = re.match(
-            r'^(?P<authors>(?:(?:\w+,\s?(?:\w\.)+)(?:,\s?|\sand\s|,\s?and\s)?)+)\s?'
+            r'^(?P<authors>(?:(?:\w+,\s?(?:\w\.)+)(?:,\s?|\sand\s|,\s?and\s|\s&\s|,\s?&\s)?)+)\s?'
             r'\((?P<year>\d{4})\)\s'
             r'(?:\"|\')?(?P<title>[^\"\'\.]+)(?:\"|\')?\.?'
             r'.*$',
@@ -48,7 +48,7 @@ class Checker:
         year = data['year']
         authors = [
             author.strip()
-            for author in re.split(r',|\sand\s', data['authors'].strip())
+            for author in re.split(r',|\sand\s|\s&\s', data['authors'].strip())
         ]
         authors = authors[::2]
 
