@@ -170,6 +170,6 @@ class Checker:
 
         sims = index[tfidf[vec]]
 
-        vs_method_result = sum(sims) / len(sims)
+        vs_method_result = max(sims)
 
         return (pp_method_result + vs_method_result) / 2

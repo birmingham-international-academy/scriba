@@ -109,7 +109,7 @@ Whenever local changes are made the server must always perform the following:
 
 1. `$ git pull origin master`
 2. `$ python manage.py migrate`
-3. `$ pythong manage.py collectstatic`
+3. `$ python manage.py collectstatic`
 
 In addition, if using the Digital Ocean setup described above, run:
 
