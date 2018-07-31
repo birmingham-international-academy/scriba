@@ -28,6 +28,11 @@ def extract(source_path, target_path):
     zp.close()
 
 
+def get(url):
+    response = requests.get(url)
+    return response.text
+
+
 def get_data_directory():
     current_filename = os.path.dirname(os.path.realpath(__file__))
     return os.path.abspath(os.path.join(

@@ -49,10 +49,10 @@ Run the following command to download the 'en' model for SpaCy: `python -m spacy
 
 LanguageTool is a service that offers spell and grammar checking. Scriba adds it to its own grammar checking.
 
-Run the following to get the Language Tool stable release:
+Run the following to get the Language Tool stable release as well as the ngram data (the total size of the unzipped files is about 15GB):
 
 ```
-$ ./bin/languagetool.sh
+$ python bin/languagetool.py
 ```
 
 This will download the necessary files in `lti_app/core/data/languagetool`.
