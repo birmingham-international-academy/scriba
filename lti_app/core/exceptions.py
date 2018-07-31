@@ -6,6 +6,8 @@ class BadlyFormattedCitationException(BaseLtiException):
         BaseLtiException.__init__(self, 'cit_check_1')
 
 
-class PipelineException(BaseLtiException):
-    def __init__(self):
-        BaseLtiException.__init__(self, 'pipeline')
+class TextProcessingException(BaseLtiException):
+    def __init__(self, message='Generic Text Processing Error.'):
+        BaseLtiException.__init__(self, 'text_processing', {
+            'message': message
+        })

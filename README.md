@@ -2,13 +2,15 @@
 
 > A Canvas LTI for automated paraphrase analysis.
 
-## Development setup
+## General Setup
 
 Scriba is compatible with Python 3.5.2.
 
+> Please note: if you encounter any problems when following this guide do not hesitate to contact us on ossedb@gmail.com
+
 First of all install the dependencies using: `pip -r requirements.txt`.
 
-### 1. Environment settings
+### 1. Environment Settings
 
 Create a `.env` file resembling the `.env.example` file in the same directory (`scriba/settings`).
 
@@ -27,7 +29,7 @@ After installing the required packages, we need to download corpora that is used
 $ ./bin/nltk_data.sh
 ```
 
-### 3. NLTK interface to the Stanford Parser
+### 3. NLTK Interface to the Stanford Parser
 
 The Stanford Parser is a probabilistic parser written in Java. NLTK provides a Python interface to it;
 so let's setup the Java environment:
@@ -39,7 +41,7 @@ $ sudo apt-get install default-jdk
 
 Then run `python bin/stanford_parser.py` to download and extract the Stanford parser.
 
-### 4. SpaCy package
+### 4. SpaCy Package
 
 Run the following command to download the 'en' model for SpaCy: `python -m spacy download en`
 
@@ -55,7 +57,7 @@ $ ./bin/languagetool.sh
 
 This will download the necessary files in `lti_app/core/data/languagetool`.
 
-### 6. Setup the database
+### 6. Setup the Database
 
 Todo.
 
@@ -67,7 +69,13 @@ workers.
 
 To setup Redis follow step 1 and 2 of this guide: https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-18-04.
 
-### 8. Run the server in development mode
+## Development Setup
+
+The following steps must be executed
+after the general setup if you
+are using a development setup.
+
+### 1. Run the Server in Development Mode
 
 To run a local HTTPS server you have to install the following Django app:
 
@@ -81,7 +89,7 @@ Then run the server using:
 $ python manage.py runsslserver --settings=scriba.settings.local
 ```
 
-### 9. Run the worker
+### 2. Run the Worker
 
 Scriba uses Python RQ for background tasks management.
 Run the worker using:
@@ -90,7 +98,7 @@ Run the worker using:
 $ python worker.py
 ```
 
-### 10. Run the Language Tool server
+### 3. Run the Language Tool Server
 
 Language Tool is a rule-based grammar checker. Scriba's
 grammar checker uses it as an added check.
@@ -98,10 +106,19 @@ grammar checker uses it as an added check.
 To run the Language Tool server execute the following command:
 
 ```
-$ java -cp lti_app/core/data/languagetool/languagetool-server.jar org.languagetool.server.HTTPServer --port 8081
+$ java -cp lti_app/core/data/languagetool/languagetool-server.jar org.languagetool.server.HTTPServer --port 8081 --languageModel lti_app/core/data/languagetool/ngram
 ```
 
-## Production setup
+## Production Setup
+
+The following steps must be executed
+after the general setup if you
+are using a production setup (here we
+are using DigitalOcean).
+
+### 1. DigitalOcean Setup
+
+Todo.
 
 ### Routine
 

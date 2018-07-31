@@ -14,10 +14,11 @@ import itertools
 import re
 
 from gensim import corpora, models, similarities
+from nltk import word_tokenize
 from predpatt import PredPatt
 
-from lti_app.core.text_helpers import are_synonyms, clean_text
-from lti_app.core.tools import Tools
+from lti_app.core.text_helpers import are_synonyms, clean_text, is_punctuation
+from lti_app.core.text_processing.tools import Tools
 
 
 class Checker:
@@ -32,15 +33,17 @@ class Checker:
     def __init__(self, text_document, excerpt_document, supporting_excerpts):
         self.text_document = text_document
         self.excerpt_document = excerpt_document
-        self.supporting_excerpts = (
-            [
+
+        if supporting_excerpts is None:
+            self.supporting_excerpts = []
+        elif type(supporting_excerpts) is list:
+            self.supporting_excerpts = supporting_excerpts
+        elif type(supporting_excerpts) is str:
+            self.supporting_excerpts = [
                 line.strip()
                 for line in clean_text(supporting_excerpts).splitlines()
                 if line.strip() != ''
             ]
-            if supporting_excerpts is not None
-            else []
-        )
 
         # Load document vectors
         documents = [self.excerpt_document.text] + self.supporting_excerpts
@@ -50,9 +53,17 @@ class Checker:
         self.tools = Tools()
 
     def _docs_to_vectors(self, documents):
-        stoplist = set('for a of the and to in'.split())
+        def tokenize_document(document):
+            stoplist = set('for a of the and to in'.split())
+
+            return [
+                word
+                for word in word_tokenize(document.lower())
+                if word not in stoplist and not is_punctuation(word)
+            ]
+
         texts = [
-            [word for word in document.lower().split() if word not in stoplist]
+            tokenize_document(document)
             for document in documents
         ]
 
@@ -60,29 +71,18 @@ class Checker:
 
         return [self.dictionary.doc2bow(text) for text in texts]
 
-    def _get_pred_patterns(self, sentences, opts):
-        pred_patt = []
-
-        for line in sentences:
-            for sentence in line:
-                pp = PredPatt.from_constituency(str(sentence), opts=opts)
-                for predicate in pp.instances:
-                    pred_patt.append({
-                        'target': predicate,
-                        'args': predicate.arguments
-                    })
-
-        return pred_patt
-
     def _is_target_negated(self, target):
         tokens = [token.text for token in target.tokens]
         return 'not' in tokens or "n't" in tokens
 
     def _tuple_similarity(self, t1, t2):
         similarity = 0.0
-        weight_target = 1.7
+        weight_target = 1.3
         weight_arg = 1
         num_args_shared = 0
+
+        # Get Targets and Arguments
+        # ---------------------------------------------
 
         target1 = self.tools.stemmer.stem(t1['target'].root.text)
         args1 = t1['args']
@@ -90,12 +90,8 @@ class Checker:
         target2 = self.tools.stemmer.stem(t2['target'].root.text)
         args2 = t2['args']
 
-        # Reverse arguments if passive voice is used
-        if len(args1) == 2 and args1[0].root.gov_rel == 'nsubjpass':
-            args1.reverse()
-
-        if len(args2) == 2 and args2[0].root.gov_rel == 'nsubjpass':
-            args2.reverse()
+        # Target Similarity
+        # ---------------------------------------------
 
         # Check for negation in the predicate
         t1_negated = self._is_target_negated(t1['target'])
@@ -105,12 +101,24 @@ class Checker:
             (not t1_negated and t2_negated)
         )
 
+        # Calculate similarity
         if (
             not negation_mismatch and
             (target1 == target2 or are_synonyms(target1, target2))
         ):
             similarity += weight_target
 
+        # Arguments Similarity
+        # ---------------------------------------------
+
+        # Reverse arguments if passive voice is used
+        if len(args1) == 2 and args1[0].root.gov_rel == 'nsubjpass':
+            args1.reverse()
+
+        if len(args2) == 2 and args2[0].root.gov_rel == 'nsubjpass':
+            args2.reverse()
+
+        # Calculate similarity
         for arg1, arg2 in list(itertools.zip_longest(args1, args2)):
             arg1_text = arg1 and self.tools.stemmer.stem(arg1.root.text)
             arg2_text = arg2 and self.tools.stemmer.stem(arg2.root.text)
@@ -132,7 +140,7 @@ class Checker:
 
     def run(self):
         # 1. Predicate patterns method
-        # ----------------------------
+        # ---------------------------------------------
 
         pairs = []
         text_pred_args = self.text_document.get('predicate_patterns')[:]
@@ -154,22 +162,33 @@ class Checker:
             excerpt_pred_args.remove(best_pair[1])
 
         if len(pairs) == 0:
-            return 0
-
-        pp_method_result = sum([sim for _, _, sim in pairs]) / len(pairs)
+            pp_method_result = 0
+        else:
+            pp_method_result = sum([sim for _, _, sim in pairs]) / len(pairs)
 
         # 2. Vector similarity method
-        # ---------------------------
+        # ---------------------------------------------
 
         tfidf = models.TfidfModel(self.vectors_corpus)
         index = similarities.SparseMatrixSimilarity(
             tfidf[self.vectors_corpus],
             num_features=len(self.dictionary)
         )
-        vec = self.dictionary.doc2bow(self.text_document.text.lower().split())
+
+        tokens = [
+            token.lower()
+            for token in self.text_document.get('tokens')
+            if not is_punctuation(token)
+        ]
+        vec = self.dictionary.doc2bow(tokens)
 
         sims = index[tfidf[vec]]
 
         vs_method_result = sum(sims) / len(sims)
 
-        return (pp_method_result + vs_method_result) / 2
+        # if vs_method_result == 0.0 and len(self.supporting_excerpts) == 0:
+        #    overall_result = pp_method_result
+        # else:
+        #    overall_result = (pp_method_result + vs_method_result) / 2
+
+        return max(vs_method_result, pp_method_result)

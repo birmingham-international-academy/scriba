@@ -13,3 +13,5 @@ nltk==3.3
 Django==2.0.6
 python-dotenv==0.8.2
 gunicorn==19.8.1
+gensim==3.5.0
+sacremoses==0.0.3

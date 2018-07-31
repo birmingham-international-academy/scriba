@@ -8,8 +8,7 @@ def check(text):
     r = requests.post(URL, data={
         'text': text,
         'language': 'en-GB',
-        'disabledCategories': 'TYPOS',
-        'disabledRules': 'EN_QUOTES'
+        'disabledRules': 'EN_QUOTES',
     })
 
     return r.json().get('matches', [])

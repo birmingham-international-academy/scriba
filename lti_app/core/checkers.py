@@ -6,10 +6,10 @@ from lti_app.core import (
     academic_style_checker,
     citation_checker,
     grammar_checker,
-    pipelines,
     plagiarism_checker,
     semantics_checker
 )
+from lti_app.core.text_processing import processing_graphs, processors
 from lti_app.setup_logging import setup_logging
 
 
@@ -40,31 +40,29 @@ class DefaultChecker:
         self.data = {}
 
         # Run citation checker in advance
-        # for pipeline preprocessing
-        # -------------------------------
+        # for preprocessing
+        # ---------------------------------------------
         self.citation_checker = citation_checker.Checker(
             self.text,
             self.reference
         )
         self.data['citation_check'] = self.citation_checker.run()
 
-        # Run text pipeline
-        # -----------------
-        self.text_pipeline = pipelines.Pipeline(
-            self.text,
-            pipelines.text_pipeline
-        )
-        self.text_document = self.text_pipeline.run(
-            args=self.data.get('citation_check')
+        # Run text processor
+        # ---------------------------------------------
+        self.text_processor = processors.TextProcessor(
+            processing_graphs.default_graph,
+            processing_graphs.citation_remover
         )
 
-        # Run excerpt pipeline
-        # --------------------
-        self.excerpt_pipeline = pipelines.Pipeline(
-            self.excerpt,
-            pipelines.excerpt_pipeline
+        self.text_document = self.text_processor.run(
+            self.text,
+            authors=self.data.get('citation_check').get('authors'),
+            year=self.data.get('citation_check').get('year')
         )
-        self.excerpt_document = self.excerpt_pipeline.run()
+
+        self.text_processor.graph_root = processing_graphs.text_cleaner
+        self.excerpt_document = self.text_processor.run(self.excerpt)
 
         # Initialize checkers
         # -------------------

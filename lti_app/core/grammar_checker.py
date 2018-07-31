@@ -8,14 +8,13 @@ Todo:
 import re
 import string
 
-import spellchecker
 from nltk import WhitespaceTokenizer
 from nltk.tree import ParentedTree
 from spacy.matcher import Matcher
 
 from lti_app.core import languagetool
 from lti_app.core.text_helpers import clean_text
-from lti_app.core.tools import Tools
+from lti_app.core.text_processing.tools import Tools
 from lti_app.helpers import remove_punctuation
 
 
@@ -24,28 +23,61 @@ class Checker:
 
     Attributes:
         clause_types (list): A list of clause-level POS tags.
-        transitive_verbs (list): A list of transitive verbs
-            that require an object.
 
     Args:
         text_document (Document): The text submitted by the student.
     """
 
     clause_types = ['S', 'SBAR', 'SINV', 'SQ']
-    transitive_verbs = ['bring', 'cost', 'give', 'lend', 'offer',
-                        'pass', 'play', 'send', 'sing', 'teach',
-                        'buy', 'get', 'leave', 'make', 'owe',
-                        'pay', 'promise', 'refuse', 'show', 'take', 'tell']
 
     def __init__(self, text_document):
         self.text_document = text_document
         self.tools = Tools()
-
-    def _is_clause(self, node):
-        return node.label() in self.clause_types
+        self.detokenize = self.tools.word_detokenizer.detokenize
 
     def _get_node_label(self, node):
         return node if type(node) is str else node.label()
+
+    def _get_verbs(self, verb_phrase):
+        verbs = []
+
+        for node in verb_phrase:
+            if isinstance(node, ParentedTree) and node.label() not in self.clause_types:
+                if self._is_verb(node.label()):
+                    verbs.append(node)
+                else:
+                    verbs.extend(self._get_verbs(node))
+
+        return verbs
+
+    def _has_disagreement(self, base_noun, base_verb, has_conjunction):
+        noun_labels = [noun.label() for noun in base_noun]
+        verb_labels = [verb.label() for verb in base_verb]
+
+        if len(noun_labels) > 1 and has_conjunction:
+            # Plural noun phrase (e.g. John and Mary)
+            i_pronoun = False
+            singular = False
+            plural = True
+        else:
+            # Extract head noun (covers compound nouns)
+            n_label = noun_labels[-1]
+
+            if n_label == 'PRP':
+                n_label = base_noun[0][0].lower()
+
+            i_pronoun = n_label == 'i'
+            singular = n_label in ['NN', 'NNP', 'he', 'she', 'it']
+            plural = n_label in ['NNS','NNPS', 'you', 'we', 'they']
+
+        return any([
+            (
+                (singular and verb_label == 'VBP')
+                or (i_pronoun and verb_label == 'VBZ')
+                or (plural and verb_label == 'VBZ')
+            )
+            for verb_label in verb_labels
+        ])
 
     def _has_wh_clause(self, node):
         for child in node:
@@ -55,6 +87,15 @@ class Checker:
                 return True
 
         return False
+
+    def _is_clause(self, node):
+        return node.label() in self.clause_types
+
+    def _is_noun(self, n):
+        return n.startswith('NN') or n == 'PRP'
+
+    def _is_verb(self, n):
+        return n.startswith('VB')
 
     def get_sentence_fragments(self, sentence):
         """Get sentence fragments.
@@ -73,7 +114,10 @@ class Checker:
         subtrees = list(sentence.subtrees(filter=lambda n: n.label() == 'FRAG'))
 
         if len(subtrees) > 0:
-            return [clean_text(' '.join(node.leaves())) for node in subtrees]
+            return [
+                clean_text(self.detokenize(node.leaves()))
+                for node in subtrees
+            ]
 
         # Search for malformed sentences
         malformed = []
@@ -81,7 +125,8 @@ class Checker:
 
         # There is no sentence, this means it's malformed.
         if len(subtrees) == 0:
-            return [clean_text(' '.join(sentence.leaves()))]
+            sent = sentence.leaves()
+            return [clean_text(self.detokenize(sent))]
 
         for tree in subtrees:
             compounds = ' '.join([self._get_node_label(node) for node in tree])
@@ -95,7 +140,7 @@ class Checker:
                 malformed.append(tree.flatten())
 
         return [
-            clean_text(' '.join(malformed_str))
+            clean_text(self.detokenize(malformed_str))
             for malformed_str in malformed
         ]
 
@@ -135,7 +180,7 @@ class Checker:
             if re.search(r'VP( , VP)+', compounds) is not None:
                 comma_splices.append(tree.flatten())
 
-        return [clean_text(' '.join(token)) for token in comma_splices]
+        return [clean_text(self.detokenize(token)) for token in comma_splices]
 
     def get_noun_verb_disagreements(self, sentence):
         """Get noun-verb disagreements.
@@ -143,26 +188,15 @@ class Checker:
         Subject-verb disagreement is when you use the plural-form verb
         for a single-form noun as in "the fox play".
 
+        Note:
+            Does not catch: (S (VP (VBP give) (NP (JJ good) (NNS results))))
+
         Args:
             sentence (Tree): The parse tree of the sentence.
 
         Returns:
             list of str: Subject-verb disagreements.
         """
-
-        def is_noun(n):
-            return n.startswith('NN') or n == 'PRP'
-
-        def is_verb(n):
-            return n.startswith('VB')
-
-        def has_disagreement(n_label, v_label):
-            return (
-                (n_label in ['NN', 'NNP'] and v_label == 'VBP')
-                or (n_label in ['NNS', 'NNPS'] and v_label == 'VBZ')
-                or (n_label in ['he', 'she', 'it'] and v_label == 'VBP')
-                or (n_label in ['you', 'we', 'they'] and v_label == 'VBZ')
-            )
 
         disagreements = []
         subtrees = list(sentence.subtrees(filter=self._is_clause))
@@ -180,24 +214,26 @@ class Checker:
             if noun_phrase is None or verb_phrase is None:
                 continue
 
-            base_noun = [n for n in noun_phrase if is_noun(n.label())]
-            base_verb = [v for v in verb_phrase if is_verb(v.label())]
+            # Get base noun components
+            base_noun = []
+            has_conjunction = False
+            for n in noun_phrase:
+                if self._is_noun(n.label()):
+                    base_noun.append(n)
+                elif n.label() == 'CC':
+                    has_conjunction = True
+
+            # Get base verb components
+            base_verb = self._get_verbs(verb_phrase)
 
             if base_noun == [] or base_verb == []:
                 continue
 
-            noun, noun_label = base_noun[0], base_noun[0].label()
-            verb, verb_label = base_verb[0], base_verb[0].label()
-            phrase = noun[0] + ' ' + verb[0]
-
-            if has_disagreement(noun_label, verb_label):
+            if self._has_disagreement(base_noun, base_verb, has_conjunction):
+                phrase = self.detokenize(
+                    noun_phrase.leaves() + verb_phrase.leaves()
+                )
                 disagreements.append(phrase)
-
-            if noun_label == 'PRP':
-                pronoun = noun[0].lower()
-
-                if has_disagreement(pronoun, verb_label):
-                    disagreements.append(phrase)
 
         return disagreements
 
@@ -215,45 +251,13 @@ class Checker:
         Returns:
             list of str: The fused sentences.
         """
-
-        pass
-
-    def get_transitive_verbs_without_object(self, sentence):
-        """Get transitive verbs without a mandatory object.
-
-        Args:
-            sentence (Tree): The parse tree of the sentence.
-
-        Returns:
-            list of str: The transitive verbs without object.
-        """
-
-        subtrees = list(sentence.subtrees(filter=lambda n: n.label() == 'VP'))
-        transitive_verbs_without_object = []
-
-        for tree in subtrees:
-            verb = ''
-            has_object = False
-
-            for node in tree:
-                n = node.label()
-
-                if n.startswith('VB'):
-                    verb = self.tools.lemmatizer.lemmatize(node[0].lower(), 'v')
-
-                if n == 'NP' or (n == 'SBAR' and self._has_wh_clause(node)):
-                    has_object = True
-
-            if not has_object and verb in self.transitive_verbs:
-                transitive_verbs_without_object.append(tree)
-
-        return [
-            clean_text(' '.join(node.leaves()))
-            for node in transitive_verbs_without_object
-        ]
+        raise NotImplementedError()
 
     def get_spelling_mistakes(self):
         """Get spelling mistakes.
+
+        Note:
+            DEPRECATED
 
         Returns:
             list of dict: A list of spelling mistake and corrections
@@ -304,6 +308,9 @@ class Checker:
     def get_there_their_occurrences(self):
         """Get there-their mistakes such as 'there father is kind'.
 
+        Note:
+            DEPRECATED
+
         Returns:
             list of str: The occurrences of there-their mistakes.
         """
@@ -337,7 +344,7 @@ class Checker:
         Returns:
             list of str: The occurrences of countability mistakes.
         """
-        pass
+        raise NotImplementedError()
 
     def process_parse_tree(self, processors, key_function=None):
         """Process the parse tree for a sentence.
@@ -389,9 +396,7 @@ class Checker:
         cleaned_text = self.text_document.get('cleaned_text')
 
         data = {
-            'spell_check': self.get_spelling_mistakes(),
             'languagetool_check': languagetool.check(cleaned_text),
-            'there_their': self.get_there_their_occurrences()
         }
 
         # Process the parse tree sentences

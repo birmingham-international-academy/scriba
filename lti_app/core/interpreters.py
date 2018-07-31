@@ -1,14 +1,13 @@
-"""Provides interpreters for the analysis data.
+"""Collection of interpreters for the raw data analysis.
 
 Todo:
-    - GradeInterpreter -> grammar and/or style correct
     - Store settings
 """
 
 from django.template.loader import render_to_string
 
 
-semantics_similarity_threshold = 0.2
+semantics_similarity_threshold = 0.15
 
 
 class FeedbackInterpreter:
@@ -26,14 +25,7 @@ class FeedbackInterpreter:
 
         # Grammar status
         gc = data['grammar_check']
-        data['grammar_status'] = all([
-            len(value) == 0
-            for key, value in gc.items()
-            if key != 'spell_check'
-        ])
-
-        # Spelling status
-        data['spelling_status'] = len(gc['spell_check']) == 0
+        data['grammar_status'] = all([len(value) == 0 for value in gc.values()])
 
         # Academic style status
         asc = data['academic_style_check']
@@ -69,7 +61,10 @@ class GradeInterpreter:
     def __init__(self, assignment_type):
         self.assignment_type = assignment_type
 
-    def _get_errors(self, d, exclude=[], include='*'):
+    def _get_errors(self, d, exclude=None, include='*'):
+        if exclude is None:
+            exclude = []
+
         keys = d.keys()
         exclude = keys if exclude == '*' else exclude
         include = keys if include == '*' else include
@@ -83,7 +78,10 @@ class GradeInterpreter:
 
         return len(errors)
 
-    def _get_minor_errors_aggregate(self, data, exclude=[]):
+    def _get_minor_errors_aggregate(self, data, exclude=None):
+        if exclude is None:
+            exclude = []
+
         citation_check = data.get('citation_check')
         grammar_check = data.get('grammar_check')
         style_check = data.get('academic_style_check')

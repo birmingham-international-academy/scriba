@@ -1,4 +1,4 @@
-"""Provides citation checkers using different referencing formats."""
+"""Collection of citation checkers using different referencing formats."""
 
 import re
 
@@ -6,7 +6,7 @@ from lti_app.core.exceptions import BadlyFormattedCitationException
 
 
 class Checker:
-    """Implements the default Harvard citation checking.
+    """The default Harvard citation checking.
 
     Args:
         text (string): The text submitted by the student.

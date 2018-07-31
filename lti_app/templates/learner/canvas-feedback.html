@@ -70,14 +70,6 @@
 {% include "includes/feedback-snippets/general-mistakes-warning.html" %}
 {% endif %}
 
-<h3>Spelling</h3>
-
-{% if grammar_check.spell_check|length > 0 %}
-{% include "includes/feedback-snippets/spelling-warning.html" %}
-{% else %}
-<p>Good, there are no spelling mistakes!</p>
-{% endif %}
-
 <h3>Citation</h3>
 
 {% if citation_check.result %}

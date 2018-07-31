@@ -1,26 +1,77 @@
 import pytest
 
-from lti_app.core.semantics_checker import Checker
+from lti_app.core.semantics_checker import Checker as SemanticsChecker
+from lti_app.core.text_processing import processing_graphs, processors
 
 
-def _normalize_sentence(text):
-    return text.split('.')[0].strip()
+# Utility/Global Functions
+# =============================================
+
+def _get_semantics_checker(text, excerpt, supporting_excerpts):
+    text_processor = processors.TextProcessor(
+        processing_graphs.default_graph,
+        processing_graphs.text_cleaner
+    )
+
+    text_document = text_processor.run(text)
+    excerpt_document = text_processor.run(excerpt)
+
+    return SemanticsChecker(
+        text_document,
+        excerpt_document,
+        supporting_excerpts
+    )
 
 
-# 'All thunderstorms have a similar life history.',
-# 'All thunderstorms have similarity in their historical life story.',
+# Tests
+# =============================================
 
-@pytest.mark.parametrize('excerpt,text,expected', [
+@pytest.mark.parametrize('text,excerpt,supporting_excerpts,expected', [
     (
         "History has a habit of repeating itself through the decades in Europe. In Italy, where communists once held sway, nationalists are now in the ascendancy.",
         'In Italy communists once held sway, however nationalists are rising up.',
-        1
+        [],
+        True
+    ),
+    (
+        'Paraphrasing has the essential function of helping the writer to restate the thoughts of another author without replicating them in an exact manner.',
+        "One important function of the paraphrase is to help a writer restate another author's ideas without copying them exactly.",
+        [],
+        True
+    ),
+    (
+        'Paraphrasing has the essential function of helping the writer to restate the thoughts of another author without replicating them in an exact manner.',
+        "One important function of the paraphrase is to help a writer restate another author's ideas without copying them exactly.",
+        ['Helping one writer to express the ideas of another using different words is a key feature in paraphrase.'],
+        True
+    ),
+    (
+        'An essential task of the paraphrase is to aid a writer in reformulating the thoughts of another author without exact copying.',
+        "One important function of the paraphrase is to help a writer restate another author's ideas without copying them exactly.",
+        [],
+        True
+    ),
+    (
+        'Nationalists are repeating history by destroying communism.',
+        'History repeats itself throughout the decades in Europe. For example, in Italy the nationalists have risen from a past of communism. Nationalist sentiment is a common feeling in the European Union.',
+        [],
+        False
+    ),
+    (
+        'Keck (2006) mentions the important role that paraphrase plays in enabling writers to express the ideas of others in their own words.',
+        'One important function of the paraphrase is to help a writer restate another author’s ideas without copying them exactly.',
+        [],
+        True
     )
 ])
-def test_similarity(excerpt, text, expected):
-    print('\n')
-    semantics_checker = Checker(text, excerpt)
+def test_similarity(text, excerpt, supporting_excerpts, expected):
+    semantics_checker = _get_semantics_checker(
+        text,
+        excerpt,
+        supporting_excerpts
+    )
 
-    semantics_checker.run()
+    threshold = 0.15
+    similarity = semantics_checker.run()
 
-    assert 1 == 1
+    assert (similarity > threshold) == expected
