@@ -90,18 +90,6 @@
             </div>
             {% endif %}
 
-            {% if grammar_check.there_their|length > 0 %}
-            <div class="{{ box_class }}">
-                <h3 class="{{ box_title_class }}">
-                    There vs Their mistakes
-                </h3>
-
-                <div class="{{ box_content_class }}">
-                    {% include "includes/feedback-snippets/there-their-warning.html" %}
-                </div>
-            </div>
-            {% endif %}
-
             {% if grammar_check.noun_verb_disagreements|length > 0 %}
             <div class="{{ box_class }}">
                 <h3 class="{{ box_title_class }}">

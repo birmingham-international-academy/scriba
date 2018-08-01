@@ -46,18 +46,6 @@
 {% include "includes/feedback-snippets/sentence-fragments-warning.html" %}
 {% endif %}
 
-{% if grammar_check.transitive_verbs_without_object|length > 0 %}
-<h4>Transitive verbs without objects</h4>
-
-{% include "includes/feedback-snippets/transitive-verbs-without-object-warning.html" %}
-{% endif %}
-
-{% if grammar_check.there_their|length > 0 %}
-<h4>There vs Their mistakes</h4>
-
-{% include "includes/feedback-snippets/there-their-warning.html" %}
-{% endif %}
-
 {% if grammar_check.noun_verb_disagreements|length > 0 %}
 <h4>Subject-verb disagreements</h4>
 

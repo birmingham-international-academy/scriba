@@ -132,7 +132,7 @@ class Checker:
             compounds = ' '.join([self._get_node_label(node) for node in tree])
 
             if (
-                re.search(r'VP', compounds) is None
+                re.search(r'VP|ADJP|CONJP|PP', compounds) is None
                 and re.search(r'SBAR VP', compounds) is None
                 and re.search(r'S( CC S)+', compounds) is None
                 and re.search(r'S( ; S)+', compounds) is None
@@ -386,6 +386,27 @@ class Checker:
 
         return data
 
+    def languagetool_check_post_process(self, lt_check):
+        # Remove proper nouns from spell check
+        # ---------------------------------------------
+        new_lt_check = []
+
+        for mistake in lt_check:
+            context = mistake.get('context')
+            offset = context.get('offset')
+            length = context.get('length')
+            mistake_str = context.get('text')[offset:offset + length]
+
+            if (
+                mistake.get('rule').get('category').get('id') == 'TYPOS'
+                and mistake_str[0].isupper()
+            ):
+                continue
+
+            new_lt_check.append(mistake)
+
+        return new_lt_check
+
     def run(self):
         """Run the grammar checker.
 
@@ -395,8 +416,11 @@ class Checker:
 
         cleaned_text = self.text_document.get('cleaned_text')
 
+        lt_check = languagetool.check(cleaned_text)
+        lt_check = self.languagetool_check_post_process(lt_check)
+
         data = {
-            'languagetool_check': languagetool.check(cleaned_text),
+            'languagetool_check': lt_check,
         }
 
         # Process the parse tree sentences
