@@ -99,5 +99,6 @@ db.sqlite3
 
 # LTI-related
 
-stanford-parser
-languagetool
+lti_app/core/data/*
+!lti_app/core/data/examples.txt
+!lti_app/core/data/informal.json

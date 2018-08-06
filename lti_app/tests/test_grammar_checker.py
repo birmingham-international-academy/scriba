@@ -46,7 +46,7 @@ sentence_fragments = [
     ),
     (
         'Whichever assignment.',
-        []
+        ['Whichever assignment.']
     ),
     (
         'The university offers good courses. Such as electrical, chemical, and industrial engineering.',

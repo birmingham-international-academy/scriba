@@ -76,9 +76,24 @@ class Checker:
         return 'not' in tokens or "n't" in tokens
 
     def _tuple_similarity(self, t1, t2):
+        """
+        resolve_relcl = True    # relative clauses
+        resolve_appos = True    # appositional modifiers
+        resolve_amod = True     # adjectival modifiers
+        resolve_conj = True     # conjuction
+        resolve_poss = True     # possessives
+        """
+
         similarity = 0.0
-        weight_target = 1.3
-        weight_arg = 1
+        weights = {
+            'target': {
+                'appos': 0.4,
+                'amod': 0.3,
+                'conj': 0.6
+            },
+            'argument': 1
+        }
+        default_weight_target = 1.3
         num_args_shared = 0
 
         # Get Targets and Arguments
@@ -102,11 +117,17 @@ class Checker:
         )
 
         # Calculate similarity
+        target1_gov_rel = t1['target'].root.gov_rel
+        target2_gov_rel = t2['target'].root.gov_rel
         if (
-            not negation_mismatch and
-            (target1 == target2 or are_synonyms(target1, target2))
+            not negation_mismatch
+            and target1_gov_rel == target2_gov_rel
+            and (target1 == target2 or are_synonyms(target1, target2))
         ):
-            similarity += weight_target
+            similarity += (
+                weights.get('target').get(target1_gov_rel)
+                or default_weight_target
+            )
 
         # Arguments Similarity
         # ---------------------------------------------
@@ -131,10 +152,10 @@ class Checker:
                     or are_synonyms(arg1_text, arg2_text)
                 )
             ):
-                similarity += weight_arg
+                similarity += weights.get('argument')
             num_args_shared += 1
 
-        normalization_factor = weight_target + num_args_shared
+        normalization_factor = default_weight_target + num_args_shared
 
         return round(similarity / normalization_factor, 2)
 
@@ -161,8 +182,10 @@ class Checker:
             text_pred_args.remove(best_pair[0])
             excerpt_pred_args.remove(best_pair[1])
 
+        print(excerpt_pred_args)
+
         if len(pairs) == 0:
-            pp_method_result = 0
+            pp_method_result = 0.0
         else:
             pp_method_result = sum([sim for _, _, sim in pairs]) / len(pairs)
 
@@ -186,9 +209,15 @@ class Checker:
 
         vs_method_result = sum(sims) / len(sims)
 
+        if vs_method_result == 0.0 and len(self.supporting_excerpts) == 0:
+            pp_method_result *= 1.3
+
         # if vs_method_result == 0.0 and len(self.supporting_excerpts) == 0:
         #    overall_result = pp_method_result
         # else:
         #    overall_result = (pp_method_result + vs_method_result) / 2
+
+        print(pp_method_result)
+        print(vs_method_result)
 
         return max(vs_method_result, pp_method_result)

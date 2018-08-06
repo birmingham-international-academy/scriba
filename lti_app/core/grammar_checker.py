@@ -12,7 +12,6 @@ from nltk import WhitespaceTokenizer
 from nltk.tree import ParentedTree
 from spacy.matcher import Matcher
 
-from lti_app.core import languagetool
 from lti_app.core.text_helpers import clean_text
 from lti_app.core.text_processing.tools import Tools
 from lti_app.helpers import remove_punctuation
@@ -37,6 +36,26 @@ class Checker:
 
     def _get_node_label(self, node):
         return node if type(node) is str else node.label()
+
+    def _get_nouns(self, noun_phrase):
+        nouns = []
+        has_conjunction = False
+
+        for node in noun_phrase:
+            if type(node) is str:
+                continue
+
+            if self._is_noun(node.label()):
+                nouns.append(node)
+            elif node.label() == 'CC':
+                has_conjunction = True
+            else:
+                nns, has_conj = self._get_nouns(node)
+
+                nouns.extend(nns)
+                has_conjunction = has_conjunction and has_conj
+
+        return nouns, has_conjunction
 
     def _get_verbs(self, verb_phrase):
         verbs = []
@@ -167,6 +186,7 @@ class Checker:
 
             if (
                 re.search(r'S , NP VP', compounds) is not None
+                or re.search(r'NP( VP)? , NP( VP)?', compounds) is not None
                 or re.search(r'S( , S)+', compounds) is not None
             ):
                 comma_splices.append(tree.flatten())
@@ -215,21 +235,15 @@ class Checker:
                 continue
 
             # Get base noun components
-            base_noun = []
-            has_conjunction = False
-            for n in noun_phrase:
-                if self._is_noun(n.label()):
-                    base_noun.append(n)
-                elif n.label() == 'CC':
-                    has_conjunction = True
+            base_nouns, has_conjunction = self._get_nouns(noun_phrase)
 
             # Get base verb components
-            base_verb = self._get_verbs(verb_phrase)
+            base_verbs = self._get_verbs(verb_phrase)
 
-            if base_noun == [] or base_verb == []:
+            if base_nouns == [] or base_verbs == []:
                 continue
 
-            if self._has_disagreement(base_noun, base_verb, has_conjunction):
+            if self._has_disagreement(base_nouns, base_verbs, has_conjunction):
                 phrase = self.detokenize(
                     noun_phrase.leaves() + verb_phrase.leaves()
                 )
@@ -416,7 +430,7 @@ class Checker:
 
         cleaned_text = self.text_document.get('cleaned_text')
 
-        lt_check = languagetool.check(cleaned_text)
+        lt_check = self.tools.languagetool.check(cleaned_text)
         lt_check = self.languagetool_check_post_process(lt_check)
 
         data = {

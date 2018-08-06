@@ -143,6 +143,10 @@ CANVAS = {
     'DEVELOPER_KEY': os.environ.get('CANVAS_DEVELOPER_KEY')
 }
 
-DANDELION = {
-    'API_KEY': os.environ.get('DANDELION_API_KEY')
+LANGUAGETOOL = {
+    'PORT': os.environ.get('LANGUAGETOOL_PORT', '8081')
+}
+
+STANFORD_CORENLP = {
+    'PORT': os.environ.get('STANFORD_CORENLP_PORT', '9000')
 }

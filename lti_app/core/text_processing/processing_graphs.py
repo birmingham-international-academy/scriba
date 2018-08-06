@@ -103,16 +103,18 @@ class Parser(ProcessorNode):
     def process(self, **kwargs):
         document = kwargs.get('document')
         input_key = kwargs.get('input_key')
-        sentences = document.get(input_key)
+        text = document.get(input_key)
 
-        if sentences is None:
+        if text is None:
             raise TextProcessingException()
 
-        return [
-            sentence
-            for line in self.tools.parser.raw_parse_sents(sentences)
-            for sentence in line
-        ]
+        return self.tools.parser.parse(text)
+
+        # return [
+        #    sentence
+        #    for line in self.tools.parser.raw_parse_sents(sentences)
+        #    for sentence in line
+        # ]
 
 
 class PredicatePatternsMatcher(ProcessorNode):
@@ -249,9 +251,8 @@ spacy_processor = SpacyProcessor()
 # =============================================
 
 default_graph = {
-    text_cleaner: [sentence_tokenizer, word_tokenizer],
-    citation_remover: [sentence_tokenizer, word_tokenizer, spacy_processor],
-    sentence_tokenizer: [parser],
+    text_cleaner: [parser, word_tokenizer],
+    citation_remover: [parser, word_tokenizer, spacy_processor],
     parser: [predicate_patterns_matcher],
     predicate_patterns_matcher: [],
     word_tokenizer: [pos_tagger],

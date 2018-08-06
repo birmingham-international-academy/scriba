@@ -19,7 +19,6 @@ Then set the keys appropriately:
 - `CANVAS_CONSUMER_KEY`: Canvas consumer key for LTI communication. This can be generated as a 256-bit key.
 - `CANVAS_SHARED_SECRET`: Canvas consumer/shared secret for LTI communication. This can be generated as a 256-bit key.
 - `CANVAS_DEVELOPER_KEY`: Canvas API key.
-- `DANDELION_API_KEY`: Text semantic similarity service offered by Dandelion (deprecated).
 
 ### 2. NLTK (Natural Language Toolkit) package
 
@@ -29,17 +28,17 @@ After installing the required packages, we need to download corpora that is used
 $ ./bin/nltk_data.sh
 ```
 
-### 3. NLTK Interface to the Stanford Parser
+### 3. The Stanford CoreNLP Package
 
-The Stanford Parser is a probabilistic parser written in Java. NLTK provides a Python interface to it;
-so let's setup the Java environment:
+The Stanford CoreNLP package contains the Stanford parser which is a probabilistic parser written in Java.
+In order to use it, let's setup the Java environment:
 
 ```
 $ sudo apt-get install default-jre
 $ sudo apt-get install default-jdk
 ```
 
-Then run `python bin/stanford_parser.py` to download and extract the Stanford parser.
+Then run `python -m bin.stanford_corenlp` to download and extract the Stanford parser.
 
 ### 4. SpaCy Package
 
@@ -52,7 +51,7 @@ LanguageTool is a service that offers spell and grammar checking. Scriba adds it
 Run the following to get the Language Tool stable release as well as the ngram data (the total size of the unzipped files is about 15GB):
 
 ```
-$ python bin/languagetool.py
+$ python bin.languagetool
 ```
 
 This will download the necessary files in `lti_app/core/data/languagetool`.
@@ -92,18 +91,26 @@ $ python manage.py runsslserver --settings=scriba.settings.local
 ### 2. Run the Worker
 
 Scriba uses Python RQ for background tasks management.
-Run the worker using:
+Run the worker locally using:
 
 ```
-$ python worker.py
+$ python worker.py --settings scriba.settings.local
 ```
 
-### 3. Run the Language Tool Server
+### 3. Run the Stanford CoreNLP Server
+
+The following command will run the CoreNLP Server on port `9000`:
+
+```
+java -mx4g -cp "lti_app/core/data/stanford-corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
+```
+
+### 4. Run the Language Tool Server
 
 Language Tool is a rule-based grammar checker. Scriba's
 grammar checker uses it as an added check.
 
-To run the Language Tool server execute the following command:
+To run the Language Tool server on port `8081` execute the following command:
 
 ```
 $ java -cp lti_app/core/data/languagetool/languagetool-server.jar org.languagetool.server.HTTPServer --port 8081 --languageModel lti_app/core/data/languagetool/ngram
