@@ -10,13 +10,17 @@ Todo:
 
 """
 
+import hashlib
 import itertools
 import re
+from functools import wraps
 
+from django.core.cache import cache
 from gensim import corpora, models, similarities
 from nltk import word_tokenize
 from predpatt import PredPatt
 
+from lti_app.caching import Cache, caching
 from lti_app.core.text_helpers import are_synonyms, clean_text, is_punctuation
 from lti_app.core.text_processing.tools import Tools
 
@@ -30,7 +34,13 @@ class Checker:
         supporting_excerpts (str): Paraphrase excerpts examples.
     """
 
-    def __init__(self, text_document, excerpt_document, supporting_excerpts):
+    def __init__(
+        self,
+        text_document,
+        excerpt_document,
+        supporting_excerpts,
+        use_cache=False
+    ):
         self.text_document = text_document
         self.excerpt_document = excerpt_document
 
@@ -45,13 +55,19 @@ class Checker:
                 if line.strip() != ''
             ]
 
+        self.cache = Cache(
+            enabled=use_cache,
+            base_key=self.excerpt_document.text + ''.join(self.supporting_excerpts)
+        )
+
         # Load document vectors
         documents = [self.excerpt_document.text] + self.supporting_excerpts
-        self.vectors_corpus = self._docs_to_vectors(documents)
+        self.dictionary, self.vectors_corpus = self._docs_to_vectors(documents)
 
         # Load tools
         self.tools = Tools()
 
+    @caching('docs_to_vectors')
     def _docs_to_vectors(self, documents):
         def tokenize_document(document):
             stoplist = set('for a of the and to in'.split())
@@ -67,9 +83,19 @@ class Checker:
             for document in documents
         ]
 
-        self.dictionary = corpora.Dictionary(texts)
+        dictionary = corpora.Dictionary(texts)
 
-        return [self.dictionary.doc2bow(text) for text in texts]
+        return dictionary, [dictionary.doc2bow(text) for text in texts]
+
+    @caching('matrix_similarity')
+    def _load_matrix_similarity(self):
+        tfidf = models.TfidfModel(self.vectors_corpus)
+        index = similarities.SparseMatrixSimilarity(
+            tfidf[self.vectors_corpus],
+            num_features=len(self.dictionary)
+        )
+
+        return tfidf, index
 
     def _is_target_negated(self, target):
         tokens = [token.text for token in target.tokens]
@@ -192,11 +218,7 @@ class Checker:
         # 2. Vector similarity method
         # ---------------------------------------------
 
-        tfidf = models.TfidfModel(self.vectors_corpus)
-        index = similarities.SparseMatrixSimilarity(
-            tfidf[self.vectors_corpus],
-            num_features=len(self.dictionary)
-        )
+        tfidf, index = self._load_matrix_similarity()
 
         tokens = [
             token.lower()

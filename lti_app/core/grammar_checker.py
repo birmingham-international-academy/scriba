@@ -319,37 +319,6 @@ class Checker:
             for word in self.tools.spell.unknown(mapped_words)
         ]
 
-    def get_there_their_occurrences(self):
-        """Get there-their mistakes such as 'there father is kind'.
-
-        Note:
-            DEPRECATED
-
-        Returns:
-            list of str: The occurrences of there-their mistakes.
-        """
-
-        patterns = [
-            [
-                {'LOWER': 'there'},
-                {'POS': 'ADV', 'OP': '?'},
-                {'POS': 'ADJ', 'OP': '?'},
-                {'POS': 'NOUN'},
-                {'POS': 'VERB', 'OP': '?'}
-            ]
-        ]
-
-        matcher_obj = Matcher(self.tools.nlp.vocab)
-        matcher_obj.add('THERE_THEIR', None, *patterns)
-
-        doc = self.text_document.get('spacy_doc')
-        matches = matcher_obj(doc)
-
-        return [
-            ' '.join([str(token) for token in doc[start:end]])
-            for _, start, end in matches
-        ]
-
     def get_countability_mistakes(self):
         """Get countability mistakes.
 

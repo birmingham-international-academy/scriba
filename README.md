@@ -68,6 +68,26 @@ workers.
 
 To setup Redis follow step 1 and 2 of this guide: https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-18-04.
 
+### 8. Memcached
+
+Install Memcached from the official repositories:
+
+```
+$ sudo apt-get update
+$ sudo apt-get install memcached
+$ sudo apt-get install libmemcached-tools
+```
+
+Then install the pylibmc interface:
+
+```
+$ sudo apt-get install -y libmemcached-dev zlib1g-dev libssl-dev python-dev build-essential
+$ pip install pylibmc
+```
+
+Next we need to increase the size of
+the cache entries. To do so, open `/etc/memcached.conf` and add the following line `-I 128M`.
+
 ## Development Setup
 
 The following steps must be executed
@@ -143,7 +163,16 @@ $ sudo supervisorctl restart englishapp
 
 ## Testing
 
-Run `pytest`
+Before starting the tests you must have the
+Stanford CoreNLP server running (see above).
+
+Then run `pytest`.
+
+To run individual tests (say grammar checking):
+
+```
+pytest lti_app/tests/test_grammar_checker.py
+```
 
 ## Contributing
 

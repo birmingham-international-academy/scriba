@@ -1,5 +1,6 @@
 """Provides text processing routines."""
 
+import copy
 from collections import deque
 
 from .document import Document
@@ -18,22 +19,27 @@ class TextProcessor:
     """
 
     def __init__(self, processing_graph, graph_root):
-        self.graph = processing_graph
+        self.graph = copy.deepcopy(processing_graph)
         self.graph_root = graph_root
 
     def _process(self, document, processor, **kwargs):
         out_key = processor.attrs.get('out')
 
         if not isinstance(processor, ProcessorNode):
-            raise TextProcessingException(
-                'The processor is not of the correct type.'
-            )
+            raise TextProcessingException.invalid_processor_type(TextProcessor)
 
         data = processor.process(
             document=document,
             **kwargs
         )
         document.put(out_key, data)
+
+    def remove_node(self, node):
+        self.graph.pop(node, None)
+
+        for source, targets in self.graph.items():
+            self.graph[source] =\
+                list(filter(lambda target: target != node, targets))
 
     def run(self, text, **kwargs):
         """Run the processor.
@@ -58,7 +64,7 @@ class TextProcessor:
         while len(queue) != 0:
             processor = queue.popleft()
 
-            for next_processor in self.graph.get(processor):
+            for next_processor in self.graph.get(processor): # TODO: []
                 if next_processor not in marked:
                     self._process(
                         document,

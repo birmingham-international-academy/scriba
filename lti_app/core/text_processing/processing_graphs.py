@@ -1,15 +1,19 @@
 """Components processing raw text."""
 
 
+import hashlib
 import re
+from functools import wraps
 
 import spacy
+from django.core.cache import cache
 from nltk import pos_tag, tokenize
 from nltk.tokenize import sent_tokenize
 from predpatt import PredPatt, PredPattOpts
 from predpatt.util.ud import dep_v1
 
 from .tools import Tools
+from lti_app.caching import Cache, caching
 from lti_app.core.exceptions import TextProcessingException
 from lti_app.core.text_helpers import clean_text, is_punctuation
 
@@ -17,12 +21,35 @@ from lti_app.core.text_helpers import clean_text, is_punctuation
 # Processing Nodes
 # =============================================
 
+"""
+def caching(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        document = kwargs.get('document')
+        use_cache = kwargs.get('use_cache')
+
+        result = self.from_cache(document.text)
+
+        if result is not None:
+            return result
+
+        result = func(self, *args, **kwargs)
+
+        if use_cache:
+            self.save_cache(document.text, result)
+
+        return result
+    return wrapper
+"""
+
+
 class ProcessorNode:
     """Base class for nodes in a text processing graph."""
 
     def __init__(self, **kwargs):
         self.attrs = kwargs
         self.tools = Tools()
+        self.cache = None
 
     def __eq__(self, other):
         return self.attrs == other.attrs
@@ -30,17 +57,29 @@ class ProcessorNode:
     def __hash__(self):
         return hash(str(self.attrs))
 
+    def _process(self, **kwargs):
+        raise NotImplementedError()
+
     def process(self, **kwargs):
         """Process the text."""
 
-        raise NotImplementedError()
+        document = kwargs.get('document')
+        enable_cache = kwargs.get('enable_cache')
+
+        self.cache = Cache(
+            enabled=enable_cache,
+            base_key=document.text
+        )
+
+        return self._process(**kwargs)
 
 
 class TextCleaner(ProcessorNode):
     def __init__(self, name='text_cleaner', out='cleaned_text'):
         ProcessorNode.__init__(self, name=name, out=out)
 
-    def process(self, **kwargs):
+    @caching(['attrs', 'name'])
+    def _process(self, **kwargs):
         document = kwargs.get('document')
         return clean_text(document.text)
 
@@ -49,7 +88,12 @@ class CitationRemover(ProcessorNode):
     def __init__(self, name='citation_remover', out='cleaned_text'):
         ProcessorNode.__init__(self, name=name, out=out)
 
-    def process(self, document=None, authors=None, year=None):
+    @caching(['attrs', 'name'])
+    def _process(self, **kwargs):
+        document = kwargs.get('document')
+        authors = kwargs.get('authors')
+        year = kwargs.get('year')
+
         pattern = (
             r'\((.*?(?:'
             + re.escape(str(authors[0]))
@@ -85,13 +129,14 @@ class SentenceTokenizer(ProcessorNode):
     def __init__(self, name='sentence_tokenizer', out='sentences'):
         ProcessorNode.__init__(self, name=name, out=out)
 
-    def process(self, **kwargs):
+    @caching(['attrs', 'name'])
+    def _process(self, **kwargs):
         document = kwargs.get('document')
         input_key = kwargs.get('input_key')
         cleaned_text = document.get(input_key)
 
         if cleaned_text is None:
-            raise TextProcessingException()
+            raise TextProcessingException.missing_key(input_key)
 
         return sent_tokenize(cleaned_text)
 
@@ -100,21 +145,16 @@ class Parser(ProcessorNode):
     def __init__(self, name='parser', out='parse_tree'):
         ProcessorNode.__init__(self, name=name, out=out)
 
-    def process(self, **kwargs):
+    @caching(['attrs', 'name'])
+    def _process(self, **kwargs):
         document = kwargs.get('document')
         input_key = kwargs.get('input_key')
         text = document.get(input_key)
 
         if text is None:
-            raise TextProcessingException()
+            raise TextProcessingException.missing_key(input_key)
 
         return self.tools.parser.parse(text)
-
-        # return [
-        #    sentence
-        #    for line in self.tools.parser.raw_parse_sents(sentences)
-        #    for sentence in line
-        # ]
 
 
 class PredicatePatternsMatcher(ProcessorNode):
@@ -138,7 +178,8 @@ class PredicatePatternsMatcher(ProcessorNode):
 
         return pred_patt
 
-    def process(self, **kwargs):
+    @caching(['attrs', 'name'])
+    def _process(self, **kwargs):
         document = kwargs.get('document')
         input_key = kwargs.get('input_key')
 
@@ -159,7 +200,7 @@ class PredicatePatternsMatcher(ProcessorNode):
         parse_tree = document.get(input_key)
 
         if parse_tree is None:
-            raise TextProcessingException()
+            raise TextProcessingException.missing_key(input_key)
 
         return self._get_pred_patterns(
             parse_tree,
@@ -171,13 +212,14 @@ class WordTokenizer(ProcessorNode):
     def __init__(self, name='word_tokenizer', out='tokens'):
         ProcessorNode.__init__(self, name=name, out=out)
 
-    def process(self, **kwargs):
+    @caching(['attrs', 'name'])
+    def _process(self, **kwargs):
         document = kwargs.get('document')
         input_key = kwargs.get('input_key')
         cleaned_text = document.get(input_key)
 
         if cleaned_text is None:
-            raise TextProcessingException()
+            raise TextProcessingException.missing_key(input_key)
 
         return tokenize.word_tokenize(cleaned_text)
 
@@ -186,13 +228,14 @@ class PosTagger(ProcessorNode):
     def __init__(self, name='pos_tagger', out='tagged_tokens'):
         ProcessorNode.__init__(self, name=name, out=out)
 
-    def process(self, **kwargs):
+    @caching(['attrs', 'name'])
+    def _process(self, **kwargs):
         document = kwargs.get('document')
         input_key = kwargs.get('input_key')
         tokens = document.get(input_key)
 
         if tokens is None:
-            raise TextProcessingException()
+            raise TextProcessingException.missing_key(input_key)
 
         return pos_tag(tokens)
 
@@ -201,13 +244,14 @@ class Lemmatizer(ProcessorNode):
     def __init__(self, name='lemmatizer', out='lemmas'):
         ProcessorNode.__init__(self, name=name, out=out)
 
-    def process(self, **kwargs):
+    @caching(['attrs', 'name'])
+    def _process(self, **kwargs):
         document = kwargs.get('document')
         input_key = kwargs.get('input_key')
         tagged_tokens = document.get(input_key)
 
         if tagged_tokens is None:
-            raise TextProcessingException()
+            raise TextProcessingException.missing_key(input_key)
 
         return [
             self.tools.lemmatizer.lemmatize(i, j[0].lower())
@@ -222,13 +266,14 @@ class SpacyProcessor(ProcessorNode):
     def __init__(self, name='spacy_processor', out='spacy_doc'):
         ProcessorNode.__init__(self, name=name, out=out)
 
-    def process(self, **kwargs):
+    @caching(['attrs', 'name'])
+    def _process(self, **kwargs):
         document = kwargs.get('document')
         input_key = kwargs.get('input_key')
         cleaned_text = document.get(input_key)
 
         if cleaned_text is None:
-            raise TextProcessingException()
+            raise TextProcessingException.missing_key(input_key)
 
         return self.tools.nlp(cleaned_text)
 

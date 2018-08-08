@@ -2,7 +2,7 @@
 
 import re
 
-from lti_app.core.exceptions import BadlyFormattedCitationException
+from lti_app.core.exceptions import CitationException
 
 
 class Checker:
@@ -41,7 +41,7 @@ class Checker:
         )
 
         if m is None:
-            raise BadlyFormattedCitationException()
+            raise CitationException.bad_format()
 
         data = m.groupdict()
 

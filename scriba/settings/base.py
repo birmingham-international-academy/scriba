@@ -84,6 +84,24 @@ DATABASES = {
 }
 
 
+# Caching
+# https://docs.djangoproject.com/en/2.1/topics/cache
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': '127.0.0.1:11211',
+        'TIMEOUT': None,
+        'OPTIONS': {
+            'binary': True,
+            'behaviors': {
+                'ketama': True,
+            }
+        }
+    }
+}
+
+
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 

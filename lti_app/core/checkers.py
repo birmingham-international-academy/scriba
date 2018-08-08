@@ -50,6 +50,8 @@ class DefaultChecker:
 
         # Run text processor
         # ---------------------------------------------
+
+        # Submitted text
         self.text_processor = processors.TextProcessor(
             processing_graphs.default_graph,
             processing_graphs.citation_remover
@@ -58,11 +60,17 @@ class DefaultChecker:
         self.text_document = self.text_processor.run(
             self.text,
             authors=self.data.get('citation_check').get('authors'),
-            year=self.data.get('citation_check').get('year')
+            year=self.data.get('citation_check').get('year'),
+            enable_cache=False
         )
 
+        # Excerpt text
         self.text_processor.graph_root = processing_graphs.text_cleaner
-        self.excerpt_document = self.text_processor.run(self.excerpt)
+        self.text_processor.remove_node(processing_graphs.spacy_processor)
+        self.excerpt_document = self.text_processor.run(
+            self.excerpt,
+            enable_cache=True
+        )
 
         # Initialize checkers
         # -------------------
@@ -72,7 +80,8 @@ class DefaultChecker:
         self.semantics_checker = semantics_checker.Checker(
             self.text_document,
             self.excerpt_document,
-            self.supporting_excerpts
+            self.supporting_excerpts,
+            use_cache=True
         )
         self.grammar_checker = grammar_checker.Checker(
             self.text_document
