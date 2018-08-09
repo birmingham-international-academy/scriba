@@ -11,6 +11,7 @@ import re
 from nltk import tokenize
 
 from lti_app.core.text_helpers import remove_stopwords
+from lti_app.core.text_processing.tools import Tools
 from lti_app.helpers import get_current_dir
 
 
@@ -29,6 +30,7 @@ class Checker:
             'quotation_overuses',
             'general_informalities'
         ]
+        self.tools = Tools()
 
     def get_phrasal_verbs(self):
         """Get the phrasal verbs.
@@ -93,18 +95,37 @@ class Checker:
             list of str: General informalities.
         """
 
-        lemmas = ' '.join(self.text_document.get('lemmas'))
+        lemmas = ' '.join(
+            [str(word_lemma[::-1])
+            for word_lemma in self.text_document.get('lemmas')]
+        )
         current_dir = get_current_dir(__file__)
-        filename = os.path.join(current_dir, 'data', 'informal.json')
+        filename = os.path.join(
+            current_dir, 'data', 'academic-style', 'informal-phrases.json'
+        )
 
         with open(filename, 'r') as f:
-            informal_words = json.load(f)
+            informal_phrases = json.load(f)
+            informal_phrases_regexps = []
 
-            return [
-                word.get('entity')
-                for word in informal_words
-                if word.get('entity') in lemmas
-            ]
+            for phrase in informal_phrases:
+                regex = [
+                    r'\([\'"]' + token + r'[\'"], [\'"](.+?)[\'"]\)'
+                    for token in phrase.get('tokens')
+                ]
+
+                informal_phrases_regexps.append(' '.join(regex))
+
+            matches = []
+            for phrase_regex in informal_phrases_regexps:
+                match = re.search(phrase_regex, lemmas, re.IGNORECASE)
+
+                if match is not None:
+                    tokens = list(match.groups())
+                    phrase = self.tools.word_detokenizer.detokenize(tokens)
+                    matches.append(phrase)
+
+            return matches
 
     def run(self):
         """Run the checker.

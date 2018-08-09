@@ -31,8 +31,8 @@ class Checker:
         index = -1
         min_length = 4
 
-        text_lemmas = self.text_document.get('lemmas')
-        excerpt_lemmas = self.excerpt_document.get('lemmas')
+        text_lemmas = [lemma for _, lemma in self.text_document.get('lemmas')]
+        excerpt_lemmas = [lemma for _, lemma in self.excerpt_document.get('lemmas')]
 
         for i, d in enumerate(ndiff(text_lemmas, excerpt_lemmas)):
             if d[0] == ' ':

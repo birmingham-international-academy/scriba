@@ -21,28 +21,6 @@ from lti_app.core.text_helpers import clean_text, is_punctuation
 # Processing Nodes
 # =============================================
 
-"""
-def caching(func):
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        document = kwargs.get('document')
-        use_cache = kwargs.get('use_cache')
-
-        result = self.from_cache(document.text)
-
-        if result is not None:
-            return result
-
-        result = func(self, *args, **kwargs)
-
-        if use_cache:
-            self.save_cache(document.text, result)
-
-        return result
-    return wrapper
-"""
-
-
 class ProcessorNode:
     """Base class for nodes in a text processing graph."""
 
@@ -253,13 +231,21 @@ class Lemmatizer(ProcessorNode):
         if tagged_tokens is None:
             raise TextProcessingException.missing_key(input_key)
 
-        return [
-            self.tools.lemmatizer.lemmatize(i, j[0].lower())
-            if j[0].lower() in ['a', 'n', 'v']
-            else self.tools.lemmatizer.lemmatize(i)
-            for i, j in tagged_tokens
-            if not is_punctuation(i)
-        ]
+        lemmas = []
+
+        for word, pos in tagged_tokens:
+            if is_punctuation(word):
+                continue
+
+            pos_lower = pos[0].lower()
+            if pos_lower in ['a', 'n', 'v']:
+                lemma = self.tools.lemmatizer.lemmatize(word, pos=pos_lower)
+            else:
+                lemma = self.tools.lemmatizer.lemmatize(word)
+
+            lemmas.append((word, lemma))
+
+        return lemmas
 
 
 class SpacyProcessor(ProcessorNode):
