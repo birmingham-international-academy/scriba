@@ -1,0 +1,7 @@
+[run]
+source = lti_app
+omit =
+    */exceptions*
+    */urls.py
+    */migrations/*
+    lti_app/admin/*

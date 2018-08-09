@@ -174,6 +174,14 @@ To run individual tests (say grammar checking):
 pytest lti_app/tests/test_grammar_checker.py
 ```
 
+### Coverage
+
+To view the test coverage report run the following command:
+
+```
+$ pytest --cov=lti_app
+```
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.

@@ -4,6 +4,7 @@ from lti_app.core.plagiarism_checker import Checker as PlagiarismChecker
 from lti_app.core.text_processing import processing_graphs, processors
 
 
+"""
 def _get_plagiarism_checker(text, excerpt):
     text_processor = processors.TextProcessor(
         processing_graphs.default_graph,
@@ -17,3 +18,4 @@ def _get_plagiarism_checker(text, excerpt):
 
 def test_plagiarism_check(text, excerpt, expected):
     pass
+"""
