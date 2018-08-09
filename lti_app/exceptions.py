@@ -26,3 +26,10 @@ class CachingException(BaseLtiException):
             'code': 'CCH_NOT_CACHEABLE',
             'message': 'Object not cacheable.'
         })
+
+    @staticmethod
+    def invalid_key():
+        return CachingException({
+            'code': 'CCH_INVALID_KEY',
+            'message': 'The key is invalid or it cannot be found.'
+        })

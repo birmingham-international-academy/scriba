@@ -39,13 +39,13 @@ def caching(name):
                 attr_key, rest = ext_key[0], ext_key[1:]
 
                 if not hasattr(self, attr_key):
-                    pass # TODO: raise exception
+                    raise CachingException.invalid_key()
 
                 attr = getattr(self, attr_key)
 
                 for key in rest:
                     if attr is None or type(attr) is not dict:
-                        pass # TODO: raise exception
+                        raise CachingException.invalid_key()
 
                     attr = attr.get(key)
 
