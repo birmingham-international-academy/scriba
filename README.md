@@ -1,5 +1,7 @@
 # Scriba
 
+<img src="./badge-coverage.svg">
+
 > A Canvas LTI for automated paraphrase analysis.
 
 ## General Setup
