@@ -6,6 +6,8 @@ repeated word strings from two texts.
 
 from difflib import ndiff
 
+from lti_app import strings
+
 
 class Checker:
     """Implements the deafult plagiarism checker.
@@ -31,8 +33,8 @@ class Checker:
         index = -1
         min_length = 4
 
-        text_lemmas = [lemma for _, lemma in self.text_document.get('lemmas')]
-        excerpt_lemmas = [lemma for _, lemma in self.excerpt_document.get('lemmas')]
+        text_lemmas = [lemma for _, lemma in self.text_document.get(strings.lemmas)]
+        excerpt_lemmas = [lemma for _, lemma in self.excerpt_document.get(strings.lemmas)]
 
         for i, d in enumerate(ndiff(text_lemmas, excerpt_lemmas)):
             if d[0] == ' ':

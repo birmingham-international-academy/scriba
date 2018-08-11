@@ -13,6 +13,7 @@ from predpatt import PredPatt, PredPattOpts
 from predpatt.util.ud import dep_v1
 
 from .tools import Tools
+from lti_app import strings
 from lti_app.caching import Cache, caching
 from lti_app.core.exceptions import TextProcessingException
 from lti_app.core.text_helpers import clean_text, is_punctuation
@@ -53,7 +54,7 @@ class ProcessorNode:
 
 
 class TextCleaner(ProcessorNode):
-    def __init__(self, name='text_cleaner', out='cleaned_text'):
+    def __init__(self, name='text_cleaner', out=strings.cleaned_text):
         ProcessorNode.__init__(self, name=name, out=out)
 
     @caching(['attrs', 'name'])
@@ -63,14 +64,19 @@ class TextCleaner(ProcessorNode):
 
 
 class CitationRemover(ProcessorNode):
-    def __init__(self, name='citation_remover', out='cleaned_text'):
+    def __init__(self, name='citation_remover', out=strings.cleaned_text):
         ProcessorNode.__init__(self, name=name, out=out)
 
     @caching(['attrs', 'name'])
     def _process(self, **kwargs):
         document = kwargs.get('document')
-        authors = kwargs.get('authors')
-        year = kwargs.get('year')
+        citation_check = kwargs.get(strings.citation_check)
+
+        if citation_check is None and type(citation_check) is not dict:
+            raise TextProcessingException.missing_key(strings.citation_check)
+
+        authors = citation_check.get('authors')
+        year = citation_check.get('year')
 
         pattern = (
             r'\((.*?(?:'
@@ -104,7 +110,7 @@ class CitationRemover(ProcessorNode):
 
 
 class SentenceTokenizer(ProcessorNode):
-    def __init__(self, name='sentence_tokenizer', out='sentences'):
+    def __init__(self, name='sentence_tokenizer', out=strings.sentences):
         ProcessorNode.__init__(self, name=name, out=out)
 
     @caching(['attrs', 'name'])
@@ -120,7 +126,7 @@ class SentenceTokenizer(ProcessorNode):
 
 
 class Parser(ProcessorNode):
-    def __init__(self, name='parser', out='parse_tree'):
+    def __init__(self, name='parser', out=strings.parse_tree):
         ProcessorNode.__init__(self, name=name, out=out)
 
     @caching(['attrs', 'name'])
@@ -139,7 +145,7 @@ class PredicatePatternsMatcher(ProcessorNode):
     def __init__(
         self,
         name='predicate_patterns_matcher',
-        out='predicate_patterns'
+        out=strings.predicate_patterns
     ):
         ProcessorNode.__init__(self, name=name, out=out)
 
@@ -187,7 +193,7 @@ class PredicatePatternsMatcher(ProcessorNode):
 
 
 class WordTokenizer(ProcessorNode):
-    def __init__(self, name='word_tokenizer', out='tokens'):
+    def __init__(self, name='word_tokenizer', out=strings.tokens):
         ProcessorNode.__init__(self, name=name, out=out)
 
     @caching(['attrs', 'name'])
@@ -203,7 +209,7 @@ class WordTokenizer(ProcessorNode):
 
 
 class PosTagger(ProcessorNode):
-    def __init__(self, name='pos_tagger', out='tagged_tokens'):
+    def __init__(self, name='pos_tagger', out=strings.tagged_tokens):
         ProcessorNode.__init__(self, name=name, out=out)
 
     @caching(['attrs', 'name'])
@@ -219,7 +225,7 @@ class PosTagger(ProcessorNode):
 
 
 class Lemmatizer(ProcessorNode):
-    def __init__(self, name='lemmatizer', out='lemmas'):
+    def __init__(self, name='lemmatizer', out=strings.lemmas):
         ProcessorNode.__init__(self, name=name, out=out)
 
     @caching(['attrs', 'name'])
@@ -249,7 +255,7 @@ class Lemmatizer(ProcessorNode):
 
 
 class SpacyProcessor(ProcessorNode):
-    def __init__(self, name='spacy_processor', out='spacy_doc'):
+    def __init__(self, name='spacy_processor', out=strings.spacy_doc):
         ProcessorNode.__init__(self, name=name, out=out)
 
     @caching(['attrs', 'name'])

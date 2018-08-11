@@ -3,20 +3,27 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from rq import Queue
 
-from lti_app.assignments import services
+from lti_app import strings
+from lti_app.assignments import request_forms, services
 from worker import conn
 
 
 def _create_or_update_assignment(request):
-    service = services.AssignmentService()
+    # Prepare fields to submit
+    # ---------------------------------------------
     fields = {
-        'course_id': request.session.get('course_id'),
-        'assignment_id': request.session.get('assignment_id'),
-        'assignment_type': request.session.get('assignment_type'),
-        'reference': request.POST.get('reference'),
-        'excerpt': request.POST.get('excerpt'),
-        'supporting_excerpts': request.POST.get('supporting_excerpts')
+        'course_id': request.session.get(strings.course_id),
+        'assignment_id': request.session.get(strings.assignment_id),
+        'assignment_type': request.session.get(strings.assignment_type)
     }
+
+    req = request_forms.AssignmentRequestForm(request.POST)
+    data = req.get_data()
+    fields.update(data)
+
+    # Create or update assignment
+    # ---------------------------------------------
+    service = services.AssignmentService()
 
     assignment = service.get_by_course_assignment_tuple(
         fields['course_id'],
@@ -35,11 +42,13 @@ def _create_or_update_assignment(request):
 
 
 def _submit_assignment(request):
-    course_id = request.session.get('course_id')
-    assignment_id = request.session.get('assignment_id')
-    assignment_type = request.session.get('assignment_type')
-    outcome_service_url = request.session.get('lis_outcome_service_url')
-    result_sourcedid = request.session.get('lis_result_sourcedid')
+    course_id = request.session.get(strings.course_id)
+    assignment_id = request.session.get(strings.assignment_id)
+    assignment_type = request.session.get(strings.assignment_type)
+    outcome_service_url = request.session.get(strings.outcome_service_url)
+    result_sourcedid = request.session.get(strings.result_sourcedid)
+    attempts = request.session.get('{}_{}_attempts'.format(course_id, assignment_id))
+
     text = request.POST.get('text')
     service = services.AssignmentService()
     q = Queue(connection=conn)
@@ -49,12 +58,13 @@ def _submit_assignment(request):
         course_id,
         assignment_id,
         assignment_type,
+        attempts,
         outcome_service_url,
         result_sourcedid,
         text
     )
 
-    request.session['job_id'] = result.id
+    request.session[strings.job_id] = result.id
 
     return JsonResponse({
         'assignment_type': assignment_type
@@ -63,15 +73,15 @@ def _submit_assignment(request):
 
 def show(request):
     service = services.AssignmentService()
-    course_id = request.session.get('course_id')
-    assignment_id = request.session.get('assignment_id')
+    course_id = request.session.get(strings.course_id)
+    assignment_id = request.session.get(strings.assignment_id)
 
     assignment = service.get_by_course_assignment_tuple(
         course_id,
         assignment_id
     ).first()
 
-    is_instructor = request.session.get('is_instructor')
+    is_instructor = request.session.get(strings.is_instructor)
 
     if is_instructor:
         template = 'teacher/index.html'
@@ -84,7 +94,7 @@ def show(request):
 
 
 def submit(request):
-    is_instructor = request.session.get('is_instructor')
+    is_instructor = request.session.get(strings.is_instructor)
 
     if is_instructor:
         return _create_or_update_assignment(request)

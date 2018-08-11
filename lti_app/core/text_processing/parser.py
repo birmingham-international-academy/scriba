@@ -1,5 +1,6 @@
 from nltk.tree import ParentedTree
 
+from lti_app import strings
 from lti_app.core.api import CoreNlpClient
 
 
@@ -12,5 +13,5 @@ class Parser:
 
         return [
             ParentedTree.fromstring(sentence.get('parse'))
-            for sentence in data.get('sentences')
+            for sentence in data.get(strings.sentences)
         ]

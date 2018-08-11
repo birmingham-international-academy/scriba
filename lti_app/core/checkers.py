@@ -1,7 +1,9 @@
 """Provides the paraphrase analyzers."""
 
+import copy
 import logging
 
+from lti_app import strings
 from lti_app.core import (
     academic_style_checker,
     citation_checker,
@@ -32,39 +34,66 @@ class DefaultChecker:
         reference (str): The reference to cite in the text.
     """
 
-    def __init__(self, text, excerpt, supporting_excerpts, reference):
+    default_checks = {
+        'citation': True,
+        'grammar': True,
+        'plagiarism': True,
+        'academic_style': True,
+        'semantics': 1
+    }
+
+    def __init__(self, text, excerpt, supporting_excerpts, reference, checks=None):
         self.text = text
         self.excerpt = excerpt
         self.supporting_excerpts = supporting_excerpts
         self.reference = reference
         self.data = {}
 
-        # Run citation checker in advance
-        # for preprocessing
+        # Setup the checks to run
         # ---------------------------------------------
-        self.citation_checker = citation_checker.Checker(
-            self.text,
-            self.reference
-        )
-        self.data['citation_check'] = self.citation_checker.run()
+        if checks is None:
+            self.checks = self.default_checks.copy()
+        else:
+            self.checks = checks.copy()
 
         # Run text processor
         # ---------------------------------------------
 
-        # Submitted text
-        self.text_processor = processors.TextProcessor(
-            processing_graphs.default_graph,
-            processing_graphs.citation_remover
+        # Run citation checker in advance in order to
+        # clean the text from citations
+        self.citation_checker = citation_checker.Checker(
+            self.text,
+            self.reference
         )
 
+        processing_graph = copy.deepcopy(processing_graphs.default_graph)
+
+        # If the citation check is enabled...
+        if self.checks.get('citation'):
+            # ... use the citation remover as the root
+            self.data[strings.citation_check] = self.citation_checker.run()
+            root = processing_graphs.citation_remover
+        else:
+            # ... otherwise use the standard text cleaner
+            root = processing_graphs.text_cleaner
+            processing_graph\
+                .get(root)\
+                .append(processing_graphs.spacy_processor)
+
+        # Instantiate the text processor
+        self.text_processor = processors.TextProcessor(
+            processing_graph,
+            root
+        )
+
+        # Submitted text processing
         self.text_document = self.text_processor.run(
             self.text,
-            authors=self.data.get('citation_check').get('authors'),
-            year=self.data.get('citation_check').get('year'),
+            citation_check=self.data.get(strings.citation_check),
             enable_cache=False
         )
 
-        # Excerpt text
+        # Excerpt text processing
         self.text_processor.graph_root = processing_graphs.text_cleaner
         self.text_processor.remove_node(processing_graphs.spacy_processor)
         self.excerpt_document = self.text_processor.run(
@@ -99,16 +128,20 @@ class DefaultChecker:
         """
 
         # Academic style check
-        self.data['academic_style_check'] = self.academic_style_checker.run()
+        if self.checks.get('academic_style'):
+            self.data[strings.academic_style_check] = self.academic_style_checker.run()
 
         # Semantics check
-        self.data['semantics_check'] = self.semantics_checker.run()
+        if self.checks.get('semantics') > 0:
+            self.data[strings.semantics_check] = self.semantics_checker.run()
 
         # Plagiarism check
-        self.data['plagiarism_check'] = self.plagiarism_checker.run()
+        if self.checks.get('plagiarism'):
+            self.data[strings.plagiarism_check] = self.plagiarism_checker.run()
 
         # Grammar check
-        self.data['grammar_check'] = self.grammar_checker.run()
+        if self.checks.get('grammar'):
+            self.data[strings.grammar_check] = self.grammar_checker.run()
 
         logger.debug('%s', self.data)
 

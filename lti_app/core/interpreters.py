@@ -1,48 +1,77 @@
-"""Collection of interpreters for the raw data analysis.
-
-Todo:
-    - Store settings
-"""
+"""Collection of interpreters for the raw data analysis."""
 
 from django.template.loader import render_to_string
 
+from lti_app import strings
 
-semantics_similarity_threshold = 0.15
+
+semantics_similarity_low_threshold = 0.15
+semantics_similarity_high_threshold = 0.35
 
 
 class FeedbackInterpreter:
     """Interpreter for pilot/diagnostic assessments."""
+
+    def __init__(self, semantics_threshold):
+        self.semantics_threshold = (
+            semantics_similarity_low_threshold
+            if semantics_threshold == 1
+            else semantics_similarity_high_threshold
+        )
 
     def run(self, data):
         """Runs the interpreter.
 
         Args:
             data (dict): The raw data from the checker
-
-        Returns:
-            dict: The interpreted data to process in the templates.
+            semantics_threshold (int): The semantics threshold
         """
 
+        # Citation status
+        # ---------------------------------------------
+        cc = data.get(strings.citation_check)
+
+        if cc is not None:
+            data['citation_status'] = cc.get('result')
+
         # Grammar status
-        gc = data['grammar_check']
-        data['grammar_status'] = all([len(value) == 0 for value in gc.values()])
+        # ---------------------------------------------
+        gc = data.get(strings.grammar_check)
+
+        if gc is not None:
+            data['grammar_status'] = all([len(value) == 0 for value in gc.values()])
 
         # Academic style status
-        asc = data['academic_style_check']
-        data['academic_style_status'] = (
-            len(asc['contractions']) == 0
-            and len(asc['phrasal_verbs']) < 3
-            and len(asc['quotation_overuses']) == 0
-            and len(asc['general_informalities']) == 0
-        )
+        # ---------------------------------------------
+        asc = data[strings.academic_style_check]
+
+        if asc is not None:
+            data['academic_style_status'] = (
+                len(asc['contractions']) == 0
+                and len(asc['phrasal_verbs']) < 3
+                and len(asc['quotation_overuses']) == 0
+                and len(asc['general_informalities']) == 0
+            )
 
         # Paraphrase status
-        pc = data['plagiarism_check']
-        sc = data['semantics_check']
-        data['plagiarism_status'] = len(pc) == 0
-        data['semantics_status'] = sc >= semantics_similarity_threshold
+        # ---------------------------------------------
+        pc = data.get(strings.plagiarism_check)
+        sc = data.get(strings.semantics_check)
+        code = ''
 
-        return data
+        if pc is not None:
+            data['plagiarism_status'] = len(pc) == 0
+            code += str(int(data['plagiarism_status']))
+        else:
+            code += 'N'
+
+        if sc is not None:
+            data['semantics_status'] = sc >= self.semantics_threshold
+            code += str(int(data['semantics_status']))
+        else:
+            code += 'N'
+
+        data['paraphrase_status'] = code
 
 
 class GradeInterpreter:
@@ -58,12 +87,20 @@ class GradeInterpreter:
 
     major_grammar_errors = ['sentence_fragments', 'comma_splices']
 
-    def __init__(self, assignment_type):
+    def __init__(self, assignment_type, semantics_threshold):
         self.assignment_type = assignment_type
+        self.semantics_threshold = (
+            semantics_similarity_low_threshold
+            if semantics_threshold == 1
+            else semantics_similarity_high_threshold
+        )
 
     def _get_errors(self, d, exclude=None, include='*'):
         if exclude is None:
             exclude = []
+
+        if d is None:
+            return []
 
         keys = d.keys()
         exclude = keys if exclude == '*' else exclude
@@ -82,58 +119,78 @@ class GradeInterpreter:
         if exclude is None:
             exclude = []
 
-        citation_check = data.get('citation_check')
-        grammar_check = data.get('grammar_check')
-        style_check = data.get('academic_style_check')
+        citation_check = data.get(strings.citation_check)
+        grammar_check = data.get(strings.grammar_check)
+        style_check = data.get(strings.academic_style_check)
+        minor_errors = []
 
-        minor_errors = self._get_errors(
-            grammar_check,
-            exclude=list(set().union(self.major_grammar_errors, exclude))
-        )
-        minor_errors += self._get_errors(style_check)
-        minor_errors += (1 if citation_check.get('result') else 0)
+        if citation_check is not None:
+            minor_errors += (1 if citation_check.get('result') else 0)
+
+        if grammar_check is not None:
+            minor_errors += self._get_errors(
+                grammar_check,
+                exclude=list(set().union(self.major_grammar_errors, exclude))
+            )
+
+        if style_check is not None:
+            minor_errors += self._get_errors(style_check)
 
         return minor_errors
 
     def _get_major_errors_aggregate(self, data):
-        grammar_check = data.get('grammar_check')
+        if data.get(strings.semantics_check) is not None:
+            semantics_error = int(not data.get('semantics_status'))
+        else:
+            semantics_error = 0
 
-        semantics_error = int(
-            data.get('semantics_check') < semantics_similarity_threshold
-        )
+        if data.get(strings.plagiarism_check) is not None:
+            plagiarism_errors = len(data.get(strings.plagiarism_check))
+        else:
+            plagiarism_errors = 0
 
-        plagiarism_errors = len(data.get('plagiarism_check'))
-
-        major_grammar_errors = self._get_errors(
-            grammar_check,
-            exclude='*',
-            include=self.major_grammar_errors
-        )
+        if data.get(strings.grammar_check) is not None:
+            major_grammar_errors = self._get_errors(
+                data.get(strings.grammar_check),
+                exclude='*',
+                include=self.major_grammar_errors
+            )
+        else:
+            major_grammar_errors = 0
 
         return semantics_error + plagiarism_errors + major_grammar_errors
 
     def _is_in_band_1(self, data):
-        citation_check = data.get('citation_check')
-        style_check = data.get('academic_style_check')
-        grammar_check = data.get('grammar_check')
-        plagiarism_check = data.get('plagiarism_check')
+        result = True
 
+        # Grammar
+        # ---------------------------------------------
         grammar_errors = self._get_errors(
-            grammar_check,
+            data.get(strings.grammar_check),
             exclude=self.major_grammar_errors
         )
-        style_errors = self._get_errors(style_check)
+        result = result and grammar_errors == 0
 
-        return (
-            citation_check.get('result') is True
-            and grammar_errors == 0
-            and style_errors == 0
-            and len(plagiarism_check) == 0
-        )
+        # Academic style
+        # ---------------------------------------------
+        style_errors = self._get_errors(data.get(strings.academic_style_check))
+        result = result and style_errors == 0
+
+        # Citation
+        # ---------------------------------------------
+        if data.get(strings.citation_check) is not None:
+            result = result and data.get(strings.citation_check)
+
+        # Plagiarism
+        # ---------------------------------------------
+        if data.get(strings.plagiarism_check) is not None:
+            result = result and len(data.get(strings.plagiarism_check) == 0)
+
+        return result
 
     def _is_in_band_2(self, data):
-        grammar_check = data.get('grammar_check')
-        style_check = data.get('academic_style_check')
+        grammar_check = data.get(strings.grammar_check)
+        style_check = data.get(strings.academic_style_check)
 
         grammar_errors = self._get_errors(
             grammar_check,
@@ -144,10 +201,10 @@ class GradeInterpreter:
         return grammar_errors == 1 or style_errors == 1
 
     def _is_in_band_3(self, data):
-        citation_check = data.get('citation_check')
+        citation_check = data.get(strings.citation_check)
         minor_errors = self._get_minor_errors_aggregate(
             data,
-            exclude=['citation_check']
+            exclude=[strings.citation_check]
         )
 
         return (
@@ -167,9 +224,6 @@ class GradeInterpreter:
 
         Args:
             data (dict): The raw data from the checker
-
-        Returns:
-            dict: The interpreted data to process in the templates.
         """
 
         if self.assignment_type == 'D':
@@ -190,8 +244,6 @@ class GradeInterpreter:
 
         data['comments'] = render_to_string('learner/canvas-feedback.html', {
             'band': band,
-            'semantics_similarity_threshold': semantics_similarity_threshold,
+            'semantics_similarity_threshold': self.semantics_threshold,
             **data
         })
-
-        return data

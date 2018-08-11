@@ -20,6 +20,7 @@ from gensim import corpora, models, similarities
 from nltk import word_tokenize
 from predpatt import PredPatt
 
+from lti_app import strings
 from lti_app.caching import Cache, caching
 from lti_app.core.text_helpers import are_synonyms, clean_text, is_punctuation
 from lti_app.core.text_processing.tools import Tools
@@ -190,8 +191,8 @@ class Checker:
         # ---------------------------------------------
 
         pairs = []
-        text_pred_args = self.text_document.get('predicate_patterns')[:]
-        excerpt_pred_args = self.excerpt_document.get('predicate_patterns')[:]
+        text_pred_args = self.text_document.get(strings.predicate_patterns)[:]
+        excerpt_pred_args = self.excerpt_document.get(strings.predicate_patterns)[:]
 
         while len(text_pred_args) > 0 and len(excerpt_pred_args) > 0:
             similarity_results = []
@@ -222,7 +223,7 @@ class Checker:
 
         tokens = [
             token.lower()
-            for token in self.text_document.get('tokens')
+            for token in self.text_document.get(strings.tokens)
             if not is_punctuation(token)
         ]
         vec = self.dictionary.doc2bow(tokens)

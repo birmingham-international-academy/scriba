@@ -12,6 +12,7 @@ from nltk import WhitespaceTokenizer
 from nltk.tree import ParentedTree
 from spacy.matcher import Matcher
 
+from lti_app import strings
 from lti_app.core.text_helpers import clean_text
 from lti_app.core.text_processing.tools import Tools
 from lti_app.helpers import remove_punctuation
@@ -286,7 +287,7 @@ class Checker:
         number_pattern = re.compile(r'^\(\d+\)|\d+\w{2}|\d+$')
         contraction_pattern = re.compile(r'^.*\'(t|ve|ll|d)$')
         proper_noun_pattern = re.compile(r'^[A-Z].*$')
-        text = self.text_document.get('cleaned_text')
+        text = self.text_document.get(strings.cleaned_text)
         text = re.sub(r'([\(\)\[\]\{\}\'"])', r' \g<1> ', text)
         text = re.sub(' +', ' ', text)
         text = re.sub('\n+', ' ', text)
@@ -351,7 +352,7 @@ class Checker:
 
         sentences = [
             ParentedTree.fromstring(str(sentence))
-            for sentence in self.text_document.get('parse_tree')
+            for sentence in self.text_document.get(strings.parse_tree)
         ]
 
         for sentence in sentences:
@@ -397,7 +398,7 @@ class Checker:
             dict: The grammar check data using the described methods.
         """
 
-        cleaned_text = self.text_document.get('cleaned_text')
+        cleaned_text = self.text_document.get(strings.cleaned_text)
 
         lt_check = self.tools.languagetool.check(cleaned_text)
         lt_check = self.languagetool_check_post_process(lt_check)

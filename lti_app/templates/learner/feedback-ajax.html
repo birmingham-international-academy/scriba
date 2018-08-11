@@ -10,9 +10,10 @@
             </p>
         </div>
 
+        {% if plagiarism_status != None or semantics_status != None %}
         <div class="mb-6">
             <h2 class="flex items-center mb-2 text-base font-bold">
-                {% if plagiarism_status and semantics_status %}
+                {% if paraphrase_status == '11' or paraphrase_status == 'N1' or paraphrase_status == '1N' %}
                 <svg class="fill-current text-green inline-block h-6 w-6" viewBox="0 0 20 20">
                     <path d="M10.219,1.688c-4.471,0-8.094,3.623-8.094,8.094s3.623,8.094,8.094,8.094s8.094-3.623,8.094-8.094S14.689,1.688,10.219,1.688 M10.219,17.022c-3.994,0-7.242-3.247-7.242-7.241c0-3.994,3.248-7.242,7.242-7.242c3.994,0,7.241,3.248,7.241,7.242C17.46,13.775,14.213,17.022,10.219,17.022 M15.099,7.03c-0.167-0.167-0.438-0.167-0.604,0.002L9.062,12.48l-2.269-2.277c-0.166-0.167-0.437-0.167-0.603,0c-0.166,0.166-0.168,0.437-0.002,0.603l2.573,2.578c0.079,0.08,0.188,0.125,0.3,0.125s0.222-0.045,0.303-0.125l5.736-5.751C15.268,7.466,15.265,7.196,15.099,7.03"></path>
                 </svg>
@@ -22,20 +23,22 @@
                 </svg>
                 {% endif %}
 
-                <span class="ml-3 {% if plagiarism_status and semantics_status %}text-green{% else %}text-orange{% endif %}">
+                <span class="ml-3 {% if paraphrase_status == '11' or paraphrase_status == 'N1' or paraphrase_status == '1N' %}text-green{% else %}text-orange{% endif %}">
                     Paraphrase
                 </span>
             </h2>
 
-            {% if not plagiarism_status %}
+            {% if plagiarism_status == False %}
                 {% include "includes/feedback-snippets/plagiarism-check-warning.html" %}
             {% endif %}
 
-            {% if not semantics_status %}
+            {% if semantics_status == False %}
                 {% include "includes/feedback-snippets/semantics-check-warning.html" %}
             {% endif %}
         </div>
+        {% endif %}
 
+        {% if grammar_check is not None %}
         <div class="mb-6">
             <h2 class="flex items-center mb-2 text-base font-bold">
                 {% if grammar_status %}
@@ -102,10 +105,12 @@
             </div>
             {% endif %}
         </div>
+        {% endif %}
 
+        {% if citation_check is not None %}
         <div class="mb-6">
             <h2 class="flex items-center mb-2 text-base font-bold">
-                {% if citation_check.result %}
+                {% if citation_status %}
                 <svg class="fill-current text-green inline-block h-6 w-6" viewBox="0 0 20 20">
                     <path d="M10.219,1.688c-4.471,0-8.094,3.623-8.094,8.094s3.623,8.094,8.094,8.094s8.094-3.623,8.094-8.094S14.689,1.688,10.219,1.688 M10.219,17.022c-3.994,0-7.242-3.247-7.242-7.241c0-3.994,3.248-7.242,7.242-7.242c3.994,0,7.241,3.248,7.241,7.242C17.46,13.775,14.213,17.022,10.219,17.022 M15.099,7.03c-0.167-0.167-0.438-0.167-0.604,0.002L9.062,12.48l-2.269-2.277c-0.166-0.167-0.437-0.167-0.603,0c-0.166,0.166-0.168,0.437-0.002,0.603l2.573,2.578c0.079,0.08,0.188,0.125,0.3,0.125s0.222-0.045,0.303-0.125l5.736-5.751C15.268,7.466,15.265,7.196,15.099,7.03"></path>
                 </svg>
@@ -115,12 +120,12 @@
                 </svg>
                 {% endif %}
 
-                <span class="ml-3 {% if citation_check.result %}text-green{% else %}text-orange{% endif %}">
+                <span class="ml-3 {% if citation_status %}text-green{% else %}text-orange{% endif %}">
                     Citation
                 </span>
             </h2>
 
-            {% if not citation_check.result %}
+            {% if not citation_status %}
             {% include "includes/feedback-snippets/citation-warning.html" %}
             {% endif %}
 
@@ -128,7 +133,9 @@
             <p>Your citation is correct but it is located after the full stop.</p>
             {% endif %}
         </div>
+        {% endif %}
 
+        {% if academic_style_check is not None %}
         <div class="mb-6">
             <h2 class="flex items-center mb-2 text-base font-bold">
                 {% if academic_style_status %}
@@ -194,6 +201,7 @@
             </div>
             {% endif %}
         </div>
+        {% endif %}
     </div>
 
     <div class="mb-4">

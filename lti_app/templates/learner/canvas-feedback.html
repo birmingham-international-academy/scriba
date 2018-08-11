@@ -5,89 +5,99 @@
 <h2>Feedback</h2>
 
 {% if band is None %}
-<p>Remember: this is only a diagnostic assignment and it is NOT graded!</p>
+    <p>Remember: this is only a diagnostic assignment and it is NOT graded!</p>
 {% elif band == 4 %}
-<p>The submission requires tutor guidance.</p>
+    <p>The submission requires tutor guidance.</p>
 {% elif band == 3 %}
-<p>You did good; however check the feedback for more details.</p>
+    <p>You did good; however check the feedback for more details.</p>
 {% elif band == 2 %}
-<p>Great job! You only made few mistakes.</p>
+    <p>Great job! You only made few mistakes.</p>
 {% elif band == 1 %}
-<p>Great job! Your paraphrase is consistent and accurate.</p>
+    <p>Great job! Your paraphrase is consistent and accurate.</p>
 {% endif %}
 
 <p>Please keep in mind that this is an automated test. If you think that the feedback is not correct please contact an instructor.</p>
 
 <h3>Paraphrase</h3>
 
-{% if semantics_check >= semantics_similarity_threshold %}
-<p>The paraphrase text reflects the meaning of the original text.</p>
-{% else %}
-{% include "includes/feedback-snippets/semantics-check-warning.html" %}
+{% if semantics_check is not None %}
+    {% if semantics_status %}
+        <p>The paraphrase text reflects the meaning of the original text.</p>
+    {% else %}
+        {% include "includes/feedback-snippets/semantics-check-warning.html" %}
+    {% endif %}
 {% endif %}
 
-{% if plagiarism_check|length > 0 %}
-{% include "includes/feedback-snippets/plagiarism-check-warning.html" %}
-{% else %}
-<p>Good job! You have not copied substantial content from the original text.</p>
+{% if plagiarism_check is not None %}
+    {% if plagiarism_status %}
+        <p>Good job! You have not copied substantial content from the original text.</p>
+    {% else %}
+        {% include "includes/feedback-snippets/plagiarism-check-warning.html" %}
+    {% endif %}
 {% endif %}
 
-<h3>Grammar</h3>
+{% if grammar_check is not None %}
+    <h3>Grammar</h3>
 
-{% if grammar_check.comma_splices|length > 0 %}
-<h4>Comma splices</h4>
+    {% if grammar_status %}
+        <p>Great job! The tool did not detect any grammatical mistake.</p>
+    {% endif %}
 
-{% include "includes/feedback-snippets/comma-splices-warning.html" %}
+    {% if grammar_check.comma_splices|length > 0 %}
+        <h4>Comma splices</h4>
+        {% include "includes/feedback-snippets/comma-splices-warning.html" %}
+    {% endif %}
+
+    {% if grammar_check.sentence_fragments|length > 0 %}
+        <h4>Sentence fragments</h4>
+        {% include "includes/feedback-snippets/sentence-fragments-warning.html" %}
+    {% endif %}
+
+    {% if grammar_check.noun_verb_disagreements|length > 0 %}
+        <h4>Subject-verb disagreements</h4>
+        {% include "includes/feedback-snippets/subject-verb-disagreements-warning.html" %}
+    {% endif %}
+
+    {% if grammar_check.languagetool_check|length > 0 %}
+        <h4>General mistakes</h4>
+        {% include "includes/feedback-snippets/general-mistakes-warning.html" %}
+    {% endif %}
 {% endif %}
 
-{% if grammar_check.sentence_fragments|length > 0 %}
-<h4>Sentence fragments</h4>
+{% if citation_check is not None %}
+    <h3>Citation</h3>
 
-{% include "includes/feedback-snippets/sentence-fragments-warning.html" %}
+    {% if citation_result %}
+        <p>You have correctly cited the text. {% if citation_check.citation_after_full_stop %}However the citation must NOT lie after a full-stop. To correct this mistake, put the full-stop <strong>after</strong> the citation.{% endif %}</p>
+    {% else %}
+        {% include "includes/feedback-snippets/citation-warning.html" %}
+    {% endif %}
 {% endif %}
 
-{% if grammar_check.noun_verb_disagreements|length > 0 %}
-<h4>Subject-verb disagreements</h4>
+{% if academic_style_check is not None %}
+    <h3>Style</h3>
 
-{% include "includes/feedback-snippets/subject-verb-disagreements-warning.html" %}
-{% endif %}
+    {% if academic_style_status %}
+        <p>Good job! The tool did not detect any style issues.</p>
+    {% endif %}
 
-{% if grammar_check.languagetool_check|length > 0 %}
-<h4>General mistakes</h4>
+    {% if academic_style_check.contractions|length > 0 %}
+        <h4>Contraction/short forms</h4>
+        {% include "includes/feedback-snippets/contractions-warning.html" %}
+    {% endif %}
 
-{% include "includes/feedback-snippets/general-mistakes-warning.html" %}
-{% endif %}
+    {% if academic_style_check.phrasal_verbs|length > 0 %}
+        <h4>Phrasal verbs</h4>
+        {% include "includes/feedback-snippets/phrasal-verbs-warning.html" %}
+    {% endif %}
 
-<h3>Citation</h3>
+    {% if academic_style_check.quotation_overuses|length > 0 %}
+        <h4>Quotation overuse</h4>
+        {% include "includes/feedback-snippets/quotation-overuses-warning.html" %}
+    {% endif %}
 
-{% if citation_check.result %}
-<p>You have correctly cited the text. {% if citation_check.citation_after_full_stop %}However the citation must NOT lie after a full-stop. To correct this mistake, put the full-stop <strong>after</strong> the citation.{% endif %}</p>
-{% else %}
-{% include "includes/feedback-snippets/citation-warning.html" %}
-{% endif %}
-
-<h3>Style</h3>
-
-{% if academic_style_check.contractions|length > 0 %}
-<h4>Contraction/short forms</h4>
-
-{% include "includes/feedback-snippets/contractions-warning.html" %}
-{% endif %}
-
-{% if academic_style_check.phrasal_verbs|length > 0 %}
-<h4>Phrasal verbs</h4>
-
-{% include "includes/feedback-snippets/phrasal-verbs-warning.html" %}
-{% endif %}
-
-{% if academic_style_check.quotation_overuses|length > 0 %}
-<h4>Quotation overuse</h4>
-
-{% include "includes/feedback-snippets/quotation-overuses-warning.html" %}
-{% endif %}
-
-{% if academic_style_check.general_informalities|length > 0 %}
-<h4>Informal words</h4>
-
-{% include "includes/feedback-snippets/general-informalities-warning.html" %}
+    {% if academic_style_check.general_informalities|length > 0 %}
+        <h4>Informal words</h4>
+        {% include "includes/feedback-snippets/general-informalities-warning.html" %}
+    {% endif %}
 {% endif %}

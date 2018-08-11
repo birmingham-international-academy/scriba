@@ -10,11 +10,11 @@
 </head>
 
 <body>
-    <div class="container">
+    <div>
         {% block toplevel %}{% endblock %}
 
-        <div id="content" class="w-full max-w-md mx-auto my-4 shadow-md rounded">
-            <div class="bg-grey-lighter text-grey-darker p-3">
+        <div id="content" class="w-full max-w-lg mx-auto my-4 rounded border border-blue-dark">
+            <div class="bg-blue-dark text-blue-lightest rounded-t p-3">
                 <h1 id="title" class="text-xl font-light">{% block title %}{% endblock %}</h1>
             </div>
 

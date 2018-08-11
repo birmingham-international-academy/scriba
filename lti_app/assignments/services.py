@@ -4,6 +4,7 @@ from django.conf import settings
 from html import parser
 from lti import tool_provider
 
+from .exceptions import AssignmentException
 from lti_app.core import checkers, interpreters
 from lti_app.assignments import repositories
 
@@ -44,6 +45,7 @@ class AssignmentService:
             course_id,
             assignment_id,
             assignment_type,
+            attempts,
             outcome_service_url,
             result_sourcedid,
             text):
@@ -53,26 +55,50 @@ class AssignmentService:
             'assignment_id': assignment_id
         }).first()
 
-        # 2. Create the interpreter for the raw data
-        feedback_interpreter = interpreters.FeedbackInterpreter()
-        grade_interpreter = interpreters.GradeInterpreter(assignment_type)
+        if (
+            attempts is not None
+            and assignment.max_attempts is not None
+            and attempts >= assignment.max_attempts
+        ):
+            raise AssignmentException.max_attempts_reached()
 
-        # 3. Run the analysis
+        # 2. Create the interpreter for the raw data
+        feedback_interpreter = interpreters.FeedbackInterpreter(assignment.semantics_check)
+        grade_interpreter = interpreters.GradeInterpreter(assignment_type, assignment.semantics_check)
+
+        # 3. Select the checks to run
+        checks = {
+            'citation': assignment.citation_check,
+            'grammar': assignment.grammar_check,
+            'plagiarism': assignment.plagiarism_check,
+            'academic_style': assignment.academic_style_check,
+            'semantics': assignment.semantics_check
+        }
+
+        # 4. Run the analysis
         checker = checkers.DefaultChecker(
             text,
             assignment.excerpt,
             assignment.supporting_excerpts,
-            assignment.reference
+            assignment.reference,
+            checks
         )
         data = checker.run()
         data['text'] = text
 
-        # 4. Run the interpreter(s)
-        data = grade_interpreter.run(data)
-        if assignment_type == 'D':
-            data = {**data, **feedback_interpreter.run(data)}
+        # 5. Run the interpreter(s)
+        # if assignment_type == 'D':
+        feedback_interpreter.run(data)
+        """
+        data = {
+            **data,
+            **feedback_interpreter.run(data)
+        }
+        """
 
-        # 5. Send the (dummy) grade
+        grade_interpreter.run(data)
+
+        # 6. Send the grade
         self._send_grade(outcome_service_url, result_sourcedid, data)
 
         return data

@@ -3,38 +3,145 @@
 {% block title %}Update the assignment{% endblock %}
 
 {% block content %}
+
+{% with label_class="block text-grey-darker text-sm font-bold mb-2" %}
+{% with input_class="appearance-none border rounded focus:border-blue focus:shadow py-2 px-3 text-grey-darker leading-normal" %}
+{% with subtitle_class="text-grey-darker bg-grey-lighter text-sm uppercase tracking-wide mb-2 p-3" %}
+
 <form method="POST" action="/assignments/" class="bg-white px-8 pt-6 pb-8">
-    <div class="mb-4">
-        <label class="block text-grey-darker text-sm font-bold mb-2" for="reference">
+    <div class="mb-8">
+        <label class="{{ label_class }}" for="reference">
             Reference
         </label>
+        <p class=""></p>
         <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker leading-tight"
+            class="{{ input_class }} w-full"
             id="reference"
             name="reference"
             type="text"
             value="{% if assignment is not None %}{{ assignment.reference }}{% endif %}"
             placeholder="Reference">
     </div>
-    <div class="mb-4">
-        <label class="block text-grey-darker text-sm font-bold mb-2" for="excerpt">
+    <div class="mb-8">
+        <label class="{{ label_class }}" for="excerpt">
             Excerpt
         </label>
         <textarea
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker leading-tight"
+            class="{{ input_class }} w-full"
             id="excerpt"
             name="excerpt"
             rows="7">{% if assignment is not None %}{{ assignment.excerpt }}{% endif %}</textarea>
     </div>
-    <div class="mb-4">
-        <label class="block text-grey-darker text-sm font-bold mb-2" for="supporting_excerpts">
+    <div class="mb-8">
+        <label class="{{ label_class }}" for="supporting_excerpts">
             Supporting excerpts (separated by new lines)
         </label>
         <textarea
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker leading-tight"
+            class="{{ input_class }} w-full"
             id="supporting_excerpts"
             name="supporting_excerpts"
             rows="7">{% if assignment is not None and assignment.supporting_excerpts is not None %}{{ assignment.supporting_excerpts }}{% endif %}</textarea>
+    </div>
+    <div class="mb-8">
+        <label class="{{ label_class }}" for="model_answers">
+            Model answers (separated by new lines)
+        </label>
+        <textarea
+            class="{{ input_class }} w-full"
+            id="model_answers"
+            name="model_answers"
+            rows="7">{% if assignment is not None and assignment.model_answers is not None %}{{ assignment.model_answers }}{% endif %}</textarea>
+    </div>
+    <div class="mb-8 border rounded">
+        <h3 class="{{ subtitle_class }}">
+            General Settings
+        </h3>
+
+        <div class="flex flex-wrap -mx-3 mb-2 p-4">
+            <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                <label class="{{ label_class }}" for="max_attempts">
+                    Maximum number of attempts
+                </label>
+                <input
+                    type="number"
+                    class="{{ input_class }}"
+                    name="max_attempts"
+                    value="{{ assignment.max_attempts }}"/>
+            </div>
+            <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                <div class="pretty p-switch p-fill p-toggle p-pulse">
+                    <input type="checkbox" name="show_excerpt" {% if assignment.show_excerpt %}checked{% endif %} />
+                    <div class="state p-success p-on">
+                        <label class="text-grey-darker">Excerpt is shown to students</label>
+                    </div>
+                    <div class="state p-off">
+                        <label class="text-grey-darker">Excerpt is hidden from students</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mb-8 border rounded">
+        <h3 class="{{ subtitle_class }}">
+            Checks Settings
+        </h3>
+
+        <div class="p-4">
+            <div class="mb-4">
+                <div class="pretty p-switch p-fill">
+                    <input type="checkbox" name="citation_check" {% if assignment.citation_check %}checked{% endif %} />
+                    <div class="state p-success">
+                        <label class="text-grey-darker">Citation checking</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="pretty p-switch p-fill">
+                    <input type="checkbox" name="grammar_check" {% if assignment.grammar_check %}checked{% endif %} />
+                    <div class="state p-success">
+                        <label class="text-grey-darker">Grammar checking</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="pretty p-switch p-fill">
+                    <input type="checkbox" name="plagiarism_check" {% if assignment.plagiarism_check %}checked{% endif %} />
+                    <div class="state p-success">
+                        <label class="text-grey-darker">Plagiarism checking</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="pretty p-switch p-fill">
+                    <input type="checkbox" name="academic_style_check" {% if assignment.academic_style_check %}checked{% endif %} />
+                    <div class="state p-success">
+                        <label class="text-grey-darker">Academic style checking</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-start">
+                <label class="text-grey-darker">Semantics check</label>
+
+                <div class="inline-block ml-6 mr-4">
+                    <label class="{{ label_class }}">Off</label>
+                    <input type="radio" name="semantics_check" value="0" {% if assignment.semantics_check == 0 %}checked{% endif %} />
+                </div>
+
+                <div class="inline-block mr-4">
+                    <label class="{{ label_class }}">Low threshold</label>
+                    <input type="radio" name="semantics_check" value="1" {% if assignment.semantics_check == 1 %}checked{% endif %}/>
+                </div>
+
+                <div class="inline-block">
+                    <label class="{{ label_class }}">High threshold</label>
+                    <input type="radio" name="semantics_check" value="2" {% if assignment.semantics_check == 2 %}checked{% endif %}/>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="flex items-center justify-between">
         <button class="bg-blue hover:bg-blue-dark text-white font-bold py-2 px-4 rounded" type="submit">
@@ -42,4 +149,9 @@
         </button>
     </div>
 </form>
+
+{% endwith %}
+{% endwith %}
+{% endwith %}
+
 {% endblock %}

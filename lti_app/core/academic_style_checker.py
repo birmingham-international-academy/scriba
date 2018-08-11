@@ -10,6 +10,7 @@ import re
 
 from nltk import tokenize
 
+from lti_app import strings
 from lti_app.core.text_helpers import remove_stopwords
 from lti_app.core.text_processing.tools import Tools
 from lti_app.helpers import get_current_dir
@@ -41,7 +42,7 @@ class Checker:
 
         phrasal_verbs = []
 
-        for token in self.text_document.get('spacy_doc'):
+        for token in self.text_document.get(strings.spacy_doc):
             if token.dep_ == 'prt' and token.head.pos_ == 'VERB':
                 verb = token.head.orth_
                 particle = token.orth_
@@ -58,7 +59,7 @@ class Checker:
 
         tagged_tokens = [
             token
-            for token in self.text_document.get('tagged_tokens')
+            for token in self.text_document.get(strings.tagged_tokens)
             if token[0] != "''"
         ]
 
@@ -74,7 +75,7 @@ class Checker:
         Returns:
             list of str: The quotation overuses.
         """
-        text = self.text_document.get('cleaned_text')
+        text = self.text_document.get(strings.cleaned_text)
         quotes_pattern = r'["\'](.*?)["\']'
         matches = re.findall(quotes_pattern, text)
         matches = [match.strip() for match in matches]
@@ -97,7 +98,7 @@ class Checker:
 
         lemmas = ' '.join(
             [str(word_lemma[::-1])
-            for word_lemma in self.text_document.get('lemmas')]
+            for word_lemma in self.text_document.get(strings.lemmas)]
         )
         current_dir = get_current_dir(__file__)
         filename = os.path.join(
@@ -111,7 +112,7 @@ class Checker:
             for phrase in informal_phrases:
                 regex = [
                     r'\([\'"]' + token + r'[\'"], [\'"](.+?)[\'"]\)'
-                    for token in phrase.get('tokens')
+                    for token in phrase.get(strings.tokens)
                 ]
 
                 informal_phrases_regexps.append(' '.join(regex))
