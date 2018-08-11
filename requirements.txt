@@ -1,18 +1,33 @@
-git+https://github.com/hltcoe/PredPatt.git
-psycopg2==2.7.1
-requests==2.18.4
-oauthlib==2.1.0
-redis==2.10.6
-whitenoise==3.3.1
-lti==0.9.3
-rq==0.11.0
-spacy==2.0.11
-pyspellchecker==0.1.2
-nltk==3.3
+# Server
+# ---------------------------------------------
 Django==2.0.6
-python-dotenv==0.8.2
 gunicorn==19.8.1
+redis==2.10.6
+rq==0.11.0
+whitenoise==3.3.1
+
+# General
+# ---------------------------------------------
+lti==0.9.3
+oauthlib==2.1.0
+python-dotenv==0.8.2
+requests==2.18.4
+
+# Database
+# ---------------------------------------------
+psycopg2==2.7.1
+
+# NLP
+# ---------------------------------------------
+git+https://github.com/hltcoe/PredPatt.git
 gensim==3.5.0
+nltk==3.3
+pyspellchecker==0.1.2
 sacremoses==0.0.3
+spacy==2.0.11
+
+# Testing
+# ---------------------------------------------
+coverage-badge==0.2.0
 pytest==3.6.2
 pytest-cov==2.5.1

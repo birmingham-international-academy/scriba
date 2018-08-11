@@ -184,6 +184,12 @@ To view the test coverage report run the following command:
 $ pytest --cov=lti_app
 ```
 
+To generate the coverage badge run the following:
+
+```
+$ coverage-badge -o badge-coverage.svg
+```
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.

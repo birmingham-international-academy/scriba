@@ -242,7 +242,7 @@ class GradeInterpreter:
             data['score'] = 1
             band = 1
 
-        data['comments'] = render_to_string('learner/canvas-feedback.html', {
+        data['comments'] = render_to_string(strings.learner_canvas_feedback, {
             'band': band,
             'semantics_similarity_threshold': self.semantics_threshold,
             **data

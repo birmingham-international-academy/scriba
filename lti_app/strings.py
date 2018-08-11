@@ -29,4 +29,10 @@ result_sourcedid = 'lis_result_sourcedid'
 
 # Templates
 # =============================================
-
+ajax_500 = '500-ajax.html'
+learner_index = 'learner/index.html'
+learner_ajax_feedback = 'learner/feedback-ajax.html'
+learner_canvas_feedback = 'learner/canvas-feedback.html'
+learner_submission_confirmation = 'learner/submission-confirmation.html'
+teacher_index = 'teacher/index.html'
+teacher_submission_confirmation = 'teacher/assignment-submission-confirmation.html'

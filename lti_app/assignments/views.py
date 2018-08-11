@@ -37,7 +37,7 @@ def _create_or_update_assignment(request):
 
     return render(
         request,
-        'teacher/assignment-submission-confirmation.html'
+        strings.teacher_submission_confirmation
     )
 
 
@@ -84,9 +84,9 @@ def show(request):
     is_instructor = request.session.get(strings.is_instructor)
 
     if is_instructor:
-        template = 'teacher/index.html'
+        template = strings.teacher_index
     else:
-        template = 'learner/index.html'
+        template = strings.learner_index
 
     return render(request, template, {
         'assignment': assignment

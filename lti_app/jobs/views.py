@@ -19,7 +19,7 @@ def index(request):
         return HttpResponse(status=204)
 
     if job.is_failed:
-        return render(request, '500-ajax.html')
+        return render(request, strings.ajax_500)
 
     # Update attempts and return response
     # ---------------------------------------------
@@ -37,8 +37,8 @@ def index(request):
     request.session[attempts_key] = attempts
 
     if assignment_type == 'D':
-        template = 'learner/feedback-ajax.html'
+        template = strings.learner_ajax_feedback
     else:
-        template = 'learner/submission-confirmation.html'
+        template = strings.learner_submission_confirmation
 
     return render(request, template, data)
