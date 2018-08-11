@@ -1,11 +1,10 @@
+import django_rq
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
-from rq import Queue
 
 from lti_app import strings
 from lti_app.assignments import request_forms, services
-from worker import conn
 
 
 def _create_or_update_assignment(request):
@@ -51,9 +50,8 @@ def _submit_assignment(request):
 
     text = request.POST.get('text')
     service = services.AssignmentService()
-    q = Queue(connection=conn)
 
-    result = q.enqueue(
+    result = django_rq.enqueue(
         service.run_analysis,
         course_id,
         assignment_id,

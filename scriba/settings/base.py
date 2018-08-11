@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_rq'
 ]
 
 MIDDLEWARE = [
@@ -85,9 +86,36 @@ DATABASES = {
     }
 }
 
+# Logging
+# https://docs.djangoproject.com/en/2.0/topics/logging/
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "rq_console": {
+            "format": "%(asctime)s %(message)s",
+            "datefmt": "%H:%M:%S",
+        },
+    },
+    "handlers": {
+        "rq_console": {
+            "level": "DEBUG",
+            "class": "rq.utils.ColorizingStreamHandler",
+            "formatter": "rq_console",
+            "exclude": ["%(asctime)s"],
+        }
+    },
+    'loggers': {
+        "rq.worker": {
+            "handlers": ["rq_console"],
+            "level": "DEBUG"
+        },
+    }
+}
 
 # Caching
-# https://docs.djangoproject.com/en/2.1/topics/cache
+# https://docs.djangoproject.com/en/2.0/topics/cache
 
 CACHES = {
     'default': {
@@ -102,6 +130,22 @@ CACHES = {
         }
     }
 }
+
+# Django-RQ
+# https://github.com/rq/django-rq
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0
+    }
+}
+
+RQ_EXCEPTION_HANDLERS = [
+    'lti_app.rq_exception_handlers.inflate_exception',
+    'lti_app.rq_exception_handlers.move_to_failed_queue'
+]
 
 
 # Password validation

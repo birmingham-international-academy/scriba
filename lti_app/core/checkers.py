@@ -1,7 +1,6 @@
 """Provides the paraphrase analyzers."""
 
 import copy
-import logging
 
 from lti_app import strings
 from lti_app.core import (
@@ -12,11 +11,6 @@ from lti_app.core import (
     semantics_checker
 )
 from lti_app.core.text_processing import processing_graphs, processors
-from lti_app.setup_logging import setup_logging
-
-
-logger = logging.getLogger(__name__)
-setup_logging()
 
 
 class DefaultChecker:
@@ -142,7 +136,5 @@ class DefaultChecker:
         # Grammar check
         if self.checks.get('grammar'):
             self.data[strings.grammar_check] = self.grammar_checker.run()
-
-        logger.debug('%s', self.data)
 
         return self.data

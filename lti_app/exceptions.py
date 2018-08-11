@@ -1,35 +1,46 @@
 class BaseLtiException(Exception):
-    def __init___(self, schema):
-        message = 'Exception Code: {}'.format(schema.get('code'))
-        message += '\nMessage: {}'.format(schema.get('message'))
+    code = None
+    description = None
 
-        Exception.__init__(self, message)
+    def __init__(self, code=None, description=None):
+        Exception.__init__(self)
 
-        self.code = schema.get('code')
-        self.message = schema.get('message')
+        if code is not None:
+            self.code = code
+
+        if description is not None:
+            self.description = description
+
+    def __str__(self):
+        code = self.code if self.code is not None else '???'
+        return '%s: %s' % (code, self.description)
+
+    def __repr__(self):
+        code = self.code if self.code is not None else '???'
+        return "<%s '%s'>" % (self.__class__.__name__, code)
 
 
 class CachingException(BaseLtiException):
-    def __init__(self, schema):
-        BaseLtiException.__init__(self, schema)
+    code = 'CCH_GENERIC'
+    description = 'Generic caching error.'
+
+    def __init__(self, code=None, description=None):
+        BaseLtiException.__init__(self, code, description)
 
     @staticmethod
     def generic():
-        return CachingException({
-            'code': 'CCH_GENERIC',
-            'message': 'Generic caching error.'
-        })
+        return CachingException()
 
     @staticmethod
     def not_cacheable():
-        return CachingException({
-            'code': 'CCH_NOT_CACHEABLE',
-            'message': 'Object not cacheable.'
-        })
+        return CachingException(
+            code='CCH_NOT_CACHEABLE',
+            description='Object not cacheable.'
+        )
 
     @staticmethod
     def invalid_key():
-        return CachingException({
-            'code': 'CCH_INVALID_KEY',
-            'message': 'The key is invalid or it cannot be found.'
-        })
+        return CachingException(
+            code='CCH_INVALID_KEY',
+            description='The key is invalid or it cannot be found.'
+        )

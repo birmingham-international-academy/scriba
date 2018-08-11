@@ -1,6 +1,12 @@
 <div class="bg-white text-grey-darker px-8 pt-6 pb-8 leading-normal">
-    <p>
-        An internal error has occurred.
-        We will fix it as soon as possible.
-    </p>
+    {% if exception is not None and exception.description is not None %}
+        <p>
+            {{ exception.description }}
+        </p>
+    {% else %}
+        <p>
+            An internal error has occurred.
+            We will fix it as soon as possible.
+        </p>
+    {% endif %}
 </div>

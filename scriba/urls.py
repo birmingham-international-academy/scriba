@@ -23,4 +23,5 @@ urlpatterns = [
     path('launch/', include('lti_app.launch.urls')),
     path('assignments/', include('lti_app.assignments.urls')),
     path('jobs/', include('lti_app.jobs.urls')),
+    path('django-rq/', include('django_rq.urls'))
 ]

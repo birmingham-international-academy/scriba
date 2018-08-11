@@ -1,7 +1,8 @@
 """Provides service classes for the assignment views."""
 
-from django.conf import settings
 from html import parser
+
+from django.conf import settings
 from lti import tool_provider
 
 from .exceptions import AssignmentException

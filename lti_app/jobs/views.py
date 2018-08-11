@@ -1,13 +1,12 @@
+import django_rq
 from django.http import HttpResponse
 from django.shortcuts import render
-from rq import Queue
 
 from lti_app import strings
-from worker import conn
 
 
 def index(request):
-    q = Queue(connection=conn)
+    q = django_rq.get_queue()
 
     # Retrieve job data
     # ---------------------------------------------
@@ -19,7 +18,9 @@ def index(request):
         return HttpResponse(status=204)
 
     if job.is_failed:
-        return render(request, strings.ajax_500)
+        return render(request, strings.ajax_500, {
+            'exception': job.meta['exception']
+        })
 
     # Update attempts and return response
     # ---------------------------------------------
