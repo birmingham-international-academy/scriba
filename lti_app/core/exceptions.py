@@ -44,3 +44,10 @@ class TextProcessingException(BaseLtiException):
             code='TXT_INVALID_PROCESSOR_TYPE',
             description='The supplied processor is not of type {}'.format(accepted_type.__name__)
         )
+
+    @staticmethod
+    def invalid_graph():
+        return TextProcessingException(
+            code='TXT_INVALID_GRAPH',
+            description='The processing graph is invalid.'
+        )

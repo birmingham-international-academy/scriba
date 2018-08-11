@@ -89,7 +89,7 @@ class DefaultChecker:
 
         # Excerpt text processing
         self.text_processor.graph_root = processing_graphs.text_cleaner
-        self.text_processor.remove_node(processing_graphs.spacy_processor)
+        self.text_processor.remove_processor(processing_graphs.spacy_processor)
         self.excerpt_document = self.text_processor.run(
             self.excerpt,
             enable_cache=True

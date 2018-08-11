@@ -22,11 +22,35 @@ class TextProcessor:
         self.graph = copy.deepcopy(processing_graph)
         self.graph_root = graph_root
 
+        if self.graph_root not in self.graph:
+            raise TextProcessingException.invalid_graph()
+
+    def __getitem__(self, key):
+        if not isinstance(key, ProcessorNode):
+            raise TypeError()
+
+        if key not in self.graph:
+            raise KeyError()
+
+        return self.graph[key]
+
+    def __setitem__(self, key, value):
+        if not isinstance(key, ProcessorNode):
+            raise TypeError()
+
+        self.graph[key] = value
+
+    def __contains__(self, item):
+        return item in self.graph
+
+    def __len__(self):
+        return len(self.graph)
+
     def _process(self, document, processor, **kwargs):
         out_key = processor.attrs.get('out')
 
         if not isinstance(processor, ProcessorNode):
-            raise TextProcessingException.invalid_processor_type(TextProcessor)
+            raise TextProcessingException.invalid_processor_type(ProcessorNode)
 
         data = processor.process(
             document=document,
@@ -34,7 +58,19 @@ class TextProcessor:
         )
         document.put(out_key, data)
 
-    def remove_node(self, node):
+    def add_processor(self, node):
+        if node in self.graph:
+            return
+
+        if not isinstance(node, ProcessorNode):
+            raise TextProcessingException.invalid_processor_type(ProcessorNode)
+
+        self.graph[node] = []
+
+    def remove_processor(self, node):
+        if node not in self.graph:
+            return
+
         self.graph.pop(node, None)
 
         for source, targets in self.graph.items():
@@ -64,7 +100,7 @@ class TextProcessor:
         while len(queue) != 0:
             processor = queue.popleft()
 
-            for next_processor in self.graph.get(processor): # TODO: []
+            for next_processor in self.graph.get(processor):
                 if next_processor not in marked:
                     self._process(
                         document,
