@@ -1,4 +1,5 @@
 import hashlib
+import re
 from functools import wraps
 
 from django.core.cache import cache
@@ -21,18 +22,23 @@ def save_cache(text, data):
     cache.set(digest, data, None)
 
 
-def caching(name):
+def caching(*name):
     def wrap(func):
         @wraps(func)
         def wrapped_f(self, *args, **kwargs):
             if not hasattr(self, 'cache'):
                 raise CachingException.not_cacheable()
 
-            ext_key = name
+            ext_key = name[:]
+
+            if len(ext_key) == 0:
+                ext_key = ['']
 
             # Get name if given as a class path
             # ---------------------------------------------
-            if type(ext_key) is list:
+            if type(ext_key[0]) is list:
+                ext_key = ext_key[0]
+
                 if len(ext_key) == 0:
                     raise CachingException.generic()
 
@@ -51,13 +57,29 @@ def caching(name):
 
                 ext_key = attr
 
+            # Format extension key using function arguments
+            # ---------------------------------------------
+            elif len(ext_key) > 1:
+                format_string, *argument_indexes = ext_key
+                data = [str(args[arg_index]) for arg_index in argument_indexes]
+                ext_key = format_string.format(*data)
+
+            # One string with no formatting arguments
+            # ---------------------------------------------
+            else:
+                ext_key = ext_key[0]
+
             # Get result from cache (if stored)
             # ---------------------------------------------
             key = self.cache.base_key + str(ext_key)
 
             result = from_cache(key)
 
-            if self.cache.enabled and result is not None:
+            fn_cache_enabled = kwargs.get('enable_cache')
+            if fn_cache_enabled is None:
+                fn_cache_enabled = True
+
+            if self.cache.enabled and fn_cache_enabled and result is not None:
                 return result
 
             # Compute result without cache
@@ -66,7 +88,7 @@ def caching(name):
 
             # Save result in cache if enabled
             # ---------------------------------------------
-            if self.cache.enabled:
+            if self.cache.enabled and fn_cache_enabled:
                 save_cache(key, result)
 
             return result

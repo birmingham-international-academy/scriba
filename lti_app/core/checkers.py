@@ -104,7 +104,7 @@ class DefaultChecker:
             self.text_document,
             self.excerpt_document,
             self.supporting_excerpts,
-            use_cache=True
+            enable_cache=True
         )
         self.grammar_checker = grammar_checker.Checker(
             self.text_document

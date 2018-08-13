@@ -1,21 +1,24 @@
-"""Provides base repository classes.
+"""Provides base repository classes."""
 
-Todo:
-- Add validation
-"""
+# from django.core.cache import cache
+from .caching import caching, Cache
 
 
 class CrudRepository:
     def __init__(self, model):
         self.model = model
+        self.cache = Cache(enabled=True, base_key='query_{}_'.format(self.model.__name__))
 
-    def get_all(self):
+    @caching('get_all')
+    def get_all(self, enable_cache=True):
         return self.model.objects.all()
 
-    def get_by_id(self, id):
+    @caching('get_by_id_{}', 0)
+    def get_by_id(self, id, enable_cache=True):
         return self.model.objects.get(pk=id)
 
-    def get_by(self, fields):
+    @caching('get_by_{}', 0)
+    def get_by(self, fields, enable_cache=True):
         return self.model.objects.all().filter(**fields)
 
     def create(self, fields):

@@ -40,7 +40,7 @@ class Checker:
         text_document,
         excerpt_document,
         supporting_excerpts,
-        use_cache=False
+        enable_cache=False
     ):
         self.text_document = text_document
         self.excerpt_document = excerpt_document
@@ -57,7 +57,7 @@ class Checker:
             ]
 
         self.cache = Cache(
-            enabled=use_cache,
+            enabled=enable_cache,
             base_key=self.excerpt_document.text + ''.join(self.supporting_excerpts)
         )
 

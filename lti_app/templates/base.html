@@ -1,12 +1,15 @@
+{% load cache %}
 {% load static %}
 
 <!DOCTYPE html>
 <html>
 
 <head>
+    {% cache None head %}
     {% include "includes/head.html" %}
 
     {% block head %}{% endblock %}
+    {% endcache %}
 </head>
 
 <body>
@@ -23,7 +26,9 @@
             </div>
         </div>
 
+        {% cache None footer %}
         {% include "includes/footer.html" %}
+        {% endcache %}
     </div>
 
     {% block foot %}{% endblock %}
