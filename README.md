@@ -116,7 +116,7 @@ Scriba uses Python RQ for background tasks management.
 Run the worker locally using:
 
 ```
-$ python worker.py --settings scriba.settings.local
+$ python manage.py rqworker default
 ```
 
 ### 3. Run the Stanford CoreNLP Server

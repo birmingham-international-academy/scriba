@@ -1,18 +1,3 @@
-import pytest
-
-from lti_app.core.citation_checker import Checker as CitationChecker
-
-
-# Utility/Global Functions
-# =============================================
-
-def _get_citation_checker(text, reference):
-    return CitationChecker(text, reference)
-
-
-# Data Providers
-# =============================================
-
 citation_check = [
     (
         'Edbali (2018) stated something.',
@@ -135,24 +120,3 @@ citation_check = [
         }
     ),
 ]
-
-
-# Tests
-# =============================================
-
-@pytest.mark.parametrize('text,reference,expected', citation_check)
-def test_citation_check(text, reference, expected):
-    citation_checker = _get_citation_checker(text, reference)
-    data = citation_checker.run()
-
-    print('ACTUAL:')
-    print(data)
-    print('EXPECTED:')
-    print(expected)
-
-    assert data.get('result') == expected.get('result')
-    assert set(data.get('authors')) == set(expected.get('authors'))
-    assert data.get('year') == expected.get('year')
-    assert data.get('in_text') == expected.get('in_text')
-    assert data.get('in_text_separated') == expected.get('in_text_separated')
-    assert data.get('parenthetical') == expected.get('parenthetical')

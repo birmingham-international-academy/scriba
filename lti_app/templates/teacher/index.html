@@ -70,7 +70,7 @@
             </div>
             <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
                 <div class="pretty p-switch p-fill p-toggle p-pulse">
-                    <input type="checkbox" name="show_excerpt" {% if assignment.show_excerpt %}checked{% endif %} />
+                    <input type="checkbox" name="show_excerpt" {% if assignment is None or assignment.show_excerpt %}checked{% endif %} />
                     <div class="state p-success p-on">
                         <label class="text-grey-darker">Excerpt is shown to students</label>
                     </div>
@@ -89,7 +89,7 @@
         <div class="p-4">
             <div class="mb-4">
                 <div class="pretty p-switch p-fill">
-                    <input type="checkbox" name="citation_check" {% if assignment.citation_check %}checked{% endif %} />
+                    <input type="checkbox" name="citation_check" {% if assignment is None or assignment.citation_check %}checked{% endif %} />
                     <div class="state p-success">
                         <label class="text-grey-darker">Citation checking</label>
                     </div>
@@ -98,7 +98,7 @@
 
             <div class="mb-4">
                 <div class="pretty p-switch p-fill">
-                    <input type="checkbox" name="grammar_check" {% if assignment.grammar_check %}checked{% endif %} />
+                    <input type="checkbox" name="grammar_check" {% if assignment is None or assignment.grammar_check %}checked{% endif %} />
                     <div class="state p-success">
                         <label class="text-grey-darker">Grammar checking</label>
                     </div>
@@ -107,7 +107,7 @@
 
             <div class="mb-4">
                 <div class="pretty p-switch p-fill">
-                    <input type="checkbox" name="plagiarism_check" {% if assignment.plagiarism_check %}checked{% endif %} />
+                    <input type="checkbox" name="plagiarism_check" {% if assignment is None or assignment.plagiarism_check %}checked{% endif %} />
                     <div class="state p-success">
                         <label class="text-grey-darker">Plagiarism checking</label>
                     </div>
@@ -116,7 +116,7 @@
 
             <div class="mb-4">
                 <div class="pretty p-switch p-fill">
-                    <input type="checkbox" name="academic_style_check" {% if assignment.academic_style_check %}checked{% endif %} />
+                    <input type="checkbox" name="academic_style_check" {% if assignment is None or assignment.academic_style_check %}checked{% endif %} />
                     <div class="state p-success">
                         <label class="text-grey-darker">Academic style checking</label>
                     </div>
@@ -133,7 +133,7 @@
 
                 <div class="inline-block mr-4">
                     <label class="{{ label_class }}">Low threshold</label>
-                    <input type="radio" name="semantics_check" value="1" {% if assignment.semantics_check == 1 %}checked{% endif %}/>
+                    <input type="radio" name="semantics_check" value="1" {% if assignment is None or assignment.semantics_check == 1 %}checked{% endif %}/>
                 </div>
 
                 <div class="inline-block">
