@@ -77,6 +77,15 @@ class TextProcessor:
             self.graph[source] =\
                 list(filter(lambda target: target != node, targets))
 
+    def add_channel(self, source, target):
+        if source not in self.graph or target not in self.graph:
+            raise KeyError()
+
+        if target in self.graph[source]:
+            return
+
+        self.graph[source].append(target)
+
     def run(self, text, **kwargs):
         """Run the processor.
 

@@ -21,8 +21,7 @@ def _get_grammar_checker(
     )
     document = text_processor.run(
         text,
-        authors=citation_check.get('authors'),
-        year=citation_check.get('year')
+        citation_check=citation_check
     )
 
     return GrammarChecker(document)

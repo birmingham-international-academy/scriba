@@ -111,7 +111,7 @@ class Checker:
 
             for phrase in informal_phrases:
                 regex = [
-                    r'\([\'"]' + token + r'[\'"], [\'"](.+?)[\'"]\)'
+                    r'\([\'"]' + token + r'[\'"], [\'"]((?:(?!,).)+)[\'"]\)' # (.+?)
                     for token in phrase.get(strings.tokens)
                 ]
 
