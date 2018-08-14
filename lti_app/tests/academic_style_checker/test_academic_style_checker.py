@@ -37,6 +37,4 @@ def test_general_informalities(make_academic_style_checker, text, expected):
 
     actual = academic_style_checker.get_general_informalities()
 
-    print(actual)
-
     assert set(actual) == set(expected)

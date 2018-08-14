@@ -1,6 +1,5 @@
 """Provides base repository classes."""
 
-# from django.core.cache import cache
 from .caching import caching, Cache
 
 

@@ -202,6 +202,17 @@
             {% endif %}
         </div>
         {% endif %}
+
+        {% if assignment.model_answers %}
+        <div class="mb-6">
+            <h2 class="flex items-center mb-2 text-base font-bold">
+                Model answers
+            </h2>
+
+            <p>
+                {{ assignment.model_answers }}
+            </p>
+        {% endif %}
     </div>
 
     <div class="mb-4">
