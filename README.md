@@ -60,7 +60,13 @@ This will download the necessary files in `lti_app/core/data/languagetool`.
 
 ### 6. Setup the Database
 
-Todo.
+Follow this tutorial up to "Opening a Postgres Prompt with the New Role" (included):
+
+https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04
+
+Then update the `.env` file with the `DB_NAME`, `DB_USER` and `DB_PASSWORD` variables.
+
+`DB_HOST` is usually `127.0.0.1` and `DB_PORT` is 5432 (see these default values in `.env.example`).
 
 ### 7. Setup Redis
 
@@ -154,14 +160,17 @@ Todo.
 Whenever local changes are made the server must always perform the following:
 
 1. `$ git pull origin master`
-2. `$ python manage.py migrate`
-3. `$ python manage.py collectstatic`
+2. `$ python manage.py migrate` if changes to the migrations have been made
+3. `$ python manage.py collectstatic` if changes to static files have been made
 
 In addition, if using the Digital Ocean setup described above, run:
 
 ```
 $ sudo supervisorctl restart englishapp
+$ sudo supervisorctl restart worker
 ```
+
+This will restart the WSGI HTTP server and the Django worker.
 
 ## Testing
 

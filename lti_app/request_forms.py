@@ -7,7 +7,7 @@ class BaseRequestForm:
     required_str = 'required'
     type_str = 'type'
     types = {
-        'bool': [True, False, 1, 0, '1', '0', 'on', 'off', 'yes', 'no']
+        'bool': [True, False, 1, 0, '1', '0', 'on', 'off', None, 'yes', 'no']
     }
 
     def __init__(self, form_data):
