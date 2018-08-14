@@ -1,6 +1,6 @@
 import pytest
 
-from .data import *
+from .data import similarity_data
 from .fixtures import make_semantics_checker
 
 

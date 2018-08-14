@@ -236,12 +236,4 @@ class Checker:
         if vs_method_result == 0.0 and len(self.supporting_excerpts) == 0:
             pp_method_result *= 1.3
 
-        # if vs_method_result == 0.0 and len(self.supporting_excerpts) == 0:
-        #    overall_result = pp_method_result
-        # else:
-        #    overall_result = (pp_method_result + vs_method_result) / 2
-
-        # print(pp_method_result)
-        # print(vs_method_result)
-
         return max(vs_method_result, pp_method_result)
