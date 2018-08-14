@@ -124,7 +124,7 @@ $ python manage.py rqworker default
 The following command will run the CoreNLP Server on port `9000`:
 
 ```
-java -mx4g -cp "lti_app/core/data/stanford-corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
+$ java -mx4g -cp "lti_app/core/data/stanford-corenlp/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
 ```
 
 ### 4. Run the Language Tool Server
@@ -173,15 +173,19 @@ Then run `pytest`.
 To run individual tests (say grammar checking):
 
 ```
-pytest lti_app/tests/test_grammar_checker.py
+pytest lti_app/tests/grammar_checker/test_grammar_checker.py
 ```
 
 ### Coverage
 
-To view the test coverage report run the following command:
+Test coverage is a useful tool for
+finding untested parts of a codebase.
+
+To view the test coverage report run
+the following command:
 
 ```
-$ pytest --cov=lti_app
+$ pytest --cov
 ```
 
 To generate the coverage badge run the following:

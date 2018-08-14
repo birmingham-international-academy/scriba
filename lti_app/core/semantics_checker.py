@@ -103,21 +103,9 @@ class Checker:
         return 'not' in tokens or "n't" in tokens
 
     def _tuple_similarity(self, t1, t2):
-        """
-        resolve_relcl = True    # relative clauses
-        resolve_appos = True    # appositional modifiers
-        resolve_amod = True     # adjectival modifiers
-        resolve_conj = True     # conjuction
-        resolve_poss = True     # possessives
-        """
-
         similarity = 0.0
         weights = {
-            'target': {
-                'appos': 0.4,
-                'amod': 0.3,
-                'conj': 0.6
-            },
+            'target': 1.5,
             'argument': 1
         }
         default_weight_target = 1.3
@@ -126,10 +114,12 @@ class Checker:
         # Get Targets and Arguments
         # ---------------------------------------------
 
-        target1 = self.tools.stemmer.stem(t1['target'].root.text)
+        target1 = t1['target'].root.text
+        target1_stem = self.tools.stemmer.stem(target1)
         args1 = t1['args']
 
-        target2 = self.tools.stemmer.stem(t2['target'].root.text)
+        target2 = t2['target'].root.text
+        target2_stem = self.tools.stemmer.stem(target2)
         args2 = t2['args']
 
         # Target Similarity
@@ -144,17 +134,20 @@ class Checker:
         )
 
         # Calculate similarity
-        target1_gov_rel = t1['target'].root.gov_rel
-        target2_gov_rel = t2['target'].root.gov_rel
+        # target1_gov_rel = t1['target'].root.gov_rel
+        # target2_gov_rel = t2['target'].root.gov_rel
         if (
             not negation_mismatch
-            and target1_gov_rel == target2_gov_rel
-            and (target1 == target2 or are_synonyms(target1, target2))
-        ):
-            similarity += (
-                weights.get('target').get(target1_gov_rel)
-                or default_weight_target
+            and (
+                target1 == target2
+                or target1_stem == target2_stem
+                or are_synonyms(target1, target2)
             )
+        ):
+            # weights.get('target').get(target2_gov_rel)
+            # weights.get('target').get(target1_gov_rel)
+
+            similarity += weights.get('target')
 
         # Arguments Similarity
         # ---------------------------------------------
@@ -167,6 +160,15 @@ class Checker:
             args2.reverse()
 
         # Calculate similarity
+        for arg1 in args1:
+            for arg2 in args2:
+                arg1_text = arg1 and self.tools.stemmer.stem(arg1.root.text)
+                arg2_text = arg2 and self.tools.stemmer.stem(arg2.root.text)
+
+                if arg1_text == arg2_text or are_synonyms(arg1_text, arg2_text):
+                    similarity += weights.get('argument')
+
+        """
         for arg1, arg2 in list(itertools.zip_longest(args1, args2)):
             arg1_text = arg1 and self.tools.stemmer.stem(arg1.root.text)
             arg2_text = arg2 and self.tools.stemmer.stem(arg2.root.text)
@@ -181,8 +183,9 @@ class Checker:
             ):
                 similarity += weights.get('argument')
             num_args_shared += 1
+        """
 
-        normalization_factor = default_weight_target + num_args_shared
+        normalization_factor = weights.get('target') + (len(args1) * len(args2)) # num_args_shared
 
         return round(similarity / normalization_factor, 2)
 
@@ -208,8 +211,6 @@ class Checker:
 
             text_pred_args.remove(best_pair[0])
             excerpt_pred_args.remove(best_pair[1])
-
-        print(excerpt_pred_args)
 
         if len(pairs) == 0:
             pp_method_result = 0.0
@@ -240,7 +241,7 @@ class Checker:
         # else:
         #    overall_result = (pp_method_result + vs_method_result) / 2
 
-        print(pp_method_result)
-        print(vs_method_result)
+        # print(pp_method_result)
+        # print(vs_method_result)
 
         return max(vs_method_result, pp_method_result)

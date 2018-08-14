@@ -3,8 +3,47 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
+from . import request_forms, services
 from lti_app import strings
-from lti_app.assignments import request_forms, services
+
+
+@require_http_methods(['GET', 'POST'])
+def index(request):
+    if request.method == 'GET':
+        return show(request)
+    else:
+        return submit(request)
+
+
+def show(request):
+    service = services.AssignmentService()
+    course_id = request.session.get(strings.course_id)
+    assignment_id = request.session.get(strings.assignment_id)
+
+    assignment = service.get_by_course_assignment_tuple(
+        course_id,
+        assignment_id
+    ).first()
+
+    is_instructor = request.session.get(strings.is_instructor)
+
+    if is_instructor:
+        template = strings.teacher_index
+    else:
+        template = strings.learner_index
+
+    return render(request, template, {
+        'assignment': assignment
+    })
+
+
+def submit(request):
+    is_instructor = request.session.get(strings.is_instructor)
+
+    if is_instructor:
+        return _create_or_update_assignment(request)
+    else:
+        return _submit_assignment(request)
 
 
 def _create_or_update_assignment(request):
@@ -13,26 +52,26 @@ def _create_or_update_assignment(request):
     fields = {
         'course_id': request.session.get(strings.course_id),
         'assignment_id': request.session.get(strings.assignment_id),
-        'assignment_type': request.session.get(strings.assignment_type)
+        'assignment_type': request.session.get(strings.assignment_type),
+        **request.POST.dict()
     }
 
-    req = request_forms.AssignmentRequestForm(request.POST)
-    data = req.get_data()
-    fields.update(data)
+    req = request_forms.AssignmentRequestForm(fields)
+    data = req.validate()
 
     # Create or update assignment
     # ---------------------------------------------
     service = services.AssignmentService()
 
     assignment = service.get_by_course_assignment_tuple(
-        fields['course_id'],
-        fields['assignment_id']
+        data['course_id'],
+        data['assignment_id']
     ).first()
 
     if assignment is None:
-        service.create(fields)
+        service.create(data)
     else:
-        service.update(assignment.id, fields)
+        service.update(assignment.id, data)
 
     return render(
         request,
@@ -67,42 +106,3 @@ def _submit_assignment(request):
     return JsonResponse({
         'assignment_type': assignment_type
     })
-
-
-def show(request):
-    service = services.AssignmentService()
-    course_id = request.session.get(strings.course_id)
-    assignment_id = request.session.get(strings.assignment_id)
-
-    assignment = service.get_by_course_assignment_tuple(
-        course_id,
-        assignment_id
-    ).first()
-
-    is_instructor = request.session.get(strings.is_instructor)
-
-    if is_instructor:
-        template = strings.teacher_index
-    else:
-        template = strings.learner_index
-
-    return render(request, template, {
-        'assignment': assignment
-    })
-
-
-def submit(request):
-    is_instructor = request.session.get(strings.is_instructor)
-
-    if is_instructor:
-        return _create_or_update_assignment(request)
-    else:
-        return _submit_assignment(request)
-
-
-@require_http_methods(['GET', 'POST'])
-def index(request):
-    if request.method == 'GET':
-        return show(request)
-    else:
-        return submit(request)

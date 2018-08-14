@@ -2,6 +2,9 @@ from lti_app.request_forms import BaseRequestForm as BRF
 
 
 class AssignmentRequestForm(BRF):
+    course_id = {'type': str, 'required': True}
+    assignment_id = {'type': str, 'required': True}
+    assignment_type = {'type': str}
     reference = {'type': str}
     excerpt = {'type': str}
     supporting_excerpts = {'type': str}

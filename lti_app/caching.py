@@ -4,7 +4,7 @@ from functools import wraps
 
 from django.core.cache import cache
 
-from .exceptions import CachingException
+from .exceptions import BaseLtiException
 
 
 def get_hash(text):
@@ -108,3 +108,29 @@ class Cache:
     def put(self, key, data):
         key = self.base_key + key
         save_cache(key, data)
+
+
+class CachingException(BaseLtiException):
+    code = 'CCH_GENERIC'
+    description = 'Generic caching error.'
+
+    def __init__(self, code=None, description=None):
+        BaseLtiException.__init__(self, code, description)
+
+    @staticmethod
+    def generic():
+        return CachingException()
+
+    @staticmethod
+    def not_cacheable():
+        return CachingException(
+            code='CCH_NOT_CACHEABLE',
+            description='Object not cacheable.'
+        )
+
+    @staticmethod
+    def invalid_key():
+        return CachingException(
+            code='CCH_INVALID_KEY',
+            description='The key is invalid or it cannot be found.'
+        )

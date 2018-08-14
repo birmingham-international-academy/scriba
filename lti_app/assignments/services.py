@@ -58,7 +58,7 @@ class AssignmentService:
 
         if (
             attempts is not None
-            and assignment.max_attempts is not None
+            and assignment.max_attempts
             and attempts >= assignment.max_attempts
         ):
             raise AssignmentException.max_attempts_reached()
