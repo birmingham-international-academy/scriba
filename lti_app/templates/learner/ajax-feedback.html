@@ -4,7 +4,8 @@
 
 <div class="bg-white text-grey-darker px-8 pt-6 pb-8 leading-normal">
     <div class="mb-4">
-        <div class="mb-8">
+        <div class="mb-8 p-4 bg-grey-lightest border">
+            <h2 class="mb-2 text-base font-bold">Your submission</h2>
             <p>
                 {{ text }}
             </p>
@@ -204,14 +205,15 @@
         {% endif %}
 
         {% if assignment.model_answers %}
-        <div class="mb-6">
-            <h2 class="flex items-center mb-2 text-base font-bold">
+        <div class="mb-6 p-4 text-green-darker bg-green-lightest border border-green">
+            <h2 class="mb-2 text-base font-bold">
                 Model answers
             </h2>
 
             <p>
                 {{ assignment.model_answers }}
             </p>
+        </div>
         {% endif %}
     </div>
 

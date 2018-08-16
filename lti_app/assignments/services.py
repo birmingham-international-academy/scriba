@@ -85,6 +85,7 @@ class AssignmentService:
             checks
         )
         data = checker.run()
+        data['assignment'] = assignment
         data['text'] = text
 
         # 5. Run the interpreter(s)

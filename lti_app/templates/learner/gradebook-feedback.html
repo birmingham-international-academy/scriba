@@ -101,3 +101,11 @@
         {% include "includes/feedback-snippets/general-informalities-warning.html" %}
     {% endif %}
 {% endif %}
+
+{% if assignment.model_answers %}
+    <div>
+        <h3>Model answers</h3>
+
+        <p>{{ assignment.model_answers }}</p>
+    </div>
+{% endif %}
