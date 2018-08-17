@@ -4,8 +4,8 @@
 import hashlib
 import re
 from functools import wraps
+from multiprocessing import Pool
 
-import spacy
 from django.core.cache import cache
 from nltk import pos_tag, tokenize
 from nltk.tokenize import sent_tokenize
@@ -17,6 +17,7 @@ from lti_app import strings
 from lti_app.caching import Cache, caching
 from lti_app.core.exceptions import TextProcessingException
 from lti_app.core.text_helpers import clean_text, is_punctuation
+from lti_app.helpers import flatten
 
 
 # Processing Nodes
@@ -126,7 +127,7 @@ class SentenceTokenizer(ProcessorNode):
 
 
 class Parser(ProcessorNode):
-    def __init__(self, name='parser', out=strings.parse_tree):
+    def __init__(self, name='parser', out=strings.parse_data):
         ProcessorNode.__init__(self, name=name, out=out)
 
     @caching(['attrs', 'name'])
@@ -187,7 +188,7 @@ class PredicatePatternsMatcher(ProcessorNode):
             raise TextProcessingException.missing_key(input_key)
 
         return self._get_pred_patterns(
-            parse_tree,
+            parse_tree.get(strings.constituencies),
             opts
         )
 
@@ -224,22 +225,20 @@ class PosTagger(ProcessorNode):
         return pos_tag(tokens)
 
 
+def _lemmatize(obj, tagged_tokens):
+    return obj._lemmatize(tagged_tokens)
+
 class Lemmatizer(ProcessorNode):
     def __init__(self, name='lemmatizer', out=strings.lemmas):
         ProcessorNode.__init__(self, name=name, out=out)
 
-    @caching(['attrs', 'name'])
-    def _process(self, **kwargs):
-        document = kwargs.get('document')
-        input_key = kwargs.get('input_key')
-        tagged_tokens = document.get(input_key)
-
-        if tagged_tokens is None:
-            raise TextProcessingException.missing_key(input_key)
-
+    def _lemmatize(self, tagged_tokens):
         lemmas = []
 
-        for word, pos in tagged_tokens:
+        for token in tagged_tokens:
+            word = token.get('word')
+            pos = token.get('pos')
+
             if is_punctuation(word):
                 continue
 
@@ -253,21 +252,24 @@ class Lemmatizer(ProcessorNode):
 
         return lemmas
 
-
-class SpacyProcessor(ProcessorNode):
-    def __init__(self, name='spacy_processor', out=strings.spacy_doc):
-        ProcessorNode.__init__(self, name=name, out=out)
-
     @caching(['attrs', 'name'])
     def _process(self, **kwargs):
         document = kwargs.get('document')
         input_key = kwargs.get('input_key')
-        cleaned_text = document.get(input_key)
+        parse_data = document.get(input_key)
 
-        if cleaned_text is None:
+        if parse_data is None:
             raise TextProcessingException.missing_key(input_key)
 
-        return self.tools.nlp(cleaned_text)
+        tagged_tokens = flatten(parse_data.get(strings.tagged_tokens))
+
+        """
+        with Pool(processes=4) as pool:
+            lemmas = pool.apply(_lemmatize, args=(self, tagged_tokens))
+            return lemmas
+        """
+
+        return self._lemmatize(tagged_tokens)
 
 
 # Register Processing Nodes
@@ -281,19 +283,15 @@ predicate_patterns_matcher = PredicatePatternsMatcher()
 word_tokenizer = WordTokenizer()
 pos_tagger = PosTagger()
 lemmatizer = Lemmatizer()
-spacy_processor = SpacyProcessor()
 
 
 # Processing Graphs
 # =============================================
 
 default_graph = {
-    text_cleaner: [parser, word_tokenizer],
-    citation_remover: [parser, word_tokenizer, spacy_processor],
-    parser: [predicate_patterns_matcher],
+    text_cleaner: [parser],
+    citation_remover: [parser],
+    parser: [predicate_patterns_matcher, lemmatizer],
     predicate_patterns_matcher: [],
-    word_tokenizer: [pos_tagger],
-    pos_tagger: [lemmatizer],
-    lemmatizer: [],
-    spacy_processor: []
+    lemmatizer: []
 }

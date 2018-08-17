@@ -42,11 +42,7 @@ $ sudo apt-get install default-jdk
 
 Then run `python -m bin.stanford_corenlp` to download and extract the Stanford parser.
 
-### 4. SpaCy Package
-
-Run the following command to download the 'en' model for SpaCy: `python -m spacy download en`
-
-### 5. Language Tool
+### 4. Language Tool
 
 LanguageTool is a service that offers spell and grammar checking. Scriba adds it to its own grammar checking.
 
@@ -58,7 +54,7 @@ $ python bin.languagetool
 
 This will download the necessary files in `lti_app/core/data/languagetool`.
 
-### 6. Setup the Database
+### 5. Setup the Database
 
 Follow this tutorial up to "Opening a Postgres Prompt with the New Role" (included):
 
@@ -68,7 +64,7 @@ Then update the `.env` file with the `DB_NAME`, `DB_USER` and `DB_PASSWORD` vari
 
 `DB_HOST` is usually `127.0.0.1` and `DB_PORT` is 5432 (see these default values in `.env.example`).
 
-### 7. Setup Redis
+### 6. Setup Redis
 
 Redis is used as a storage for jobs from RQ (Redis Queue) for
 queueing jobs and processing them in the background with
@@ -76,7 +72,7 @@ workers.
 
 To setup Redis follow step 1 and 2 of this guide: https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-18-04.
 
-### 8. Memcached
+### 7. Memcached
 
 Install Memcached from the official repositories:
 

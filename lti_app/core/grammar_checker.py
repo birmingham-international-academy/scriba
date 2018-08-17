@@ -1,16 +1,10 @@
-"""Provides grammar checkers.
-
-Todo:
-    - Remove citation
-
-"""
+"""Provides grammar checkers."""
 
 import re
 import string
 
 from nltk import WhitespaceTokenizer
 from nltk.tree import ParentedTree
-from spacy.matcher import Matcher
 
 from lti_app import strings
 from lti_app.core.text_helpers import clean_text
@@ -352,7 +346,7 @@ class Checker:
 
         sentences = [
             ParentedTree.fromstring(str(sentence))
-            for sentence in self.text_document.get(strings.parse_tree)
+            for sentence in self.text_document.get(strings.parse_data).get(strings.constituencies)
         ]
 
         for sentence in sentences:

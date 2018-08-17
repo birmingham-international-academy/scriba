@@ -4,6 +4,7 @@ A semantic checker must detect the topic
 as well as the semantic structure similarity.
 
 Todo:
+    - Apply penalty for remaining excerpt patterns
     - Compound word synonyms
     - Detect idioms
     - Different POS tags
@@ -24,6 +25,7 @@ from lti_app import strings
 from lti_app.caching import Cache, caching
 from lti_app.core.text_helpers import are_synonyms, clean_text, is_punctuation
 from lti_app.core.text_processing.tools import Tools
+from lti_app.helpers import flatten
 
 
 class Checker:
@@ -221,19 +223,24 @@ class Checker:
         # ---------------------------------------------
 
         tfidf, index = self._load_matrix_similarity()
+        parse_data = self.text_document.get(strings.parse_data)
 
         tokens = [
-            token.lower()
-            for token in self.text_document.get(strings.tokens)
-            if not is_punctuation(token)
+            token.get('word').lower()
+            for token in flatten(parse_data.get(strings.tagged_tokens))
+            if not is_punctuation(token.get('word'))
         ]
+
         vec = self.dictionary.doc2bow(tokens)
 
         sims = index[tfidf[vec]]
 
         vs_method_result = sum(sims) / len(sims)
 
-        if vs_method_result == 0.0 and len(self.supporting_excerpts) == 0:
-            pp_method_result *= 1.3
+        # if vs_method_result == 0.0 and len(self.supporting_excerpts) == 0:
+        # return max(vs_method_result, pp_method_result)
 
-        return max(vs_method_result, pp_method_result)
+        pp_method_result *= 1.3
+        vs_method_result *= 0.7
+
+        return (pp_method_result + vs_method_result) / 2

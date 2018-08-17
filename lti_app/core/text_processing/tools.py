@@ -1,4 +1,3 @@
-import spacy
 import spellchecker
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from sacremoses import MosesDetokenizer
@@ -12,7 +11,6 @@ class Tools(metaclass=Singleton):
     def __init__(self):
         self.lemmatizer = WordNetLemmatizer()
         self.stemmer = PorterStemmer()
-        self.nlp = spacy.load('en')
         self.parser = Parser()
         self.languagetool = LanguageToolClient()
         self.spell = spellchecker.SpellChecker()

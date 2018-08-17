@@ -12,10 +12,6 @@ def make_academic_style_checker():
             processing_graphs.text_cleaner
         )
         text_processor.remove_processor(processing_graphs.parser)
-        text_processor.add_channel(
-            processing_graphs.text_cleaner,
-            processing_graphs.spacy_processor
-        )
 
         text_document = text_processor.run(text)
 

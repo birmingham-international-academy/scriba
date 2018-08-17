@@ -85,3 +85,11 @@ def is_number(s):
         return True
     except ValueError:
         return False
+
+
+def find_by(ls, key, value):
+    return next((item for item in ls if item[key] == value), None)
+
+
+def flatten(ls):
+    return [item for sublist in ls for item in sublist]

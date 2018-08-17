@@ -1,6 +1,7 @@
 """Provides the paraphrase analyzers."""
 
 import copy
+import time
 
 from lti_app import strings
 from lti_app.core import (
@@ -70,9 +71,6 @@ class DefaultChecker:
         else:
             # ... otherwise use the standard text cleaner
             root = processing_graphs.text_cleaner
-            processing_graph\
-                .get(root)\
-                .append(processing_graphs.spacy_processor)
 
         # Instantiate the text processor
         self.text_processor = processors.TextProcessor(
@@ -89,7 +87,6 @@ class DefaultChecker:
 
         # Excerpt text processing
         self.text_processor.graph_root = processing_graphs.text_cleaner
-        self.text_processor.remove_processor(processing_graphs.spacy_processor)
         self.excerpt_document = self.text_processor.run(
             self.excerpt,
             enable_cache=True

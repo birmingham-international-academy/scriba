@@ -10,10 +10,11 @@ semantics_check = 'semantics_check'
 # =============================================
 cleaned_text = 'cleaned_text'
 lemmas = 'lemmas'
-parse_tree = 'parse_tree'
+parse_data = 'parse_data'
+constituencies = 'constituencies'
+dependencies = 'dependencies'
 predicate_patterns = 'predicate_patterns'
 sentences = 'sentences'
-spacy_doc = 'spacy_doc'
 tagged_tokens = 'tagged_tokens'
 tokens = 'tokens'
 

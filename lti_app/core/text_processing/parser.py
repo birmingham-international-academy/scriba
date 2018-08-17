@@ -10,8 +10,18 @@ class Parser:
 
     def parse(self, text):
         data = self.client.run(text, ['parse'])
+        sentences = data.get('sentences')
+        constituencies = []
+        dependencies = []
+        tagged_tokens = []
 
-        return [
-            ParentedTree.fromstring(sentence.get('parse'))
-            for sentence in data.get(strings.sentences)
-        ]
+        for sentence in sentences:
+            constituencies.append(ParentedTree.fromstring(sentence.get('parse')))
+            dependencies.append(sentence.get('basicDependencies'))
+            tagged_tokens.append(sentence.get('tokens'))
+
+        return {
+            strings.constituencies: constituencies,
+            strings.dependencies: dependencies,
+            strings.tagged_tokens: tagged_tokens
+        }

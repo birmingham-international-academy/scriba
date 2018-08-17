@@ -13,7 +13,7 @@ from nltk import tokenize
 from lti_app import strings
 from lti_app.core.text_helpers import remove_stopwords
 from lti_app.core.text_processing.tools import Tools
-from lti_app.helpers import get_current_dir
+from lti_app.helpers import find_by, flatten, get_current_dir
 
 
 class Checker:
@@ -40,13 +40,20 @@ class Checker:
             list of str: The phrasal verbs.
         """
 
+        parse_data = self.text_document.get(strings.parse_data)
+        dependencies = parse_data.get(strings.dependencies)
+        tagged_tokens = parse_data.get(strings.tagged_tokens)
         phrasal_verbs = []
 
-        for token in self.text_document.get(strings.spacy_doc):
-            if token.dep_ == 'prt' and token.head.pos_ == 'VERB':
-                verb = token.head.orth_
-                particle = token.orth_
-                phrasal_verbs.append(verb + ' ' + particle)
+        for sent_index, sent_deps in enumerate(dependencies):
+            for token in sent_deps:
+                governor_index = token.get('governor')
+                head = find_by(tagged_tokens[sent_index], 'index', governor_index)
+
+                if 'prt' in token.get('dep') and head.get('pos').startswith('VB'):
+                    verb = token.get('governorGloss')
+                    particle = token.get('dependentGloss')
+                    phrasal_verbs.append(verb + ' ' + particle)
 
         return phrasal_verbs
 
@@ -57,16 +64,17 @@ class Checker:
             list of str: The contractions.
         """
 
+        parse_data = self.text_document.get(strings.parse_data)
         tagged_tokens = [
             token
-            for token in self.text_document.get(strings.tagged_tokens)
-            if token[0] != "''"
+            for token in flatten(parse_data.get(strings.tagged_tokens))
+            if token.get('word') != "''"
         ]
 
         return [
-            tagged_tokens[index - 1][0] + token
-            for index, (token, pos) in enumerate(tagged_tokens)
-            if "'" in token and pos != 'POS'
+            tagged_tokens[index - 1].get('word') + token.get('word')
+            for index, token in enumerate(tagged_tokens)
+            if "'" in token.get('word') and token.get('pos') != 'POS'
         ]
 
     def get_quotation_overuses(self):
