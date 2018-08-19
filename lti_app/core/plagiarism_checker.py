@@ -25,14 +25,14 @@ class Checker:
         self.tools = Tools()
 
     def matches(self, list1, list2, min_length=4):
-        words1, lemmas1 = [list(ls) for ls in list(zip(*list1))]
-        words2, lemmas2 = [list(ls) for ls in list(zip(*list2))]
+        words1, stems1 = [list(ls) for ls in list(zip(*list1))]
+        words2, stems2 = [list(ls) for ls in list(zip(*list2))]
 
-        lemmas1 = [lemma.lower() for lemma in lemmas1]
-        lemmas2 = [lemma.lower() for lemma in lemmas2]
+        stems1 = [lemma.lower() for lemma in stems1]
+        stems2 = [lemma.lower() for lemma in stems2]
 
         while True:
-            mbs = difflib.SequenceMatcher(None, lemmas1, lemmas2).get_matching_blocks()
+            mbs = difflib.SequenceMatcher(None, stems1, stems2).get_matching_blocks()
 
             if len(mbs) == 1:
                 break
@@ -42,14 +42,14 @@ class Checker:
                     yield words1[i: i + n]
 
                 del words1[i: i + n]
-                del lemmas1[i: i + n]
+                del stems1[i: i + n]
                 del words2[j: j + n]
-                del lemmas2[j: j + n]
+                del stems2[j: j + n]
 
     def run(self):
-        text_lemmas = self.text_document.get(strings.lemmas)
-        excerpt_lemmas = self.excerpt_document.get(strings.lemmas)
-        matches = list(self.matches(text_lemmas, excerpt_lemmas))
+        text_stems = self.text_document.get(strings.stems)
+        excerpt_stems = self.excerpt_document.get(strings.stems)
+        matches = list(self.matches(text_stems, excerpt_stems))
         detokenize = self.tools.word_detokenizer.detokenize
 
         return [detokenize(match) for match in matches]

@@ -29,6 +29,7 @@ class Checker:
             'phrasal_verbs',
             'contractions',
             'quotation_overuses',
+            'personal_nouns',
             'general_informalities'
         ]
         self.tools = Tools()
@@ -97,6 +98,14 @@ class Checker:
 
         return quotation_overuses
 
+    def get_personal_nouns(self):
+        text = self.text_document.get(strings.cleaned_text)
+
+        personal_form_regex = r'\s?((?:i|me|my|mine|you)\s.*?\s)'
+        matches = re.findall(personal_form_regex, text, re.IGNORECASE)
+
+        return matches
+
     def get_general_informalities(self):
         """Get general informal words such as 'nice', 'good', 'bad'.
 
@@ -104,10 +113,11 @@ class Checker:
             list of str: General informalities.
         """
 
-        lemmas = ' '.join(
-            [str(word_lemma[::-1])
-            for word_lemma in self.text_document.get(strings.lemmas)]
-        )
+        stems = ' '.join([
+            str(word_stem[::-1])
+            for word_stem in self.text_document.get(strings.stems)
+        ])
+
         current_dir = get_current_dir(__file__)
         filename = os.path.join(
             current_dir, 'data', 'academic-style', 'informal-phrases.json'
@@ -127,7 +137,7 @@ class Checker:
 
             matches = []
             for phrase_regex in informal_phrases_regexps:
-                match = re.search(phrase_regex, lemmas, re.IGNORECASE)
+                match = re.search(phrase_regex, stems, re.IGNORECASE)
 
                 if match is not None:
                     tokens = list(match.groups())

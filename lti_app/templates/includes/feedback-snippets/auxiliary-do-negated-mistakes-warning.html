@@ -1,0 +1,11 @@
+<p>The following mistakes regarding the auxiliary "do not" have been found in your text:</p>
+<ul>
+{% for phrase in grammar_check.auxiliary_do_negated_mistakes %}
+    <li>{{ phrase }}</li>
+{% endfor %}
+</ul>
+
+<p>The <strong>auxiliary "do not"/"did not"</strong> mistake occurs when the verb "do" in its negated form is not followed by another verb.</p>
+<p><strong>Example</strong>: <i>The student didn't plagiarism.</i></p>
+<p>This can be correct by searching the verb for "plagiarism", which is "plagiarise":</p>
+<p><i>The student didn't plagiarise.</i></p>

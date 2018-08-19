@@ -2,6 +2,7 @@ import spellchecker
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from sacremoses import MosesDetokenizer
 
+from lti_app.caching import caching
 from lti_app.core.api import LanguageToolClient
 from lti_app.core.text_processing.parser import Parser
 from lti_app.helpers import Singleton

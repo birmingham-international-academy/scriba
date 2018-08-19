@@ -7,9 +7,9 @@ from nltk import WhitespaceTokenizer
 from nltk.tree import ParentedTree
 
 from lti_app import strings
-from lti_app.core.text_helpers import clean_text
+from lti_app.core.text_helpers import clean_text, remove_punctuation
 from lti_app.core.text_processing.tools import Tools
-from lti_app.helpers import remove_punctuation
+from lti_app.helpers import flatten
 
 
 class Checker:
@@ -324,6 +324,54 @@ class Checker:
         """
         raise NotImplementedError()
 
+    def get_auxiliary_do_negated_mistakes(self):
+        """Get the auxiliary verb "do" (in negated form) mistakes.
+
+        Example: They don't plagiarism. (It should be followed by another verb)
+
+        Returns:
+            list of str: The occurrences of the auxiliary "do" mistakes.
+        """
+
+        mistakes = []
+        parse_data = self.text_document.get(strings.parse_data)
+        tagged_tokens = flatten(parse_data.get(strings.tagged_tokens))
+        len_tagged_tokens = len(tagged_tokens)
+
+        for index, token in enumerate(tagged_tokens):
+            token_word = token.get('word')
+
+            if token_word == 'do' or token_word == 'did':
+                next_token = None
+                next_next_token = None
+
+                if index + 1 < len_tagged_tokens:
+                    next_token = tagged_tokens[index + 1]
+                if index + 2 < len_tagged_tokens:
+                    next_next_token = tagged_tokens[index + 2]
+
+                next_token_word = (
+                    next_token.get('word')
+                    if next_token is not None
+                    else ''
+                )
+
+                if (
+                    (next_token_word == 'not' or next_token_word == "n't")
+                    and next_next_token is not None
+                    and not next_next_token.get('pos').startswith('VB')
+                ):
+                    token_word = token.get('word')
+                    next_next_token_word = next_next_token.get('word')
+
+                    mistake = token_word
+                    mistake += (' ' if next_token_word == 'not' else '')
+                    mistake += next_token_word
+                    mistake += ' {}'.format(next_next_token_word)
+                    mistakes.append(mistake)
+
+        return mistakes
+
     def process_parse_tree(self, processors, key_function=None):
         """Process the parse tree for a sentence.
 
@@ -396,9 +444,11 @@ class Checker:
 
         lt_check = self.tools.languagetool.check(cleaned_text)
         lt_check = self.languagetool_check_post_process(lt_check)
+        auxiliary_do_negated_mistakes = self.get_auxiliary_do_negated_mistakes()
 
         data = {
             'languagetool_check': lt_check,
+            'auxiliary_do_negated_mistakes': auxiliary_do_negated_mistakes
         }
 
         # Process the parse tree sentences

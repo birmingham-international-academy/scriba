@@ -58,6 +58,11 @@
         {% include "includes/feedback-snippets/subject-verb-disagreements-warning.html" %}
     {% endif %}
 
+    {% if grammar_check.auxiliary_do_negated_mistakes|length > 0 %}
+        <h4>Auxiliary verb "do not" mistakes</h4>
+        {% include "includes/feedback-snippets/auxiliary-do-negated-mistakes-warning.html" %}
+    {% endif %}
+
     {% if grammar_check.languagetool_check|length > 0 %}
         <h4>General mistakes</h4>
         {% include "includes/feedback-snippets/general-mistakes-warning.html" %}
@@ -67,7 +72,7 @@
 {% if citation_check is not None %}
     <h3>Citation</h3>
 
-    {% if citation_result %}
+    {% if citation_status %}
         <p>You have correctly cited the text. {% if citation_check.citation_after_full_stop %}However the citation must NOT lie after a full-stop. To correct this mistake, put the full-stop <strong>after</strong> the citation.{% endif %}</p>
     {% else %}
         {% include "includes/feedback-snippets/citation-warning.html" %}
@@ -94,6 +99,11 @@
     {% if academic_style_check.quotation_overuses|length > 0 %}
         <h4>Quotation overuse</h4>
         {% include "includes/feedback-snippets/quotation-overuses-warning.html" %}
+    {% endif %}
+
+    {% if academic_style_check.personal_nouns|length > 0 %}
+        <h4>Personal nouns</h4>
+        {% include "includes/feedback-snippets/personal-nouns-warning.html" %}
     {% endif %}
 
     {% if academic_style_check.general_informalities|length > 0 %}

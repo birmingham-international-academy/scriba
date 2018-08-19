@@ -1,7 +1,6 @@
 """Provides text processing routines."""
 
 import copy
-import time
 from collections import deque
 
 from .document import Document
@@ -112,15 +111,12 @@ class TextProcessor:
 
             for next_processor in self.graph.get(processor):
                 if next_processor not in marked:
-                    start = time.clock()
                     self._process(
                         document,
                         next_processor,
                         input_key=processor.attrs.get('out'),
                         **kwargs
                     )
-                    end = time.clock()
-                    print('{} =====================> {}'.format(next_processor.attrs.get('name'), end - start))
 
                     marked.append(next_processor)
                     queue.append(next_processor)

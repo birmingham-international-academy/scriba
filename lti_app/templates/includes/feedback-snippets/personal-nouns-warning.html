@@ -1,0 +1,10 @@
+<p>The following personal noun phrases have been found:</p>
+
+<ul>
+{% for phrase in academic_style_check.personal_nouns %}
+    <li>{{ phrase }}</li>
+{% endfor %}
+</ul>
+
+<p>In academic texts is advised to not overuse personal forms such as "I", "me", "my", "mine", "you" "your", "yours" etc...</p>
+<p>In fact excessive use of personal nouns may lead the reader to believe the study was overly subjective.</p>

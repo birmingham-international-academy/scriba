@@ -97,6 +97,19 @@ def are_hierarchically_related(word1, word2):
     return len(w1_synsets & w2_hypernyms) > 0
 
 
+def remove_punctuation(s):
+    """Remove punctuation from an input string.
+
+    Args:
+        s (str): The string to remove punctuation from.
+
+    Returns:
+        str: The string without punctuation.
+    """
+
+    return ''.join(c for c in s if c not in '!?.,;:')
+
+
 def remove_stopwords(text):
     stop_words = set(stopwords.words('english'))
     tokenizer = WhitespaceTokenizer()

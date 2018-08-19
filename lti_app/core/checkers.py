@@ -1,7 +1,6 @@
 """Provides the paraphrase analyzers."""
 
 import copy
-import time
 
 from lti_app import strings
 from lti_app.core import (
@@ -64,7 +63,11 @@ class DefaultChecker:
         processing_graph = copy.deepcopy(processing_graphs.default_graph)
 
         # If the citation check is enabled...
-        if self.checks.get('citation'):
+        if (
+            self.checks.get('citation')
+            and self.reference is not None
+            and self.reference != ''
+        ):
             # ... use the citation remover as the root
             self.data[strings.citation_check] = self.citation_checker.run()
             root = processing_graphs.citation_remover

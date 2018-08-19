@@ -6,7 +6,7 @@ from lti_app.core.exceptions import CitationException
 
 
 class Checker:
-    """The default Harvard citation checking.
+    """The default citation checking (very lenient).
 
     Args:
         text (string): The text submitted by the student.
@@ -31,7 +31,9 @@ class Checker:
 
         authors_regex += r')'
 
-        in_text_regex = authors_regex + r'\s*\(\s*' + year + r'\s*\)'
+        in_text_regex = (
+            authors_regex + r'\'?s?\s*\(\s*' + year + r'\s*\)'
+        )
 
         in_text_separated_regex = (
             r'((?!\()' + authors_regex + r'.*?(?!\(\s*)' + year + r'(?!\s*\)))'

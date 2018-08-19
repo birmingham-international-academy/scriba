@@ -46,12 +46,7 @@ class FeedbackInterpreter:
         asc = data[strings.academic_style_check]
 
         if asc is not None:
-            data['academic_style_status'] = (
-                len(asc['contractions']) == 0
-                and len(asc['phrasal_verbs']) < 3
-                and len(asc['quotation_overuses']) == 0
-                and len(asc['general_informalities']) == 0
-            )
+            data['academic_style_status'] = all([len(value) == 0 for value in asc.values()])
 
         # Paraphrase status
         # ---------------------------------------------

@@ -105,6 +105,18 @@
                 </div>
             </div>
             {% endif %}
+
+            {% if grammar_check.auxiliary_do_negated_mistakes|length > 0 %}
+            <div class="{{ box_class }}">
+                <h3 class="{{ box_title_class }}">
+                    Auxiliary verb "do not" mistakes
+                </h3>
+
+                <div class="{{ box_content_class }}">
+                    {% include "includes/feedback-snippets/auxiliary-do-negated-mistakes-warning.html" %}
+                </div>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
 
@@ -186,6 +198,18 @@
 
                 <div class="{{ box_content_class }}">
                     {% include "includes/feedback-snippets/quotation-overuses-warning.html" %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if academic_style_check.personal_nouns|length > 0 %}
+            <div class="{{ box_class }}">
+                <h3 class="{{ box_title_class }}">
+                    Personal nouns
+                </h3>
+
+                <div class="{{ box_content_class }}">
+                    {% include "includes/feedback-snippets/personal-nouns-warning.html" %}
                 </div>
             </div>
             {% endif %}

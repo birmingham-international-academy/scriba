@@ -25,17 +25,14 @@ class Singleton(type):
         return cls._instance
 
 
-def get_current_dir(current_file):
-    """Get the current directory.
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
 
-    Args:
-        current_file (str): The __file__ value from which to get the directory.
 
-    Returns:
-        str: The current directory.
-    """
-
-    return os.path.dirname(os.path.realpath(current_file))
+def find_by(ls, key, value):
+    return next((item for item in ls if item[key] == value), None)
 
 
 def find_file(pattern, path, first=False):
@@ -57,17 +54,21 @@ def find_file(pattern, path, first=False):
     return result[0] if first else result
 
 
-def remove_punctuation(s):
-    """Remove punctuation from an input string.
+def flatten(ls):
+    return [item for sublist in ls for item in sublist]
+
+
+def get_current_dir(current_file):
+    """Get the current directory.
 
     Args:
-        s (str): The string to remove punctuation from.
+        current_file (str): The __file__ value from which to get the directory.
 
     Returns:
-        str: The string without punctuation.
+        str: The current directory.
     """
 
-    return ''.join(c for c in s if c not in '!?.,;:')
+    return os.path.dirname(os.path.realpath(current_file))
 
 
 def is_number(s):
@@ -85,11 +86,3 @@ def is_number(s):
         return True
     except ValueError:
         return False
-
-
-def find_by(ls, key, value):
-    return next((item for item in ls if item[key] == value), None)
-
-
-def flatten(ls):
-    return [item for sublist in ls for item in sublist]

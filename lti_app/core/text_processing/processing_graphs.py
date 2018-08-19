@@ -3,11 +3,10 @@
 
 import hashlib
 import re
-from functools import wraps
+from functools import wraps, lru_cache
 from multiprocessing import Pool
 
 from django.core.cache import cache
-from nltk import pos_tag, tokenize
 from nltk.tokenize import sent_tokenize
 from predpatt import PredPatt, PredPattOpts
 from predpatt.util.ud import dep_v1
@@ -17,7 +16,7 @@ from lti_app import strings
 from lti_app.caching import Cache, caching
 from lti_app.core.exceptions import TextProcessingException
 from lti_app.core.text_helpers import clean_text, is_punctuation
-from lti_app.helpers import flatten
+from lti_app.helpers import chunks, flatten
 
 
 # Processing Nodes
@@ -155,6 +154,7 @@ class PredicatePatternsMatcher(ProcessorNode):
 
         for sentence in sentences:
             pp = PredPatt.from_constituency(str(sentence), opts=opts)
+
             for predicate in pp.instances:
                 pred_patt.append({
                     'target': predicate,
@@ -187,70 +187,13 @@ class PredicatePatternsMatcher(ProcessorNode):
         if parse_tree is None:
             raise TextProcessingException.missing_key(input_key)
 
-        return self._get_pred_patterns(
-            parse_tree.get(strings.constituencies),
-            opts
-        )
+        constituencies = parse_tree.get(strings.constituencies)
+        return self._get_pred_patterns(constituencies, opts)
 
 
-class WordTokenizer(ProcessorNode):
-    def __init__(self, name='word_tokenizer', out=strings.tokens):
+class Stemmer(ProcessorNode):
+    def __init__(self, name='stemmer', out=strings.stems):
         ProcessorNode.__init__(self, name=name, out=out)
-
-    @caching(['attrs', 'name'])
-    def _process(self, **kwargs):
-        document = kwargs.get('document')
-        input_key = kwargs.get('input_key')
-        cleaned_text = document.get(input_key)
-
-        if cleaned_text is None:
-            raise TextProcessingException.missing_key(input_key)
-
-        return tokenize.word_tokenize(cleaned_text)
-
-
-class PosTagger(ProcessorNode):
-    def __init__(self, name='pos_tagger', out=strings.tagged_tokens):
-        ProcessorNode.__init__(self, name=name, out=out)
-
-    @caching(['attrs', 'name'])
-    def _process(self, **kwargs):
-        document = kwargs.get('document')
-        input_key = kwargs.get('input_key')
-        tokens = document.get(input_key)
-
-        if tokens is None:
-            raise TextProcessingException.missing_key(input_key)
-
-        return pos_tag(tokens)
-
-
-def _lemmatize(obj, tagged_tokens):
-    return obj._lemmatize(tagged_tokens)
-
-class Lemmatizer(ProcessorNode):
-    def __init__(self, name='lemmatizer', out=strings.lemmas):
-        ProcessorNode.__init__(self, name=name, out=out)
-
-    def _lemmatize(self, tagged_tokens):
-        lemmas = []
-
-        for token in tagged_tokens:
-            word = token.get('word')
-            pos = token.get('pos')
-
-            if is_punctuation(word):
-                continue
-
-            pos_lower = pos[0].lower()
-            if pos_lower in ['a', 'n', 'v']:
-                lemma = self.tools.lemmatizer.lemmatize(word, pos=pos_lower)
-            else:
-                lemma = self.tools.lemmatizer.lemmatize(word)
-
-            lemmas.append((word, lemma))
-
-        return lemmas
 
     @caching(['attrs', 'name'])
     def _process(self, **kwargs):
@@ -263,13 +206,11 @@ class Lemmatizer(ProcessorNode):
 
         tagged_tokens = flatten(parse_data.get(strings.tagged_tokens))
 
-        """
-        with Pool(processes=4) as pool:
-            lemmas = pool.apply(_lemmatize, args=(self, tagged_tokens))
-            return lemmas
-        """
-
-        return self._lemmatize(tagged_tokens)
+        return [
+            (token.get('word'), self.tools.stemmer.stem(token.get('word')))
+            for token in tagged_tokens
+            if not is_punctuation(token.get('word'))
+        ]
 
 
 # Register Processing Nodes
@@ -280,9 +221,7 @@ citation_remover = CitationRemover()
 sentence_tokenizer = SentenceTokenizer()
 parser = Parser()
 predicate_patterns_matcher = PredicatePatternsMatcher()
-word_tokenizer = WordTokenizer()
-pos_tagger = PosTagger()
-lemmatizer = Lemmatizer()
+stemmer = Stemmer()
 
 
 # Processing Graphs
@@ -291,7 +230,7 @@ lemmatizer = Lemmatizer()
 default_graph = {
     text_cleaner: [parser],
     citation_remover: [parser],
-    parser: [predicate_patterns_matcher, lemmatizer],
+    parser: [predicate_patterns_matcher, stemmer],
     predicate_patterns_matcher: [],
-    lemmatizer: []
+    stemmer: []
 }

@@ -9,7 +9,7 @@ semantics_check = 'semantics_check'
 # Text processing
 # =============================================
 cleaned_text = 'cleaned_text'
-lemmas = 'lemmas'
+stems = 'stems'
 parse_data = 'parse_data'
 constituencies = 'constituencies'
 dependencies = 'dependencies'
