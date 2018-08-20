@@ -112,7 +112,7 @@
     {% endif %}
 {% endif %}
 
-{% if assignment.model_answers %}
+{% if assignment.model_answers and is_last_attempt %}
     <div>
         <h3>Model answers</h3>
 

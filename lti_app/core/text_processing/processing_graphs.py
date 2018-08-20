@@ -153,7 +153,7 @@ class PredicatePatternsMatcher(ProcessorNode):
         pred_patt = []
 
         for sentence in sentences:
-            pp = PredPatt.from_constituency(str(sentence), opts=opts)
+            pp = PredPatt.from_constituency(str(sentence), opts=opts, cacheable=False)
 
             for predicate in pp.instances:
                 pred_patt.append({

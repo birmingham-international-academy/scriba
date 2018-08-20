@@ -86,17 +86,11 @@ class AssignmentService:
         )
         data = checker.run()
         data['assignment'] = assignment
+        data['is_last_attempt'] = attempts == assignment.max_attempts - 1
         data['text'] = text
 
         # 5. Run the interpreter(s)
-        # if assignment_type == 'D':
         feedback_interpreter.run(data)
-        """
-        data = {
-            **data,
-            **feedback_interpreter.run(data)
-        }
-        """
 
         grade_interpreter.run(data)
 

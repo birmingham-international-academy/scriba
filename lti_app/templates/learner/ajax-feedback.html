@@ -228,7 +228,7 @@
         </div>
         {% endif %}
 
-        {% if assignment.model_answers %}
+        {% if assignment.model_answers and is_last_attempt %}
         <div class="mb-6 p-4 text-green-darker bg-green-lightest border border-green">
             <h2 class="mb-2 text-base font-bold">
                 Model answers
