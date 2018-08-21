@@ -3,8 +3,7 @@
 
 import hashlib
 import re
-from functools import wraps, lru_cache
-from multiprocessing import Pool
+from functools import wraps
 
 from django.core.cache import cache
 from nltk.tokenize import sent_tokenize
