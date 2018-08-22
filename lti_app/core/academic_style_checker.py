@@ -7,10 +7,13 @@ are not used in academic texts.
 import json
 import os
 import re
+import time
 
+from flashtext import KeywordProcessor
 from nltk import tokenize
 
 from lti_app import strings
+from lti_app.caching import Cache, caching
 from lti_app.core.text_helpers import remove_stopwords
 from lti_app.core.text_processing.tools import Tools
 from lti_app.helpers import find_by, flatten, get_current_dir
@@ -23,7 +26,7 @@ class Checker:
         text_document (Document): The text submitted by the student.
     """
 
-    def __init__(self, text_document):
+    def __init__(self, text_document, enable_cache=False):
         self.text_document = text_document
         self.enabled_checks = [
             'phrasal_verbs',
@@ -33,6 +36,21 @@ class Checker:
             'general_informalities'
         ]
         self.tools = Tools()
+        self.cache = Cache(
+            enabled=enable_cache,
+            base_key='academic_style_checker'
+        )
+
+    @caching('informal_phrases')
+    def _get_informal_phrases(self):
+        current_dir = get_current_dir(__file__)
+        filename = os.path.join(
+            current_dir, 'data', 'academic-style', 'informal-phrases.json'
+        )
+
+        with open(filename, 'r') as f:
+            informal_phrases = json.load(f)
+            return informal_phrases
 
     def get_phrasal_verbs(self):
         """Get the phrasal verbs.
@@ -118,33 +136,49 @@ class Checker:
             for word_stem in self.text_document.get(strings.stems)
         ])
 
-        current_dir = get_current_dir(__file__)
-        filename = os.path.join(
-            current_dir, 'data', 'academic-style', 'informal-phrases.json'
+        stems = ' '.join(
+            [stem for word, stem, in self.text_document.get(strings.stems)]
         )
 
-        with open(filename, 'r') as f:
-            informal_phrases = json.load(f)
-            informal_phrases_regexps = []
+        keyword_processor = KeywordProcessor()
+        informal_phrases = self._get_informal_phrases()
 
-            for phrase in informal_phrases:
-                regex = [
-                    r'\([\'"]' + token + r'[\'"], [\'"]((?:(?!,).)+)[\'"]\)' # (.+?)
-                    for token in phrase.get(strings.tokens)
-                ]
+        for phrase in informal_phrases:
+            tokens = phrase.get('tokens')
 
-                informal_phrases_regexps.append(' '.join(regex))
+            if type(tokens) is list:
+                keyword_processor.add_keywords_from_list(tokens)
+            else:
+                keyword_processor.add_keyword(tokens, phrase.get('out'))
 
-            matches = []
-            for phrase_regex in informal_phrases_regexps:
-                match = re.search(phrase_regex, stems, re.IGNORECASE)
+        matches = keyword_processor.extract_keywords(stems)
+        return matches
 
-                if match is not None:
-                    tokens = list(match.groups())
-                    phrase = self.tools.word_detokenizer.detokenize(tokens)
-                    matches.append(phrase)
 
-            return matches
+        """
+        informal_phrases_regexps = []
+
+        for phrase in informal_phrases:
+            pattern = [
+                r'\([\'"]' + token + r'[\'"], [\'"]((?:(?!,).)+)[\'"]\)'
+                for token in phrase.get(strings.tokens)
+            ]
+            pattern = ' '.join(pattern)
+            regex = re.compile(pattern, re.IGNORECASE)
+
+            informal_phrases_regexps.append(regex)
+
+        matches = []
+        for phrase_regex in informal_phrases_regexps:
+            match = phrase_regex.search(stems)
+
+            if match is not None:
+                tokens = list(match.groups())
+                phrase = self.tools.word_detokenizer.detokenize(tokens)
+                matches.append(phrase)
+        """
+
+        return matches
 
     def run(self):
         """Run the checker.
@@ -156,6 +190,9 @@ class Checker:
         data = {}
 
         for check in self.enabled_checks:
+            start = time.clock()
             data[check] = getattr(self, 'get_' + check)()
+            end = time.clock()
+            print('ASC_{}: {}'.format(check, end - start))
 
         return data

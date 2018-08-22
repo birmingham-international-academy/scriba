@@ -117,7 +117,7 @@ class GradeInterpreter:
         citation_check = data.get(strings.citation_check)
         grammar_check = data.get(strings.grammar_check)
         style_check = data.get(strings.academic_style_check)
-        minor_errors = []
+        minor_errors = 0
 
         if citation_check is not None:
             minor_errors += (1 if citation_check.get('result') else 0)

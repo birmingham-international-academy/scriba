@@ -9,6 +9,16 @@ from lti_app import strings
 
 @require_http_methods(['GET', 'POST'])
 def index(request):
+    """Index view. It accepts GET (for listing/showing)
+    and POST (for creating/submitting)
+
+    Args:
+        request (HttpRequest): The request object.
+
+    Returns:
+        HttpResponse: The response object.
+    """
+
     if request.method == 'GET':
         return show(request)
     else:
@@ -16,6 +26,17 @@ def index(request):
 
 
 def show(request):
+    """The details view for the assignment.
+    If the role is a teacher then it will show the assignment settings.
+    Otherwise it will show the assignment to complete.
+
+    Args:
+        request (HttpRequest): The request object.
+
+    Returns:
+        HttpResponse: The response object.
+    """
+
     service = services.AssignmentService()
     course_id = request.session.get(strings.course_id)
     assignment_id = request.session.get(strings.assignment_id)
@@ -32,12 +53,19 @@ def show(request):
     else:
         template = strings.learner_index
 
-    return render(request, template, {
-        'assignment': assignment
-    })
+    return render(request, template, {'assignment': assignment})
 
 
 def submit(request):
+    """Submit the assignment details either as a student or as a teacher.
+
+    Args:
+        request (HttpRequest): The request object.
+
+    Returns:
+        HttpResponse: The response object.
+    """
+
     is_instructor = request.session.get(strings.is_instructor)
 
     if is_instructor:
@@ -47,6 +75,15 @@ def submit(request):
 
 
 def _create_or_update_assignment(request):
+    """Create or update the assignment (restricted to teachers).
+
+    Args:
+        request (HttpRequest): The request object.
+
+    Returns:
+        HttpResponse: The response object.
+    """
+
     # Prepare fields to submit
     # ---------------------------------------------
     fields = {
@@ -80,6 +117,15 @@ def _create_or_update_assignment(request):
 
 
 def _submit_assignment(request):
+    """Submit the assignment (restricted to students).
+
+    Args:
+        request (HttpRequest): The request object.
+
+    Returns:
+        JsonResponse: The response object.
+    """
+
     course_id = request.session.get(strings.course_id)
     assignment_id = request.session.get(strings.assignment_id)
     assignment_type = request.session.get(strings.assignment_type)
@@ -103,6 +149,4 @@ def _submit_assignment(request):
 
     request.session[strings.job_id] = result.id
 
-    return JsonResponse({
-        'assignment_type': assignment_type
-    })
+    return JsonResponse({'assignment_type': assignment_type})

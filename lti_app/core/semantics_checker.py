@@ -16,7 +16,6 @@ import itertools
 import re
 from functools import wraps
 
-from django.core.cache import cache
 from gensim import corpora, models, similarities
 from nltk import word_tokenize
 from predpatt import PredPatt

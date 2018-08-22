@@ -1,3 +1,6 @@
+"""Database models for the LTI app."""
+
+
 from django.db import models
 
 

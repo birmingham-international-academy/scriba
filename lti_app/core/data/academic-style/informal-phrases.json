@@ -1,28 +1,101 @@
 [
-    { "tokens": ["thing"], "suggestion": "factor, issue, aspect, item, tokens"  },
-    { "tokens": ["good", "enough"], "suggestion": "adequate" },
-    { "tokens": ["lot", "of"], "suggestion": "many, numerous, several" },
-    { "tokens": ["a", "lot", "of"], "suggestion": "many, numerous, several" },
-    { "tokens": ["load", "of"], "suggestion": "many, numerous, several" },
-    { "tokens": ["to", "do", "with"], "suggestion": "regarding, concerning" },
-    { "tokens": ["good"], "suggestion": "positive, useful, valuable, advantageous" },
-    { "tokens": ["bad"], "suggestion": "negative, disadvantageous" },
-    { "tokens": ["big"], "suggestion": "large, major, significant" },
-    { "tokens": ["little"], "suggestion": "small, minor" },
-    { "tokens": ["cool"], "suggestion": "" },
-    { "tokens": ["get"], "suggestion": "obtain" },
-    { "tokens": ["ha", "got"], "suggestion": "have" },
-    { "tokens": ["have", "got"], "suggestion": "have" },
-    { "tokens": ["give"], "suggestion": "provide" },
-    { "tokens": ["stay"], "suggestion": "remain, persist" },
-    { "tokens": ["keep"], "suggestion": "preserve" },
-    { "tokens": ["about", "to"], "suggestion": "" },
-    { "tokens": ["in", "advance"], "suggestion": "" },
-    { "tokens": ["all", "of", "a", "sudden"], "suggestion": "" },
-    { "tokens": ["all", "over", "the", "place"], "suggestion": "" },
-    { "tokens": ["go", "from", "bad", "to", "wors"], "suggestion": "" },
-    { "tokens": ["close", "call"], "suggestion": "" },
-    { "tokens": ["fair", "enough"], "suggestion": "" },
-    { "tokens": ["are", "(?:n't|not)", "mani"], "suggestion": "are few" },
-    { "tokens": ["are", "a", "lot"], "suggestion": "are many" }
+    {
+        "tokens": "thing",
+        "suggestion": "factor, issue, aspect, item, tokens"
+    },
+    {
+        "tokens": "good enough",
+        "suggestion": "adequate"
+    },
+    {
+        "tokens": "lot of",
+        "suggestion": "many, numerous, several"
+    },
+    {
+        "tokens": "a lot of",
+        "suggestion": "many, numerous, several"
+    },
+    {
+        "tokens": "load of",
+        "suggestion": "many, numerous, several"
+    },
+    {
+        "tokens": "to do with",
+        "suggestion": "regarding, concerning"
+    },
+    {
+        "tokens": "good",
+        "suggestion": "positive, useful, valuable, advantageous"
+    },
+    {
+        "tokens": "bad",
+        "suggestion": "negative, disadvantageous"
+    },
+    {
+        "tokens": "big",
+        "suggestion": "large, major, significant"
+    },
+    {
+        "tokens": "little",
+        "suggestion": "small, minor"
+    },
+    {
+        "tokens": "cool",
+        "suggestion": ""
+    },
+    {
+        "tokens": "get",
+        "suggestion": "obtain"
+    },
+    {
+        "tokens": "ha got",
+        "out": "have/has got",
+        "suggestion": "have/has"
+    },
+    {
+        "tokens": "give",
+        "suggestion": "provide"
+    },
+    {
+        "tokens": "stay",
+        "suggestion": "remain, persist"
+    },
+    {
+        "tokens": "keep",
+        "suggestion": "preserve"
+    },
+    {
+        "tokens": "about to",
+        "suggestion": ""
+    },
+    {
+        "tokens": "in advance",
+        "suggestion": ""
+    },
+    {
+        "tokens": "all of a sudden",
+        "suggestion": ""
+    },
+    {
+        "tokens": "all over the place",
+        "suggestion": ""
+    },
+    {
+        "tokens": "go from bad to wors",
+        "suggestion": ""
+    },
+    {
+        "tokens": "fair enough",
+        "suggestion": ""
+    },
+    {
+        "tokens": {
+            "are not/n't many": ["are n't mani", "are not mani"]
+        },
+        "suggestion": "are few"
+    },
+    {
+        "tokens": "are a lot",
+        "suggestion": "are many"
+    }
 ]
