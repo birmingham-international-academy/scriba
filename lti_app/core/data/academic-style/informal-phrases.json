@@ -82,6 +82,7 @@
     },
     {
         "tokens": "go from bad to wors",
+        "out": "go from bad to worse",
         "suggestion": ""
     },
     {
@@ -89,9 +90,13 @@
         "suggestion": ""
     },
     {
-        "tokens": {
-            "are not/n't many": ["are n't mani", "are not mani"]
-        },
+        "tokens": "are n't mani",
+        "out": "aren't many",
+        "suggestion": "are few"
+    },
+    {
+        "tokens": "are not mani",
+        "out": "are not many",
         "suggestion": "are few"
     },
     {

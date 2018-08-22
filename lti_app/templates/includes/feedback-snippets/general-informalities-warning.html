@@ -1,8 +1,8 @@
 <p>The following general informal words have been found:</p>
 
 <ul>
-{% for word in academic_style_check.general_informalities %}
-    <li>{{ word }}</li>
+{% for tokens, suggestion in academic_style_check.general_informalities %}
+    <li>"{{ tokens }}" {% if suggestion %}can be replaced by "{{ suggestion }}"{% endif %}</li>
 {% endfor %}
 </ul>
 

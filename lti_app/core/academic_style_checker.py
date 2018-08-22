@@ -7,7 +7,6 @@ are not used in academic texts.
 import json
 import os
 import re
-import time
 
 from flashtext import KeywordProcessor
 from nltk import tokenize
@@ -145,39 +144,17 @@ class Checker:
 
         for phrase in informal_phrases:
             tokens = phrase.get('tokens')
+            out_tokens = phrase.get('out')
+            suggestion = phrase.get('suggestion')
 
-            if type(tokens) is list:
-                keyword_processor.add_keywords_from_list(tokens)
-            else:
-                keyword_processor.add_keyword(tokens, phrase.get('out'))
+            tokens_to_show = out_tokens if out_tokens is not None else tokens
+
+            keyword_processor.add_keyword(
+                tokens,
+                (tokens_to_show, suggestion)
+            )
 
         matches = keyword_processor.extract_keywords(stems)
-        return matches
-
-
-        """
-        informal_phrases_regexps = []
-
-        for phrase in informal_phrases:
-            pattern = [
-                r'\([\'"]' + token + r'[\'"], [\'"]((?:(?!,).)+)[\'"]\)'
-                for token in phrase.get(strings.tokens)
-            ]
-            pattern = ' '.join(pattern)
-            regex = re.compile(pattern, re.IGNORECASE)
-
-            informal_phrases_regexps.append(regex)
-
-        matches = []
-        for phrase_regex in informal_phrases_regexps:
-            match = phrase_regex.search(stems)
-
-            if match is not None:
-                tokens = list(match.groups())
-                phrase = self.tools.word_detokenizer.detokenize(tokens)
-                matches.append(phrase)
-        """
-
         return matches
 
     def run(self):
@@ -190,9 +167,6 @@ class Checker:
         data = {}
 
         for check in self.enabled_checks:
-            start = time.clock()
             data[check] = getattr(self, 'get_' + check)()
-            end = time.clock()
-            print('ASC_{}: {}'.format(check, end - start))
 
         return data
