@@ -13,7 +13,6 @@
         <label class="{{ label_class }}" for="reference">
             Reference
         </label>
-        <p class=""></p>
         <input
             class="{{ input_class }} w-full"
             id="reference"
@@ -41,6 +40,18 @@
             id="supporting_excerpts"
             name="supporting_excerpts"
             rows="7">{% if assignment is not None and assignment.supporting_excerpts is not None %}{{ assignment.supporting_excerpts }}{% endif %}</textarea>
+    </div>
+    <div class="mb-8">
+        <label class="{{ label_class }}" for="rubric">
+            Rubric
+        </label>
+        <input
+            class="{{ input_class }} w-full"
+            id="rubric"
+            name="rubric"
+            type="text"
+            value="{% if assignment and assignment.rubric %}{{ assignment.rubric }}{% endif %}"
+            placeholder="Rubric">
     </div>
     <div class="mb-8">
         <label class="{{ label_class }}" for="model_answers">

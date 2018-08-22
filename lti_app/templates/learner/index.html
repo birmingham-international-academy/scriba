@@ -83,7 +83,9 @@
 </style>
 {% endblock %}
 
-{% block title %}Complete the assignment{% endblock %}
+{% block title %}
+    {% if assignment.rubric is not None %}{{ assignment.rubric }}{% else %}Complete the assignment{% endif %}
+{% endblock %}
 
 {% block content %}
 

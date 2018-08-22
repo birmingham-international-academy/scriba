@@ -17,6 +17,7 @@ class Assignment(models.Model):
     reference = models.TextField()
     excerpt = models.TextField()
     supporting_excerpts = models.TextField(null=True)
+    rubric = models.TextField(null=True)
     model_answers = models.TextField(null=True)
     max_attempts = models.IntegerField(null=True)
     show_excerpt = models.BooleanField(default=True)
