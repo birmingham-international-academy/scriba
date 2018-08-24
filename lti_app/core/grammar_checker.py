@@ -398,9 +398,6 @@ class Checker:
         ]
 
         for sentence in sentences:
-
-            print(sentence)
-
             for index, processor in enumerate(processors):
                 key = key_function(processor.__name__, index)
                 result = processor(sentence)

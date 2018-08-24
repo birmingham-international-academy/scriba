@@ -118,7 +118,7 @@ class Checker:
     def get_personal_nouns(self):
         text = self.text_document.get(strings.cleaned_text)
 
-        personal_form_regex = r'\s?((?:i|me|my|mine|you)\s.*?\s)'
+        personal_form_regex = r'(?:\s|\.|\,|\;|\:|\!|\?|^)((?:i|me|my|mine|you)\s.*?)(?:\s|\.|\,|\;|\:|\!|\?|$)'
         matches = re.findall(personal_form_regex, text, re.IGNORECASE)
 
         return matches

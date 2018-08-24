@@ -106,9 +106,11 @@ class Checker:
     def _tuple_similarity(self, t1, t2):
         similarity = 0.0
         weights = {
-            'target': 1.5,
+            'target_same_rel': 1.2,
+            'target_diff_rel': 1.05,
             'argument': 1
         }
+        weight_key = 'target_same_rel'
         default_weight_target = 1.3
         num_args_shared = 0
 
@@ -135,8 +137,10 @@ class Checker:
         )
 
         # Calculate similarity
-        # target1_gov_rel = t1['target'].root.gov_rel
-        # target2_gov_rel = t2['target'].root.gov_rel
+        target1_gov_rel = t1['target'].root.gov_rel
+        target2_gov_rel = t2['target'].root.gov_rel
+        same_rel = target1_gov_rel == target2_gov_rel
+
         if (
             not negation_mismatch
             and (
@@ -145,10 +149,8 @@ class Checker:
                 or are_synonyms(target1, target2)
             )
         ):
-            # weights.get('target').get(target2_gov_rel)
-            # weights.get('target').get(target1_gov_rel)
-
-            similarity += weights.get('target')
+            weight_key = 'target_same_rel' if same_rel else 'target_diff_rel'
+            similarity += weights.get(weight_key)
 
         # Arguments Similarity
         # ---------------------------------------------
@@ -186,9 +188,9 @@ class Checker:
             num_args_shared += 1
         """
 
-        normalization_factor = weights.get('target') + (len(args1) * len(args2)) # num_args_shared
+        norm_factor = weights.get(weight_key) + (len(args1) * len(args2)) # num_args_shared
 
-        return round(similarity / normalization_factor, 2)
+        return round(similarity / norm_factor, 2)
 
     def run(self):
         # 1. Predicate patterns method

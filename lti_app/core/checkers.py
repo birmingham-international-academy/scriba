@@ -1,7 +1,6 @@
 """Provides the paraphrase analyzers."""
 
 import copy
-import time
 
 from lti_app import strings
 from lti_app.core import (
@@ -125,30 +124,18 @@ class DefaultChecker:
 
         # Academic style check
         if self.checks.get('academic_style'):
-            start = time.clock()
             self.data[strings.academic_style_check] = self.academic_style_checker.run()
-            end = time.clock()
-            print('ASC: {}'.format(end - start))
 
         # Semantics check
         if self.checks.get('semantics') > 0:
-            start = time.clock()
             self.data[strings.semantics_check] = self.semantics_checker.run()
-            end = time.clock()
-            print('SEM: {}'.format(end - start))
 
         # Plagiarism check
         if self.checks.get('plagiarism'):
-            start = time.clock()
             self.data[strings.plagiarism_check] = self.plagiarism_checker.run()
-            end = time.clock()
-            print('PLAGIARISM: {}'.format(end - start))
 
         # Grammar check
         if self.checks.get('grammar'):
-            start = time.clock()
             self.data[strings.grammar_check] = self.grammar_checker.run()
-            end = time.clock()
-            print('GRAMMAR: {}'.format(end - start))
 
         return self.data
