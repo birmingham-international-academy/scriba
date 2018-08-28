@@ -1,4 +1,4 @@
-# Scriba
+# Scriba (English Academic Paraphrase Practice)
 
 <img src="./badge-coverage.svg">
 

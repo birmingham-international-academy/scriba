@@ -33,64 +33,84 @@ class Checker:
         return node if type(node) is str else node.label()
 
     def _get_nouns(self, noun_phrase):
+        rev_noun_phrase = list(reversed(noun_phrase))
+        pos_tags = [self._get_node_label(node) for node in noun_phrase]
+
+        if rev_noun_phrase[0].label() == 'POS':
+            return [rev_noun_phrase[0]]
+
+        if re.search(r'NN.?( (CC|,) NN.?)+', ' '.join(pos_tags)) is not None:
+            nouns = filter(
+                lambda node: self._get_node_label(node).startswith('NN'),
+                noun_phrase
+            )
+            return list(nouns)
+
+        for token in rev_noun_phrase:
+            if token.label() in ['NN', 'NNP', 'NNPS', 'NNS', 'NX', 'POS', 'JJR']:
+                return [token]
+
         nouns = []
-        has_conjunction = False
+        for token in noun_phrase:
+            if token.label() == 'NP':
+                nouns.extend(self._get_nouns(token))
+        if len(nouns) > 0:
+            return nouns
 
-        for node in noun_phrase:
-            if type(node) is str:
-                continue
+        for token in rev_noun_phrase:
+            if token.label() in ['$', 'ADJP', 'PRN']:
+                return [token]
 
-            if self._is_noun(node.label()):
-                nouns.append(node)
-            elif node.label() == 'CC':
-                has_conjunction = True
-            else:
-                nns, has_conj = self._get_nouns(node)
+        for token in rev_noun_phrase:
+            if token.label() == 'CD':
+                return [token]
 
-                nouns.extend(nns)
-                has_conjunction = has_conjunction and has_conj
+        for token in rev_noun_phrase:
+            if token.label() in ['JJ', 'JJS', 'RB', 'QP']:
+                return [token]
 
-        return nouns, has_conjunction
+        return [rev_noun_phrase[0]]
 
     def _get_verbs(self, verb_phrase):
         verbs = []
 
         for node in verb_phrase:
-            if isinstance(node, ParentedTree) and node.label() not in self.clause_types:
-                if self._is_verb(node.label()):
-                    verbs.append(node)
-                else:
-                    verbs.extend(self._get_verbs(node))
+            if isinstance(node, ParentedTree) and self._is_verb(node.label()):
+                verbs.append(node)
 
         return verbs
 
-    def _has_disagreement(self, base_noun, base_verb, has_conjunction):
-        noun_labels = [noun.label() for noun in base_noun]
-        verb_labels = [verb.label() for verb in base_verb]
+    def _has_disagreement(self, base_noun, base_verb):
+        nouns = [
+            (self._get_node_label(noun[0]).lower(), noun.label())
+            for noun in base_noun
+        ]
+        verbs = [
+            (self._get_node_label(verb[0]).lower(), verb.label())
+            for verb in base_verb
+        ]
 
-        if len(noun_labels) > 1 and has_conjunction:
-            # Plural noun phrase (e.g. John and Mary)
+        if len(nouns) > 1:
+            # Plural noun phrase (e.g. Aldo, Giovanni, and Giacomo)
             i_pronoun = False
             singular = False
             plural = True
         else:
             # Extract head noun (covers compound nouns)
-            n_label = noun_labels[-1]
+            n_word, n_label = nouns[-1]
+            entity = n_word if n_label == 'PRP' else n_label
 
-            if n_label == 'PRP':
-                n_label = base_noun[0][0].lower()
-
-            i_pronoun = n_label == 'i'
-            singular = n_label in ['NN', 'NNP', 'he', 'she', 'it']
-            plural = n_label in ['NNS','NNPS', 'you', 'we', 'they']
+            i_pronoun = entity == 'i'
+            singular = entity in ['NN', 'NNP', 'he', 'she', 'it']
+            plural = entity in ['NNS','NNPS', 'you', 'we', 'they']
 
         return any([
             (
-                (singular and verb_label == 'VBP')
+                (singular and (verb_label == 'VBP' or verb_word in ['were']))
                 or (i_pronoun and verb_label == 'VBZ')
-                or (plural and verb_label == 'VBZ')
+                or (plural and (verb_label == 'VBZ' or verb_word in ['was']))
             )
-            for verb_label in verb_labels
+            for verb_word, verb_label in verbs
         ])
 
     def _has_wh_clause(self, node):
@@ -203,9 +223,6 @@ class Checker:
         Subject-verb disagreement is when you use the plural-form verb
         for a single-form noun as in "the fox play".
 
-        Note:
-            Does not catch: (S (VP (VBP give) (NP (JJ good) (NNS results))))
-
         Args:
             sentence (Tree): The parse tree of the sentence.
 
@@ -230,7 +247,7 @@ class Checker:
                 continue
 
             # Get base noun components
-            base_nouns, has_conjunction = self._get_nouns(noun_phrase)
+            base_nouns = self._get_nouns(noun_phrase)
 
             # Get base verb components
             base_verbs = self._get_verbs(verb_phrase)
@@ -238,7 +255,7 @@ class Checker:
             if base_nouns == [] or base_verbs == []:
                 continue
 
-            if self._has_disagreement(base_nouns, base_verbs, has_conjunction):
+            if self._has_disagreement(base_nouns, base_verbs):
                 phrase = self.detokenize(
                     noun_phrase.leaves() + verb_phrase.leaves()
                 )
@@ -398,6 +415,9 @@ class Checker:
         ]
 
         for sentence in sentences:
+
+            print(sentence)
+
             for index, processor in enumerate(processors):
                 key = key_function(processor.__name__, index)
                 result = processor(sentence)
