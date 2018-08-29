@@ -22,7 +22,7 @@ def index(request):
             'exception': job.meta['exception']
         })
 
-    # Update attempts and return response
+    # Update attempts
     # ---------------------------------------------
     course_id = request.session.get(strings.course_id)
     assignment_id = request.session.get(strings.assignment_id)
@@ -35,6 +35,16 @@ def index(request):
         attempts += 1
 
     request.session[attempts_key] = attempts
+
+    # Update latest feedback
+    # ---------------------------------------------
+    data_copy = dict(data)
+    data_copy.pop('assignment', None)
+
+    request.session[strings.latest_feedback] = data_copy
+
+    # Return response
+    # ---------------------------------------------
 
     template = strings.learner_ajax_feedback
 

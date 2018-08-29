@@ -41,19 +41,35 @@ def show(request):
     course_id = request.session.get(strings.course_id)
     assignment_id = request.session.get(strings.assignment_id)
 
+    if request.GET.get('reset'):
+        request.session[strings.latest_feedback] = None
+
+    latest_feedback = request.session.get(strings.latest_feedback)
+
     assignment = service.get_by_course_assignment_tuple(
         course_id,
         assignment_id
     ).first()
 
+    context = {'assignment': assignment}
+
     is_instructor = request.session.get(strings.is_instructor)
 
     if is_instructor:
+        # Instructor
         template = strings.teacher_index
     else:
-        template = strings.learner_index
+        # Student
+        if latest_feedback is not None:
+            template = strings.learner_feedback
+            context = {
+                'assignment': assignment,
+                **latest_feedback
+            }
+        else:
+            template = strings.learner_index
 
-    return render(request, template, {'assignment': assignment})
+    return render(request, template, context)
 
 
 def submit(request):
