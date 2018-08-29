@@ -26,7 +26,6 @@ def index(request):
     # ---------------------------------------------
     course_id = request.session.get(strings.course_id)
     assignment_id = request.session.get(strings.assignment_id)
-    assignment_type = request.session.get(strings.assignment_type)
     attempts_key = '{}_{}_attempts'.format(course_id, assignment_id)
     attempts = request.session.get(attempts_key)
 
@@ -37,9 +36,6 @@ def index(request):
 
     request.session[attempts_key] = attempts
 
-    if assignment_type == 'D':
-        template = strings.learner_ajax_feedback
-    else:
-        template = strings.learner_submission_confirmation
+    template = strings.learner_ajax_feedback
 
     return render(request, template, data)

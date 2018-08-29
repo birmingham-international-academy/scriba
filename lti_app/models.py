@@ -3,6 +3,8 @@
 
 from django.db import models
 
+from lti_app import strings
+
 
 TYPES = (
     ('D', 'Diagnostic'),
@@ -17,10 +19,18 @@ class Assignment(models.Model):
     reference = models.TextField()
     excerpt = models.TextField()
     supporting_excerpts = models.TextField(null=True)
-    rubric = models.TextField(null=True)
     model_answers = models.TextField(null=True)
+
+    # General settings
+    rubric = models.TextField(null=True)
+    graded_confirmation_text = models.TextField(
+        default=strings.graded_confirmation_text
+    )
     max_attempts = models.IntegerField(null=True)
     show_excerpt = models.BooleanField(default=True)
+    show_retry_button = models.BooleanField(default=True)
+
+    # Checks
     citation_check = models.BooleanField(default=True)
     grammar_check = models.BooleanField(default=True)
     plagiarism_check = models.BooleanField(default=True)

@@ -23,6 +23,7 @@ class CrudRepository:
     def create(self, fields):
         obj = self.model(**fields)
         obj.save()
+        return obj
 
     def update(self, model_id, fields):
         self.model.objects.filter(id=model_id).update(**fields)

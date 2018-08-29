@@ -30,7 +30,7 @@ class AssignmentService:
         )
 
     def create(self, fields):
-        self.repository.create(fields)
+        return self.repository.create(fields)
 
     def update(self, model_id, fields):
         self.repository.update(model_id, fields)

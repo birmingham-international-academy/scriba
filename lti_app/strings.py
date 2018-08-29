@@ -36,4 +36,11 @@ learner_ajax_feedback = 'learner/ajax-feedback.html'
 learner_canvas_feedback = 'learner/gradebook-feedback.html'
 learner_submission_confirmation = 'learner/submission-confirmation.html'
 teacher_index = 'teacher/index.html'
-teacher_submission_confirmation = 'teacher/assignment-submission-confirmation.html'
+teacher_submission_confirmation = 'teacher/submission-confirmation.html'
+
+# Defaults
+# =============================================
+graded_confirmation_text=(
+    "Your writing has been submitted for human moderation. "
+    "The 'grade' will normally appear within 7 days of submission."
+)

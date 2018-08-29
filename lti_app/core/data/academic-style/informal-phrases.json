@@ -102,5 +102,13 @@
     {
         "tokens": "are a lot",
         "suggestion": "are many"
+    },
+    {
+        "tokens": "like",
+        "suggestion": "similar to"
+    },
+    {
+        "tokens": "same as",
+        "suggestion": "similar to"
     }
 ]

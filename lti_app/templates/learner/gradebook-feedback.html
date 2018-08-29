@@ -26,11 +26,14 @@
     {% else %}
         {% include "includes/feedback-snippets/semantics-check-warning.html" %}
     {% endif %}
+    <p>Remember that this is a judgment from the application, which <strong>may</strong> not be incorrect.</p>
+{% else %}
+    {% include "includes/feedback-snippets/semantics-check-off.html" %}
 {% endif %}
 
 {% if plagiarism_check is not None %}
     {% if plagiarism_status %}
-        <p>Good job! You have not copied substantial content from the original text.</p>
+        <p>You did not copy any substantial content from the original text.</p>
     {% else %}
         {% include "includes/feedback-snippets/plagiarism-check-warning.html" %}
     {% endif %}

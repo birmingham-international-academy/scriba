@@ -33,6 +33,10 @@
                 {% include "includes/feedback-snippets/plagiarism-check-warning.html" %}
             {% endif %}
 
+            {% if semantics_status is None %}
+                {% include "includes/feedback-snippets/semantics-check-off.html" %}
+            {% endif %}
+
             {% if semantics_status == False %}
                 {% include "includes/feedback-snippets/semantics-check-warning.html" %}
             {% endif %}
@@ -241,11 +245,13 @@
         {% endif %}
     </div>
 
+    {% if assignment.show_retry_button %}
     <div class="mb-4">
         <a href="/assignments/" class="no-underline bg-blue hover:bg-blue-dark text-white font-bold py-2 px-4 rounded">
             Retry
         </a>
     </div>
+    {% endif %}
 </div>
 
 {% endwith %}
