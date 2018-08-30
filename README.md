@@ -155,18 +155,13 @@ Todo.
 
 Whenever local changes are made the server must always perform the following:
 
-1. `$ git pull origin master`
-2. `$ python manage.py migrate` if changes to the migrations have been made
-3. `$ python manage.py collectstatic` if changes to static files have been made
-
-In addition, if using the Digital Ocean setup described above, run:
-
-```
-$ sudo supervisorctl restart englishapp
-$ sudo supervisorctl restart worker
-```
-
-This will restart the WSGI HTTP server and the Django worker.
+1. In your local machine run: `ssh <username>@<ip address>`. For the current DigitalOcean setup the values are `<username> = englishapp` and `<ip address> = 178.128.41.130`.
+2. Then in the server run the following commands:
+    1. `$ git pull origin master`
+    2. `$ python manage.py migrate` if changes to the migrations have been made
+    3. `$ python manage.py collectstatic` if changes to static files have been made
+    4. `$ sudo supervisorctl restart englishapp` to restart the server
+    5. `$ sudo supervisorctl restart worker` to restart the worker
 
 ## Testing
 
