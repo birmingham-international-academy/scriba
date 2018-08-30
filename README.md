@@ -10,7 +10,7 @@ Scriba is compatible with Python 3.5.2.
 
 > Please note: if you encounter any problems when following this guide do not hesitate to contact us on ossedb@gmail.com
 
-First of all install the dependencies using: `pip -r requirements.txt`.
+First of all install the dependencies using: `pip install -r requirements.txt`.
 
 ### 1. Environment Settings
 
