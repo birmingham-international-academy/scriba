@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 from . import request_forms, services
+from .exceptions import AssignmentException
 from lti_app import strings
 
 
@@ -40,6 +41,7 @@ def show(request):
     service = services.AssignmentService()
     course_id = request.session.get(strings.course_id)
     assignment_id = request.session.get(strings.assignment_id)
+    attempts = request.session.get('{}_{}_attempts'.format(course_id, assignment_id))
 
     if request.GET.get('reset'):
         request.session[strings.latest_feedback] = None
@@ -67,6 +69,13 @@ def show(request):
                 **latest_feedback
             }
         else:
+            if (
+                attempts is not None
+                and assignment.max_attempts
+                and attempts >= assignment.max_attempts
+            ):
+                raise AssignmentException.max_attempts_reached()
+
             template = strings.learner_index
 
     return render(request, template, context)

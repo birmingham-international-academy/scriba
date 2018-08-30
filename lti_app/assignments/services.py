@@ -5,7 +5,6 @@ from html import parser
 from django.conf import settings
 from lti import tool_provider
 
-from .exceptions import AssignmentException
 from lti_app.core import checkers, interpreters
 from lti_app.assignments import repositories
 
@@ -55,13 +54,6 @@ class AssignmentService:
             'course_id': course_id,
             'assignment_id': assignment_id
         }).first()
-
-        if (
-            attempts is not None
-            and assignment.max_attempts
-            and attempts >= assignment.max_attempts
-        ):
-            raise AssignmentException.max_attempts_reached()
 
         # 2. Create the interpreter for the raw data
         feedback_interpreter = interpreters.FeedbackInterpreter(assignment.semantics_check)
