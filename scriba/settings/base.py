@@ -200,6 +200,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.file'
 
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+
 CANVAS = {
     'CONSUMER_KEY': os.environ.get('CANVAS_CONSUMER_KEY'),
     'SHARED_SECRET': os.environ.get('CANVAS_SHARED_SECRET'),

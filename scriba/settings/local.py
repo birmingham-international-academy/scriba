@@ -3,7 +3,7 @@ from scriba.settings.base import *
 
 ENVIRONMENT = 'local'
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     '0.0.0.0',

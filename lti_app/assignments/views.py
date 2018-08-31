@@ -62,8 +62,9 @@ def show(request):
         template = strings.teacher_index
     else:
         # Student
-        if latest_feedback is not None:
+        if latest_feedback is not None and assignment.assignment_type == 'D':
             template = strings.learner_feedback
+            latest_feedback.pop('assignment', None)
             context = {
                 'assignment': assignment,
                 **latest_feedback
@@ -71,7 +72,6 @@ def show(request):
         else:
             if (
                 attempts is not None
-                and assignment.max_attempts
                 and attempts >= assignment.max_attempts
             ):
                 raise AssignmentException.max_attempts_reached()

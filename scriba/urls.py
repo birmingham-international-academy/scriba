@@ -15,8 +15,11 @@ Including another URLconf
 """
 
 # from django.contrib import admin
+from django.conf.urls import handler500
 from django.urls import include, path
 from django.views.generic import TemplateView
+
+from lti_app.views import error_500
 
 
 urlpatterns = [
@@ -26,3 +29,5 @@ urlpatterns = [
     path('assignments/', include('lti_app.assignments.urls')),
     path('jobs/', include('lti_app.jobs.urls'))
 ]
+
+handler500 = error_500

@@ -38,7 +38,7 @@ def index(request):
 
     # Update latest feedback
     # ---------------------------------------------
-    data_copy = dict(data)
+    data_copy = data.copy()
     data_copy.pop('assignment', None)
 
     request.session[strings.latest_feedback] = data_copy
