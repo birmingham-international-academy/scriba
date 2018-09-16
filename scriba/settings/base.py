@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 import json
-from django.core.exceptions import ImproperlyConfigured
+# from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 
