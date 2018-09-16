@@ -11,7 +11,6 @@ def make_plagiarism_checker():
             processing_graphs.default_graph,
             processing_graphs.text_cleaner
         )
-        text_processor.remove_processor(processing_graphs.parser)
 
         text_document = text_processor.run(text)
         excerpt_document = text_processor.run(excerpt)

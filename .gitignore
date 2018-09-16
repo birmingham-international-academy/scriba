@@ -103,3 +103,8 @@ assets/
 lti_app/core/data/*
 !lti_app/core/data/examples.txt
 !lti_app/core/data/academic-style
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
