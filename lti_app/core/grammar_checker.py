@@ -199,9 +199,20 @@ class Checker:
         for tree in subtrees:
             compounds = ' '.join([node.label() for node in tree])
 
+            if re.search(r'S , NP VP', compounds) is not None:
+                s = tree[0]
+                vp = list(s.subtrees(filter=lambda n: n.label() == 'VP'))
+
+                if len(vp) > 0:
+                    vb = list(vp[0].subtrees(filter=lambda n: n.label() == 'VBG'))
+
+                    if len(vb) > 0:
+                        continue
+
+                comma_splices.append(tree.flatten())
+
             if (
-                re.search(r'S , NP VP', compounds) is not None
-                or re.search(r'NP( VP)? , NP( VP)?', compounds) is not None
+                re.search(r'NP( VP)? , NP( VP)?', compounds) is not None
                 or re.search(r'S( , S)+', compounds) is not None
             ):
                 comma_splices.append(tree.flatten())
