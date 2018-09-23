@@ -8,7 +8,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '178.128.41.130',
     'englishapp.tk',
-    'www.englishapp.tk'
+    'www.englishapp.tk',
+    'scriba-prod.eu-west-2.elasticbeanstalk.com'
 ]
 
 SESSION_COOKIE_SECURE = True
