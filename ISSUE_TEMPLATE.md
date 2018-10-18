@@ -1,29 +1,21 @@
 ### Prerequisites
 
-* [ ] Put an X between the brackets on this line if you have done all of the following:
-    * Replicated the development environment as detailed in [README.md](README.md)
-    * Checked that your issue isn't already filed: https://github.com/oss6/scriba/issues
+[Things that needs to be in place to understand this bug/feature/task]
 
 ### Description
 
-[Description of the issue]
+Description in the format:
 
-### Steps to Reproduce
+As a(n) [...]
+I want/should be able to [...]
+so that [...]
 
-1. [First Step]
-2. [Second Step]
-3. [and so on...]
+Example:
 
-**Expected behavior:** [What you expect to happen]
+As a teacher
+I want to be able to set the maximum attempts for an assignment
+so that students can't change their grades.
 
-**Actual behavior:** [What actually happens]
+### Acceptance Criteria
 
-**Reproduces how often:** [What percentage of the time does it reproduce?]
-
-### Versions
-
-Include the version of Scriba you're using as well as the OS and what version of the OS you're running.
-
-### Additional Information
-
-Any additional information, configuration or data that might be necessary to reproduce the issue.
+List of criteria that determines the issue can be closed.
