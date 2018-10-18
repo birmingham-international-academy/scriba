@@ -12,15 +12,14 @@ Welcome to the repository of `scriba`! The following is a set of guidelines for 
   * [Your First Code Contribution](#your-first-code-contribution)
   * [Pull Requests](#pull-requests)
 
-[Styleguides](#styleguides)
+[Style Guides](#style-guides)
   * [Git Commit Messages](#git-commit-messages)
-  * [JavaScript Styleguide](#javascript-styleguide)
-  * [CoffeeScript Styleguide](#coffeescript-styleguide)
-  * [Specs Styleguide](#specs-styleguide)
-  * [Documentation Styleguide](#documentation-styleguide)
+  * [Python Styleguide](#python-style-guide)
+  * [Documentation Style Guide](#documentation-style-guide)
 
-[Additional Notes](#additional-notes)
-  * [Issue and Pull Request Labels](#issue-and-pull-request-labels)
+[Version Control](#version-control)
+
+[Issue Labels](#issue-labels)
 
 ## What should I know before I get started?
 
@@ -65,7 +64,7 @@ Before creating enhancement suggestions, please check if there is a related enha
     * Built in Scriba modules (such as `checker`)
     * Local modules (using relative paths)
 
-## Style guides
+## Style Guides
 
 ### Git Commit Messages
 
@@ -90,63 +89,52 @@ Before creating enhancement suggestions, please check if there is a related enha
 
 The Python code follows [PEP 8](https://www.python.org/dev/peps/pep-0008/).
 
-### Documentation Style Guide
+## Version Control
 
-## Additional Notes
+The following convention is used:
 
-### Version Control
+- `master`: the branch reflective production.
+- `develop`: the branch for active development. Once a release is ready `develop` is merged into `master`.
+- `feature/<issue number>/<description>`:
+- `bug/<issue number>/<description>`:
+- `task/<issue number>/<description>`:
 
-The repository uses the [Feature Branch Model](https://hackernoon.com/still-using-gitflow-what-about-a-simpler-alternative-74aa9a46b9a3).
+### Managing Release Versions With Git Tags
 
-#### Worflow
+In this model, a merge from develop to master is considered a new version release.
+To track each release version, tags can be used.
+These will be used as reference to choose which version should be deployed at the servers.
 
-1. Create a branch from the master (feature-x), which is where the feature will be developed: `git checkout -b feature-x`
-2. Push the branch to the remote: `git push -u origin feature-x`. With the branch in the remote repo, a pull request should be opened with it.
-3. Fix the reviewed code and wait for approval. If a new release on the master generates a conflict, a best practice would be to rebase it (instead of merging).
-4. (optional) If a rebase is needed: checkout to master `git checkout master`, pull the changes `git pull`, go back to the feature branch `git checkout feature-x`, do the rebase `git rebase master` and then sync the rebased branch `git push --force-with-lease`.
-5. If there are no conflicts and it was approved: `git checkout master` then `git merge --squash feature-x` then `git commit`.
+### Workflow
 
-#### Managing Release Versions With Git Tags
+1. Move to `develop` branch: git checkout `develop`
+2. Start a branch for a feature/bug/task `git checkout -b (feature|bug|task)/<issue number>/<description>`
+3. Work on this newly created branch (commiting and pushing)
+4. After finishing development on this task:
+  - Go into GitHub and raise a pull request (Pull requests > New pull request)
+  - The direction of the PR needs to be from your feature/bug/task branch to the develop branch
+5. Wait for the developers on the team to approve the pull request, then merge the branches
+6. When it is time for a new release do the same process, this time from `develop` to `master`.
+7. Then create a tag announcing the release:
+  - `git checkout master`
+  - `git pull`
+  - `git tag -a v1.0.0`
+  - `git push origin v1.0.0 --follow-tags`
 
-In the feature branch model, a merge is considered a new version release. To track each release version, tags can be used. These will be used as reference to choose which version should be deployed at the servers.
-
-The process is:
-
-1. Checkout to the master branch: `git checkout master`
-2. Pull changes from the remote `git pull`
-3. Create a tag using `git tag -a v1.0.0`
-4. Push the modifications and the tag: `git push origin v1.0.0 --follow-tags`
-
-#### What happens if a hot-fix is needed?
-
-At some point, an issue will be raised and the production version will need a hot-fix. A feature branch can't just be opened to develop a fix, as the master will probably be ahead of the production version. In this case, the fix needs to be done directly on the production version:
-
-1. Checkout to the production version tag `git checkout v0.10.0`.
-2. Create a new branch from this tag `git checkout -b hotfix-v0.10.1-weirdbehavior`.
-3. Create the fix and commit it.
-4. Create a tag for this new release `git tag -a v0.10.1`.
-5. Push the branch and tag to remote `git push -u origin hotfix-v0.10.1-weirdbehavior --follow-tags`.
-6. Deploy the tag `v0.10.1` to the production environment.
-
-### Issue and Pull Request Labels
+## Issue Labels
 
 The labels are loosely grouped by their purpose, but it's not required that every issue have a label from every group or that an issue can't have more than one label from the same group.
 
-#### Type of Issue and Issue State
+### Type of Issue
 
 | Label name | Description |
 | --- | --- |
-| `enhancement` | Feature requests. |
-| `bug` | Confirmed bugs or reports that are very likely to be bugs. |
-| `question` | Questions more than bug reports or feature requests (e.g. how do I do X). |
-| `help-wanted` | The Scriba team would appreciate help in resolving these issues. |
-| `more-information-needed` | More information needs to be collected about these problems or feature requests (e.g. steps to reproduce). |
-| `needs-reproduction` | Likely bugs, but haven't been reliably reproduced. |
-| `duplicate` | Issues which are duplicates of other issues, i.e. they have been reported before. |
-| `wontfix` | The Scriba team has decided not to fix these issues for now, either because they're working as intended or for some other reason. |
-| `invalid` | Issues which aren't valid (e.g. user errors). |
+| `question` | General questions (e.g. how do I do X). |
+| `story` | Functionality request expressed from the perspective of the user. |
+| `bug` | Problem that impairs product or service functionality. |
+| `task` | Task that needs to be done (e.g. refactoring, testing). |
 
-#### Topic Categories
+### Topic Categories
 
 | Label name | Description |
 | --- | --- |
@@ -156,13 +144,3 @@ The labels are loosely grouped by their purpose, but it's not required that ever
 | `academic-style` | Academic style related issue. |
 | `citation` | Citation related issue. |
 | `lti` | LTI related issue. |
-
-#### Pull Request Labels
-
-| Label name | Description |
-| --- | --- |
-| `work-in-progress` | Pull requests which are still being worked on, more changes will follow. |
-| `needs-review` | Pull requests which need code review, and approval from maintainers. |
-| `under-review` | Pull requests being reviewed by maintainers. |
-| `requires-changes` | Pull requests which need to be updated based on review comments and then reviewed again. |
-| `needs-testing` | Pull requests which need manual testing. |
