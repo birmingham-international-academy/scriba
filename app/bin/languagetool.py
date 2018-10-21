@@ -25,6 +25,8 @@ ngram_parser = NGramResourceFinder()
 resource_url = 'https://www.languagetool.org/download/LanguageTool-stable.zip'
 filename = os.path.join(data_dir, 'languagetool.zip')
 
+print(filename)
+
 with open(filename, 'wb') as f:
     print('> Downloading languagetool.zip')
     download(resource_url, f)
@@ -34,7 +36,7 @@ extract(filename, data_dir)
 
 directory_glob = os.path.join(data_dir, 'LanguageTool-*')
 for path in glob.glob(directory_glob):
-    if os.path.isdir(f):
+    if os.path.isdir(path):
         os.rename(
             os.path.join(data_dir, path),
             os.path.join(data_dir, 'languagetool')
@@ -45,6 +47,7 @@ os.remove(filename)
 # LanguageTool ngram data
 # =============================================
 
+"""
 base_url = 'http://languagetool.org/download/ngram-data/'
 filename = os.path.join(data_dir, 'ngram.zip')
 
@@ -64,3 +67,4 @@ extract(filename, ngram_directory)
 os.remove(filename)
 
 print('> LanguageTool successfully installed!')
+"""

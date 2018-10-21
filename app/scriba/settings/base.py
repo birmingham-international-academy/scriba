@@ -131,15 +131,9 @@ LOGGING = {
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': '127.0.0.1:11211',
-        'TIMEOUT': None,
-        'OPTIONS': {
-            'binary': True,
-            'behaviors': {
-                'ketama': True,
-            }
-        }
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': os.environ.get('MEMCACHED_LOCATION', 'memcached:11211'),
+        'TIMEOUT': None
     }
 }
 
@@ -148,8 +142,8 @@ CACHES = {
 
 RQ_QUEUES = {
     'default': {
-        'HOST': 'localhost',
-        'PORT': 6379,
+        'HOST': os.environ.get('REDIS_HOST', 'redis'),
+        'PORT': os.environ.get('REDIS_PORT', '6379'),
         'DB': 0
     }
 }
@@ -222,9 +216,11 @@ CANVAS = {
 }
 
 LANGUAGETOOL = {
-    'PORT': os.environ.get('LANGUAGETOOL_PORT', '8081')
+    'HOST': os.environ.get('LANGUAGETOOL_HOST', 'languagetool'),
+    'PORT': os.environ.get('LANGUAGETOOL_PORT', '8010')
 }
 
 STANFORD_CORENLP = {
+    'HOST': os.environ.get('STANFORD_CORENLP_HOST', 'corenlp'),
     'PORT': os.environ.get('STANFORD_CORENLP_PORT', '9000')
 }

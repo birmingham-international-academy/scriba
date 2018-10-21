@@ -1,0 +1,56 @@
+version: '3.6'
+
+services:
+  db:
+    build: db
+    restart: always
+    env_file: db/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - /var/lib/postgresql/data/
+
+  redis:
+    image: redis:latest
+    restart: always
+
+  memcached:
+    image: memcached:latest
+    restart: always
+
+  corenlp:
+    build: corenlp
+    restart: always
+
+  languagetool:
+    build: languagetool
+    restart: always
+
+  base_app:
+    build: app
+    volumes:
+      - ./app:/src
+    depends_on:
+      - db
+      - redis
+      - corenlp
+      - memcached
+      - languagetool
+
+  rq:
+    image: scriba_base_app
+    restart: always
+    env_file: app/.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=scriba.settings.local
+    command: python manage.py rqworker default
+
+  app:
+    image: scriba_base_app
+    restart: always
+    env_file: app/.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=scriba.settings.local
+    command: ./compose_local/up.sh
+    ports:
+      - "443:443"

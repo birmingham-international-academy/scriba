@@ -19,6 +19,8 @@ srparser_url = '{0}/{1}'.format(base, srparser_filename)
 def download_stanford_corenlp():
     zip_filename = os.path.join(data_dir, 'stanford-corenlp.zip')
 
+    print(zip_filename)
+
     with open(zip_filename, 'wb') as f:
         print('> Downloading Stanford CoreNLP ...')
         download(corenlp_url, f)

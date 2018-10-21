@@ -6,6 +6,16 @@
 
 > Please note: if you encounter any problems when following this guide do not hesitate to contact us on ossedb@gmail.com
 
+```
+docker-compose up -d --build
+```
+
+```
+docker rm $(docker ps -a -q) --force
+docker volume prune
+docker rmi $(docker images -q) --force
+```
+
 ## How to read this document
 
 ### I want to setup a new local development environment on my machine

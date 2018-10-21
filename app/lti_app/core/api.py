@@ -33,8 +33,9 @@ class CanvasApiClient:
 
 class CoreNlpClient:
     def __init__(self):
+        host = settings.STANFORD_CORENLP['HOST']
         port = settings.STANFORD_CORENLP['PORT']
-        self.endpoint = 'http://localhost:{0}'.format(port)
+        self.endpoint = 'http://{0}:{1}'.format(host, port)
 
     def run(self, text, annotators):
         params = {
@@ -53,8 +54,9 @@ class CoreNlpClient:
 
 class LanguageToolClient:
     def __init__(self):
+        host = settings.LANGUAGETOOL['HOST']
         port = settings.LANGUAGETOOL['PORT']
-        self.endpoint = 'http://localhost:{0}/v2/check'.format(port)
+        self.endpoint = 'http://{0}:{1}/v2/check'.format(host, port)
 
     def check(self, text):
         response = requests.post(self.endpoint, data={
