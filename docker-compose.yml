@@ -13,21 +13,31 @@ services:
   redis:
     image: redis:latest
     restart: always
+    ports:
+      - "6379:6379"
 
   memcached:
     image: memcached:latest
     restart: always
+    ports:
+      - "11211:11211"
 
   corenlp:
     build: corenlp
     restart: always
+    ports:
+      - "9000:9000"
 
   languagetool:
     build: languagetool
     restart: always
+    ports:
+      - "8010:8010"
 
-  base_app:
+  app:
     build: app
+    restart: always
+    env_file: app/.env
     volumes:
       - ./app:/src
     depends_on:
@@ -37,20 +47,11 @@ services:
       - memcached
       - languagetool
 
-  rq:
-    image: scriba_base_app
+  nginx:
+    build: nginx
     restart: always
-    env_file: app/.env
-    environment:
-      - DJANGO_SETTINGS_MODULE=scriba.settings.local
-    command: python manage.py rqworker default
-
-  app:
-    image: scriba_base_app
-    restart: always
-    env_file: app/.env
-    environment:
-      - DJANGO_SETTINGS_MODULE=scriba.settings.local
-    command: ./compose_local/up.sh
+    env_file: nginx/.env
     ports:
       - "443:443"
+    depends_on:
+      - app
