@@ -22,5 +22,9 @@ RUN python -m nltk.downloader wordnet wordnet_ic stopwords words punkt averaged_
 
 ### Supervisor configuration
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./docker-entrypoint.sh /
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+RUN ["chmod", "+x", "/docker-entrypoint.sh"]
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+# CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
