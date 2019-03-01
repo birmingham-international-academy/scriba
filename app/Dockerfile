@@ -8,6 +8,7 @@ WORKDIR ${DOCKYARD}
 
 ### Install core packages
 RUN apt-get -q -y update && apt-get upgrade -q -y && apt-get -q -y autoremove && apt-get -q -y autoclean
+RUN apt-get install -q -y --no-install-recommends apt-utils
 RUN apt-get install -q -y git default-jre supervisor
 
 ### Install Python packages
