@@ -1,10 +1,8 @@
 # Scriba (English Academic Paraphrase Practice)
 
-<img src="./badge-coverage.svg">
-
 > A Canvas LTI for automated paraphrase analysis.
 
-> Please note: if you encounter any problems setting up your environment contact us on ossedb@gmail.com
+> Please note: if you encounter any problems setting up your environment contact us on o.edbali@bham.ac.uk or r.nickalls@birmingham.ac.uk
 
 ## Development Setup
 
@@ -43,6 +41,8 @@ For development the Nginx `HOST` variable must be `localhost`.
 
 ### Run Docker
 
+> Note: you may need to run `sudo` before each Docker command.
+
 If you're building the app for the first time then run the following:
 
 ```
@@ -73,7 +73,36 @@ docker rmi $(docker images -q) --force
 
 ### Inspecting the Logs
 
-TODO
+To inspect the logs on any container run the following:
+
+```
+docker logs <container_id>
+```
+
+where `<container_id>` can be retrieved from the list given by `docker ps`.
+
+## Setting up the LTI on Canvas
+
+### Register the development LTI
+
+To register the development LTI go into `Settings > Apps > View App Configurations > + App`.
+
+This will prompt a popup:
+
+- **Configuration Type**: choose *Paste XML*
+- **Name**: give a meaningful name to the app (e.g. English APP - DEV)
+- **Consumer key**: the consumer key used in the `.env` file.
+- **Shared secret**: the shared secret used in the `.env` file.
+- **XML Configuration**
+    * For this you need to enter in the browser: `https://127.0.0.1/register`
+    * This will return an XML response which you need to copy
+    * Paste the XML in the text area in the popup
+    * Change any `http://127.0.0.1/launch` string to use `https` instead (if not already)
+
+### Create an assignment using the LTI
+
+- In the **Submission type** entry choose **External tool** and *find* the newly created LTI (or an existing one).
+- Click **Save** or **Save & publish**
 
 ## Production Setup
 
@@ -114,12 +143,6 @@ the following command:
 
 ```
 $ pytest --cov
-```
-
-To generate the coverage badge run the following:
-
-```
-$ coverage-badge -o badge-coverage.svg
 ```
 
 ## Contributing
